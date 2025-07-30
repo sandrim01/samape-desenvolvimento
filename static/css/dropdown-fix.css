@@ -1,0 +1,164 @@
+/* Correções específicas para dropdown do menu de perfil */
+
+/* Garantir que o dropdown funcione corretamente */
+.navbar .dropdown-menu {
+    position: absolute !important;
+    z-index: 1050 !important;
+    display: none;
+    min-width: 280px;
+    background-color: var(--bg-card, #2a2a2a);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    padding: 0;
+    overflow: hidden;
+    margin-top: 0.5rem;
+    transform: none !important;
+}
+
+/* Mostrar dropdown quando ativo */
+.navbar .dropdown-menu.show {
+    display: block !important;
+}
+
+/* Botão dropdown */
+.navbar .dropdown-toggle {
+    border: none !important;
+    background: transparent !important;
+    color: var(--text-light, #e9ecef) !important;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.navbar .dropdown-toggle:hover {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    color: var(--text-white, #ffffff) !important;
+}
+
+.navbar .dropdown-toggle:focus {
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+/* Estilo do cabeçalho do usuário */
+.dropdown-menu .user-info-header {
+    background: linear-gradient(45deg, #2D8BF7, #215B9C);
+    color: white;
+    padding: 20px 15px;
+    text-align: center;
+    border-bottom: none;
+    margin: 0;
+}
+
+.dropdown-menu .user-info-header .profile-image {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    border: 3px solid white;
+    margin: 0 auto 10px;
+    display: block;
+    object-fit: cover;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+}
+
+.dropdown-menu .user-info-header .user-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: white;
+}
+
+.dropdown-menu .user-info-header .user-email {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 8px;
+}
+
+.dropdown-menu .user-info-header .user-role {
+    display: inline-block;
+    padding: 4px 12px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Itens do dropdown */
+.dropdown-menu .dropdown-item {
+    color: var(--text-light, #e9ecef);
+    padding: 12px 20px;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+    border: none;
+    background: none;
+    display: flex;
+    align-items: center;
+}
+
+.dropdown-menu .dropdown-item:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: var(--text-white, #ffffff);
+}
+
+.dropdown-menu .dropdown-item i {
+    width: 20px;
+    text-align: center;
+    margin-right: 10px;
+}
+
+/* Divider */
+.dropdown-menu .dropdown-divider {
+    margin: 0;
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Tema claro */
+[data-bs-theme="light"] .navbar .dropdown-menu {
+    background-color: #ffffff;
+    border: 1px solid #e5e5e5;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+[data-bs-theme="light"] .dropdown-menu .dropdown-item {
+    color: #333333;
+}
+
+[data-bs-theme="light"] .dropdown-menu .dropdown-item:hover {
+    background-color: #f5f5f5;
+    color: #000000;
+}
+
+[data-bs-theme="light"] .dropdown-menu .dropdown-divider {
+    border-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .navbar .dropdown-menu {
+        position: fixed !important;
+        top: 60px !important;
+        right: 10px !important;
+        left: auto !important;
+        width: 280px;
+        max-width: calc(100vw - 20px);
+    }
+}
+
+/* Garantir que o JavaScript do Bootstrap funcione */
+.dropdown-menu.show {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* Fix para problemas de clique */
+.navbar .dropdown {
+    position: relative;
+}
+
+.navbar .dropdown-toggle::after {
+    display: none; /* Remove a seta padrão do Bootstrap */
+}

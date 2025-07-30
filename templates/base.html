@@ -28,6 +28,7 @@
     <link href="{{ url_for('static', filename='css/contrast-fixes.css') }}" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/dark-forms.css') }}?v={{ now }}" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/mobile.css') }}?v={{ now }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/dropdown-fix.css') }}?v={{ now }}" rel="stylesheet">
     
     {% block extra_css %}{% endblock %}
 </head>
@@ -449,6 +450,9 @@
     
     <!-- Fancybox para imagens -->
     <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js"></script>
+    
+    <!-- Dropdown Fix específico -->
+    <script src="{{ url_for('static', filename='js/dropdown-fix.js') }}?v={{ now }}"></script>
     
     <!-- Inicializar componentes do Bootstrap -->
     <script>
