@@ -15,7 +15,7 @@ from sqlalchemy.exc import IntegrityError
 
 from wtforms.validators import Optional
 
-from app import db
+from database import db
 from models import (
     User, Client, Equipment, ServiceOrder, FinancialEntry, ActionLog,
     UserRole, ServiceOrderStatus, FinancialEntryType, Supplier, Part, PartSale,

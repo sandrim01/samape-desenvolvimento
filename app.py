@@ -3,25 +3,18 @@ import logging
 from datetime import timedelta
 
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.orm import DeclarativeBase
 from flask_login import LoginManager
 from flask_wtf.csrf import CSRFProtect
 from werkzeug.middleware.proxy_fix import ProxyFix
 
+from database import db
 from jinja_filters import nl2br, format_document, format_currency, status_color, absolute_value
 
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
 
-# Create SQLAlchemy base class
-class Base(DeclarativeBase):
-    pass
-
-
 # Initialize extensions
-db = SQLAlchemy(model_class=Base)
 login_manager = LoginManager()
 csrf = CSRFProtect()
 
@@ -63,16 +56,14 @@ login_manager.login_view = "login"
 login_manager.login_message = "Por favor, faça login para acessar esta página."
 login_manager.login_message_category = "warning"
 
-# Import models and create tables
-with app.app_context():
-    import models
+# Import models 
+import models
+
+# Setup user loader for Flask-Login
+@login_manager.user_loader
+def load_user(user_id):
     from models import User
-    db.create_all()
-    
-    # Setup user loader for Flask-Login
-    @login_manager.user_loader
-    def load_user(user_id):
-        return User.query.get(int(user_id))
+    return User.query.get(int(user_id))
 
 # Register Jinja filters
 app.jinja_env.filters['nl2br'] = nl2br
