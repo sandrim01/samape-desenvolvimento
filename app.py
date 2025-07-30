@@ -62,8 +62,13 @@ import models
 # Setup user loader for Flask-Login
 @login_manager.user_loader
 def load_user(user_id):
-    from models import User
-    return User.query.get(int(user_id))
+    try:
+        from models import User
+        if user_id is None or user_id == 'None':
+            return None
+        return User.query.get(int(user_id))
+    except (ValueError, TypeError):
+        return None
 
 # Register Jinja filters
 app.jinja_env.filters['nl2br'] = nl2br
