@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+
+{% block title %}Nova Manutenção{% endblock %}
+
+{% block content %}
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Registrar Manutenção de Veículo</h1>
+            </div>
+            <div class="col-sm-6">
+                <div class="float-sm-right">
+                    <a href="{{ url_for('view_vehicle', id=vehicle.id) }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left mr-1"></i> Voltar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            Registrar manutenção para {{ vehicle.plate }} ({{ vehicle.brand }} {{ vehicle.model }})
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <form method="post">
+                            {{ form.hidden_tag() }}
+                            {{ form.vehicle_id }}
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        {{ form.date.label(class="form-label") }}
+                                        {{ form.date(class="form-control", value=today) }}
+                                        {% if form.date.errors %}
+                                        <div class="invalid-feedback" style="display:block">
+                                            {% for error in form.date.errors %}
+                                            <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        {{ form.mileage.label(class="form-label") }}
+                                        {{ form.mileage(class="form-control", value=vehicle.current_km) }}
+                                        {% if form.mileage.errors %}
+                                        <div class="invalid-feedback" style="display:block">
+                                            {% for error in form.mileage.errors %}
+                                            <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        {{ form.description.label(class="form-label") }}
+                                        {{ form.description(class="form-control", rows=4) }}
+                                        {% if form.description.errors %}
+                                        <div class="invalid-feedback" style="display:block">
+                                            {% for error in form.description.errors %}
+                                            <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        {{ form.cost.label(class="form-label") }}
+                                        {{ form.cost(class="form-control") }}
+                                        {% if form.cost.errors %}
+                                        <div class="invalid-feedback" style="display:block">
+                                            {% for error in form.cost.errors %}
+                                            <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                        <small class="form-text text-muted">Se houver custo, será criada uma entrada financeira automática.</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        {{ form.performed_by_id.label(class="form-label") }}
+                                        {{ form.performed_by_id(class="form-control") }}
+                                        {% if form.performed_by_id.errors %}
+                                        <div class="invalid-feedback" style="display:block">
+                                            {% for error in form.performed_by_id.errors %}
+                                            <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        {{ form.service_provider.label(class="form-label") }}
+                                        {{ form.service_provider(class="form-control") }}
+                                        {% if form.service_provider.errors %}
+                                        <div class="invalid-feedback" style="display:block">
+                                            {% for error in form.service_provider.errors %}
+                                            <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        {{ form.invoice_number.label(class="form-label") }}
+                                        {{ form.invoice_number(class="form-control") }}
+                                        {% if form.invoice_number.errors %}
+                                        <div class="invalid-feedback" style="display:block">
+                                            {% for error in form.invoice_number.errors %}
+                                            <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group text-right">
+                                <a href="{{ url_for('view_vehicle', id=vehicle.id) }}" class="btn btn-secondary mr-2">Cancelar</a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save mr-1"></i> Salvar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

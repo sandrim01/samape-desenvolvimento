@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SAMAPE - Sistema de Gestão de Serviços{% endblock %}</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Fancybox para visualização de imagens -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css"/>
+    
+    <!-- Custom CSS -->
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/menu-updates.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/mobile-enhanced.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/dashboard-metrics.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/contrast-fixes.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/dark-forms.css') }}?v={{ now }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/mobile.css') }}?v={{ now }}" rel="stylesheet">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    {% if current_user.is_authenticated %}
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <!-- Logo centralizada -->
+            <a class="navbar-brand" href="{{ url_for('dashboard') }}">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="SAMAPE" class="logo-img" width="150">
+            </a>
+            <!-- Versão do sistema -->
+            <small class="text-light d-none d-md-block">V 1.0{{ config.APP_VERSION }}</small>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item dropdown">
+                        <button type="button" class="btn nav-link" id="profileMenuBtn">
+                            {% if current_user.profile_image %}
+                                <img src="{{ url_for('static', filename='images/profiles/' + current_user.profile_image) }}" 
+                                     alt="Perfil" class="profile-avatar me-1">
+                            {% else %}
+                                <img src="{{ url_for('static', filename='images/profiles/default_profile.svg') }}" 
+                                     alt="Perfil" class="profile-avatar me-1">
+                            {% endif %}
+                            {{ current_user.name }}
+                            <i class="fas fa-caret-down ms-1"></i>
+                        </button>
+                        <div id="profileMenu" class="profile-menu" style="display: none;">
+                            <div class="user-info-header">
+                                {% if current_user.profile_image %}
+                                    <img src="{{ url_for('static', filename='images/profiles/' + current_user.profile_image) }}" 
+                                         alt="Perfil" class="profile-image">
+                                {% else %}
+                                    <img src="{{ url_for('static', filename='images/profiles/default_profile.svg') }}" 
+                                         alt="Perfil" class="profile-image">
+                                {% endif %}
+                                <div class="user-name">{{ current_user.name }}</div>
+                                <div class="user-email">{{ current_user.email }}</div>
+                                <div class="user-role">{{ current_user.role.value }}</div>
+                            </div>
+                            <div class="profile-menu-items">
+                                <a href="{{ url_for('profile') }}" class="menu-item"><i class="fas fa-id-card me-2"></i>Meu Perfil</a>
+                                {% if current_user.role == UserRole.admin %}
+                                <a href="{{ url_for('system_settings') }}" class="menu-item"><i class="fas fa-cogs me-2"></i>Configurações</a>
+                                {% endif %}
+                                <hr class="menu-divider">
+                                <a href="{{ url_for('logout') }}" class="menu-item"><i class="fas fa-sign-out-alt me-2"></i>Sair</a>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+                <div class="position-sticky pt-3">
+                    <!-- User info in sidebar -->
+                    <div class="sidebar-user-info mb-4">
+                        <div class="sidebar-profile-wrapper" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            {% if current_user.profile_image %}
+                                <img src="{{ url_for('static', filename='images/profiles/' + current_user.profile_image) }}" 
+                                    alt="Perfil" class="sidebar-profile-image dropdown-toggle">
+                            {% else %}
+                                <img src="{{ url_for('static', filename='images/profiles/default_profile.svg') }}" 
+                                    alt="Perfil" class="sidebar-profile-image dropdown-toggle">
+                            {% endif %}
+                            <div class="sidebar-user-name">{{ current_user.name }}</div>
+                        </div>
+                        
+                        <!-- Menu dropdown de perfil na sidebar -->
+                        <ul class="dropdown-menu sidebar-profile-dropdown">
+                            <li>
+                                <div class="user-info-header">
+                                    {% if current_user.profile_image %}
+                                        <img src="{{ url_for('static', filename='images/profiles/' + current_user.profile_image) }}" 
+                                             alt="Perfil" class="profile-image">
+                                    {% else %}
+                                        <img src="{{ url_for('static', filename='images/profiles/default_profile.svg') }}" 
+                                             alt="Perfil" class="profile-image">
+                                    {% endif %}
+                                    <div class="user-name">{{ current_user.name }}</div>
+                                    <div class="user-email">{{ current_user.email }}</div>
+                                    <div class="user-role">{{ current_user.role.value }}</div>
+                                </div>
+                            </li>
+                            <li><a class="dropdown-item" href="{{ url_for('profile') }}"><i class="fas fa-id-card me-2"></i>Meu Perfil</a></li>
+                            {% if current_user.role == UserRole.admin %}
+                            <li><a class="dropdown-item" href="{{ url_for('system_settings') }}"><i class="fas fa-cogs me-2"></i>Configurações</a></li>
+                            {% endif %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt me-2"></i>Sair</a></li>
+                        </ul>
+                    </div>
+                    
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.path == '/dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">
+                                <i class="fas fa-tachometer-alt"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if '/os' in request.path %}active{% endif %}" href="{{ url_for('service_orders') }}">
+                                <i class="fas fa-clipboard-list"></i> Ordens de Serviço
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if '/clientes' in request.path %}active{% endif %}" href="{{ url_for('clients') }}">
+                                <i class="fas fa-users"></i> Clientes
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if '/maquinarios' in request.path %}active{% endif %}" href="{{ url_for('equipment') }}">
+                                <i class="fas fa-tools"></i> Maquinários
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if '/fornecedores' in request.path %}active{% endif %}" href="{{ url_for('suppliers') }}">
+                                <i class="fas fa-truck"></i> Fornecedores
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if '/pecas' in request.path and '/vendas-pecas' not in request.path %}active{% endif %}" href="{{ url_for('parts') }}">
+                                <i class="fas fa-cogs"></i> Peças
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if '/vendas-pecas' in request.path %}active{% endif %}" href="{{ url_for('part_sales') }}">
+                                <i class="fas fa-shopping-cart"></i> Venda de Peças
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if '/pedidos-fornecedor' in request.path %}active{% endif %}" href="{{ url_for('supplier_orders') }}">
+                                <i class="fas fa-shipping-fast"></i> Pedidos a Fornecedores
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if '/estoque' in request.path %}active{% endif %}" href="{{ url_for('stock_items') }}">
+                                <i class="fas fa-hard-hat"></i> EPIs e Ferramentas
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if '/frota' in request.path %}active{% endif %}" href="{{ url_for('fleet') }}">
+                                <i class="fas fa-truck-monster"></i> Controle de Frota
+                            </a>
+                        </li>
+                        {% if current_user.role == UserRole.admin or current_user.role == UserRole.gerente %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if '/funcionarios' in request.path %}active{% endif %}" href="{{ url_for('employees') }}">
+                                <i class="fas fa-user-tie"></i> Funcionários
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if '/financeiro' in request.path %}active{% endif %}" href="{{ url_for('financial') }}">
+                                <i class="fas fa-dollar-sign"></i> Financeiro
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if '/notas-fiscais' in request.path %}active{% endif %}" href="{{ url_for('invoices') }}">
+                                <i class="fas fa-file-invoice"></i> Notas Fiscais
+                            </a>
+                        </li>
+                        {% endif %}
+                        {% if current_user.role == UserRole.admin %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if '/logs' in request.path %}active{% endif %}" href="{{ url_for('logs') }}">
+                                <i class="fas fa-history"></i> Logs de Ação
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 content">
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} alert-dismissible fade show mt-3" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+    {% else %}
+    <!-- Non-authenticated content -->
+    {% block auth_content %}{% endblock %}
+    {% endif %}
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Custom JavaScript -->
+    <script src="{{ url_for('static', filename='js/main.js') }}?v={{ now }}"></script>
+    <script src="{{ url_for('static', filename='js/charts.js') }}?v={{ now }}"></script>
+    
+    <!-- Script block for child templates -->
+    {% block scripts %}{% endblock %}
+    
+    <!-- Theme Detection -->
+    <script>
+        // Force dark theme as specified by user requirement
+        document.addEventListener('DOMContentLoaded', function() {
+            // Always use dark theme by default
+            document.documentElement.setAttribute('data-bs-theme', 'dark');
+            
+            // We still keep the listener for system changes in case we want to implement
+            // auto theme switching in the future
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+                // Uncomment this line to enable auto theme switching
+                // document.documentElement.setAttribute('data-bs-theme', event.matches ? 'dark' : 'light');
+            });
+        });
+    </script>
+    
+    <!-- Fancybox JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js"></script>
+    <script>
+        // Inicializar Fancybox para galerias de imagens
+        document.addEventListener("DOMContentLoaded", function() {
+            Fancybox.bind("[data-fancybox]", {
+                // Opções personalizadas
+                Toolbar: {
+                    display: [
+                        { id: "prev", position: "center" },
+                        { id: "counter", position: "center" },
+                        { id: "next", position: "center" },
+                        { id: "zoom", position: "right" },
+                        { id: "close", position: "right" },
+                    ],
+                },
+                Thumbs: {
+                    autoStart: false,
+                },
+                Image: {
+                    zoom: true,
+                },
+                on: {
+                    initLayout: (fancybox) => {
+                        // Personalizar cores para combinar com o tema dark
+                        const $container = fancybox.$container;
+                        
+                        if ($container) {
+                            $container.style.setProperty("--f-bg-color", "rgba(33, 37, 41, 0.95)");
+                            $container.style.setProperty("--f-button-color", "#fff");
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+    
+    <!-- Mobile Bottom Navigation Bar -->
+    <div class="mobile-bottom-nav d-lg-none">
+        <a href="{{ url_for('dashboard') }}" class="nav-item {% if request.path == url_for('dashboard') %}active{% endif %}">
+            <i class="fas fa-home"></i>
+            <span>Início</span>
+        </a>
+        <a href="{{ url_for('service_orders') }}" class="nav-item {% if '/ordens-servico' in request.path %}active{% endif %}">
+            <i class="fas fa-clipboard-list"></i>
+            <span>OS</span>
+        </a>
+        <a href="{{ url_for('clients') }}" class="nav-item {% if '/clientes' in request.path %}active{% endif %}">
+            <i class="fas fa-users"></i>
+            <span>Clientes</span>
+        </a>
+        <a href="{{ url_for('equipment') }}" class="nav-item {% if '/equipamentos' in request.path %}active{% endif %}">
+            <i class="fas fa-tools"></i>
+            <span>Equip.</span>
+        </a>
+        <a href="{{ url_for('stock_items') }}" class="nav-item {% if '/estoque' in request.path %}active{% endif %}">
+            <i class="fas fa-boxes"></i>
+            <span>Estoque</span>
+        </a>
+    </div>
+    
+    <!-- Snack notification para mobile -->
+    <div id="snackNotification" class="snack-notification">
+        <span id="snackText"></span>
+    </div>
+
+    <!-- Mobile JS helper -->
+    <script>
+    // Função para mostrar notificação em estilo snackbar
+    function showSnack(message, duration = 3000) {
+        const snack = document.getElementById('snackNotification');
+        const text = document.getElementById('snackText');
+        
+        text.textContent = message;
+        snack.classList.add('show');
+        
+        setTimeout(() => {
+            snack.classList.remove('show');
+        }, duration);
+    }
+    
+    // Função para converter tabelas para cards em mobile
+    function initMobileCardTables() {
+        document.querySelectorAll('.mobile-card-table').forEach(container => {
+            const table = container.querySelector('table');
+            if (!table) return;
+            
+            const headerRow = table.querySelector('thead tr');
+            if (!headerRow) return;
+            
+            const headings = Array.from(headerRow.querySelectorAll('th')).map(th => th.textContent.trim());
+            
+            const rows = Array.from(table.querySelectorAll('tbody tr'));
+            
+            rows.forEach(row => {
+                const values = Array.from(row.querySelectorAll('td')).map(td => td.innerHTML);
+                
+                // Cria o card
+                const card = document.createElement('div');
+                card.className = 'mobile-card-row d-lg-none';
+                
+                // Header do card (primeiro elemento)
+                const header = document.createElement('div');
+                header.className = 'row-header';
+                
+                const title = document.createElement('div');
+                title.className = 'title';
+                title.innerHTML = values[0];
+                
+                // Status ou badge no header (se existir)
+                const statusIndex = values.findIndex(v => v.includes('badge') || v.includes('status'));
+                
+                if (statusIndex !== -1) {
+                    const status = document.createElement('div');
+                    status.className = 'status';
+                    status.innerHTML = values[statusIndex];
+                    
+                    header.appendChild(title);
+                    header.appendChild(status);
+                } else {
+                    header.appendChild(title);
+                }
+                
+                card.appendChild(header);
+                
+                // Conteúdo do card (exceto primeiro elemento e possível status)
+                for (let i = 1; i < values.length; i++) {
+                    if (i === statusIndex) continue;
+                    
+                    // Pula células vazias ou apenas com espaços
+                    if (!values[i] || values[i].trim() === '') continue;
+                    
+                    // Se for uma célula de ações, cria uma seção especial
+                    if (values[i].includes('btn') || values[i].includes('fa-')) {
+                        const actions = document.createElement('div');
+                        actions.className = 'row-actions';
+                        actions.innerHTML = values[i];
+                        card.appendChild(actions);
+                        continue;
+                    }
+                    
+                    const item = document.createElement('div');
+                    item.className = 'row-item';
+                    
+                    const label = document.createElement('div');
+                    label.className = 'item-label';
+                    label.textContent = headings[i];
+                    
+                    const value = document.createElement('div');
+                    value.className = 'item-value';
+                    value.innerHTML = values[i];
+                    
+                    item.appendChild(label);
+                    item.appendChild(value);
+                    card.appendChild(item);
+                }
+                
+                container.appendChild(card);
+            });
+        });
+    }
+    
+    // Executa quando o documento estiver pronto
+    document.addEventListener('DOMContentLoaded', function() {
+        // Inicializa tabelas para mobile
+        initMobileCardTables();
+        
+        // Fecha o menu ao clicar em um item (em mobile)
+        if (window.innerWidth < 992) {
+            document.querySelectorAll('.navbar-nav .nav-link').forEach(link => {
+                link.addEventListener('click', () => {
+                    const navbarCollapse = document.querySelector('.navbar-collapse');
+                    if (navbarCollapse && navbarCollapse.classList.contains('show')) {
+                        navbarCollapse.classList.remove('show');
+                    }
+                });
+            });
+        }
+    });
+    </script>
+    
+    <!-- jQuery e Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Fancybox para imagens -->
+    <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js"></script>
+    
+    <!-- Inicializar componentes do Bootstrap -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Inicializar todos os componentes do Bootstrap (dropdowns, tooltips, popovers)
+            var dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'));
+            dropdownElementList.forEach(function (dropdownToggleEl) {
+                new bootstrap.Dropdown(dropdownToggleEl);
+            });
+            
+            // Inicializar tooltips do Bootstrap
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+                new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+            
+            // Inicializar popovers do Bootstrap
+            var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+            popoverTriggerList.forEach(function (popoverTriggerEl) {
+                new bootstrap.Popover(popoverTriggerEl);
+            });
+        });
+    </script>
+</body>
+</html>

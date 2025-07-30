@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block title %}Novo Equipamento - SAMAPE{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Novo Equipamento</h1>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-tools me-1"></i> Cadastrar Novo Equipamento
+    </div>
+    <div class="card-body">
+        <form method="post" novalidate>
+            {{ form.hidden_tag() }}
+            
+            <div class="mb-3">
+                <label for="client_id" class="form-label">Cliente *</label>
+                {{ form.client_id(class="form-control", id="client_id") }}
+                {% if form.client_id.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.client_id.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="type" class="form-label">Tipo *</label>
+                    {{ form.type(class="form-control", id="type", placeholder="Informe o tipo") }}
+                    {% if form.type.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.type.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="brand" class="form-label">Marca</label>
+                    {{ form.brand(class="form-control", id="brand", placeholder="Informe a marca") }}
+                    {% if form.brand.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.brand.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="model" class="form-label">Modelo</label>
+                    {{ form.model(class="form-control", id="model", placeholder="Informe o modelo") }}
+                    {% if form.model.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.model.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="serial_number" class="form-label">Número de Série</label>
+                    {{ form.serial_number(class="form-control", id="serial_number") }}
+                    {% if form.serial_number.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.serial_number.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="year" class="form-label">Ano</label>
+                {{ form.year(class="form-control", id="year", placeholder="AAAA") }}
+                {% if form.year.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.year.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">Salvar</button>
+                <a href="{{ url_for('equipment') }}" class="btn btn-secondary ms-2">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% block scripts %}
+{{ super() }}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const brandSelect = document.getElementById('brand_select');
+        const modelSelect = document.getElementById('model_select');
+        const typeSelect = document.getElementById('type_select');
+        
+        const otherBrandContainer = document.getElementById('other_brand_container');
+        const otherModelContainer = document.getElementById('other_model_container');
+        const otherTypeContainer = document.getElementById('other_type_container');
+        
+        // Adicionar opção "Outro" ao final de cada select
+        function addOtherOption(selectElement) {
+            const otherOption = document.createElement('option');
+            otherOption.value = 'outro';
+            otherOption.textContent = 'Outro (especificar)';
+            selectElement.appendChild(otherOption);
+        }
+        
+        addOtherOption(brandSelect);
+        addOtherOption(typeSelect);
+        addOtherOption(modelSelect);
+        
+        // Função para mostrar/ocultar o campo de texto dependendo da seleção
+        function toggleOtherField(selectElement, otherContainer) {
+            if (selectElement.value === 'outro') {
+                otherContainer.style.display = 'block';
+            } else {
+                otherContainer.style.display = 'none';
+            }
+        }
+        
+        // Event listeners para os campos select
+        brandSelect.addEventListener('change', function() {
+            toggleOtherField(brandSelect, otherBrandContainer);
+            
+            // Se não for "Outro", buscar modelos para a marca selecionada
+            if (brandSelect.value && brandSelect.value !== 'outro') {
+                // Limpar e desabilitar o select de modelos enquanto carrega
+                modelSelect.innerHTML = '<option value="">Carregando...</option>';
+                modelSelect.disabled = true;
+                
+                // Buscar modelos da API
+                fetch(`/api/equipamentos/modelos-por-marca?brand=${encodeURIComponent(brandSelect.value)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Limpar o select
+                        modelSelect.innerHTML = '<option value="">Selecione um modelo</option>';
+                        
+                        // Adicionar modelos retornados pela API
+                        data.forEach(model => {
+                            const option = document.createElement('option');
+                            option.value = model.value;
+                            option.textContent = model.text;
+                            modelSelect.appendChild(option);
+                        });
+                        
+                        // Adicionar a opção "Outro"
+                        addOtherOption(modelSelect);
+                        
+                        // Habilitar novamente o select
+                        modelSelect.disabled = false;
+                    })
+                    .catch(error => {
+                        console.error('Erro ao carregar modelos:', error);
+                        modelSelect.innerHTML = '<option value="">Erro ao carregar modelos</option>';
+                        modelSelect.disabled = false;
+                    });
+            } else if (brandSelect.value === 'outro') {
+                // Se for "Outro", mostrar o campo de texto e limpar o select de modelos
+                modelSelect.innerHTML = '<option value="">Primeiro especifique a marca</option>';
+                modelSelect.disabled = true;
+            }
+        });
+        
+        typeSelect.addEventListener('change', function() {
+            toggleOtherField(typeSelect, otherTypeContainer);
+        });
+        
+        modelSelect.addEventListener('change', function() {
+            toggleOtherField(modelSelect, otherModelContainer);
+        });
+        
+        // Inicializar os campos com base nos valores atuais (se houver)
+        toggleOtherField(brandSelect, otherBrandContainer);
+        toggleOtherField(typeSelect, otherTypeContainer);
+        toggleOtherField(modelSelect, otherModelContainer);
+    });
+</script>
+{% endblock %}
+{% endblock %}
