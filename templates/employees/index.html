@@ -98,4 +98,12 @@
         {% endif %}
     </div>
 </div>
+
+{% if current_user.is_admin() %}
+<div class="mt-4 text-center">
+    <a href="{{ url_for('bater_ponto') }}" class="btn btn-outline-success">
+        <i class="fas fa-clock me-1"></i> Controle de Ponto dos Funcionários
+    </a>
+</div>
+{% endif %}
 {% endblock %}
