@@ -51,6 +51,7 @@ class User(UserMixin, db.Model):
     role = db.Column(Enum(UserRole), default=UserRole.funcionario, nullable=False)
     active = db.Column(db.Boolean, default=True, nullable=False)
     profile_image = db.Column(db.String(255), default='default_profile.svg')
+    profile_image_data = db.Column(db.Text)  # Nova coluna para armazenar imagem em base64
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
@@ -63,6 +64,15 @@ class User(UserMixin, db.Model):
     
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+    
+    def get_profile_image(self):
+        """Retorna a imagem de perfil (base64 ou padrão)"""
+        if self.profile_image_data:
+            return self.profile_image_data
+        else:
+            # Importar apenas quando necessário para evitar importação circular
+            from default_profile_base64 import DEFAULT_PROFILE_IMAGE_BASE64
+            return DEFAULT_PROFILE_IMAGE_BASE64
     
     def is_admin(self):
         return self.role == UserRole.admin

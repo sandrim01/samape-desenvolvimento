@@ -11,13 +11,8 @@
             <div class="card mb-4">
                 <div class="card-body text-center">
                     <div class="profile-image-container mb-3">
-                        {% if current_user.profile_image %}
-                            <img src="{{ url_for('static', filename='images/profiles/' + current_user.profile_image) }}" 
-                                 alt="Foto de Perfil" class="rounded-circle profile-image">
-                        {% else %}
-                            <img src="{{ url_for('static', filename='images/profiles/default_profile.svg') }}" 
-                                 alt="Foto de Perfil" class="rounded-circle profile-image">
-                        {% endif %}
+                        <img src="{{ current_user.get_profile_image() }}" 
+                             alt="Foto de Perfil" class="rounded-circle profile-image">
                     </div>
                     <h5 class="card-title">{{ current_user.name }}</h5>
                     <p class="card-text">{{ current_user.email }}</p>

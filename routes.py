@@ -2015,12 +2015,8 @@ def register_routes(app):
                 
             # Handle profile image upload
             if form.profile_image.data and hasattr(form.profile_image.data, 'filename'):
-                # Save the image
-                import os
+                import base64
                 from werkzeug.utils import secure_filename
-                
-                # Create the profiles directory if it doesn't exist
-                os.makedirs('static/images/profiles', exist_ok=True)
                 
                 # Get the file extension
                 filename = secure_filename(form.profile_image.data.filename)
@@ -2040,33 +2036,41 @@ def register_routes(app):
                     flash('Tamanho do arquivo maior que 2MB. Por favor, escolha uma imagem menor.', 'danger')
                     return render_template('profile/index.html', form=form)
                 
-                # Remover imagem anterior se existir e não for a padrão
-                if current_user.profile_image and current_user.profile_image != 'default_profile.svg':
-                    old_file_path = os.path.join('static/images/profiles', current_user.profile_image)
-                    if os.path.exists(old_file_path):
-                        try:
-                            os.remove(old_file_path)
-                        except:
-                            pass  # Se não conseguir remover, apenas continue
-                
-                # Create a unique filename based on user ID and timestamp para evitar cache do navegador
-                timestamp = int(datetime.now().timestamp())
-                profile_image_filename = f"user_{current_user.id}_{timestamp}{file_extension}"
-                
-                # Save the file
-                file_path = os.path.join('static/images/profiles', profile_image_filename)
-                form.profile_image.data.save(file_path)
-                
-                # Update the user's profile_image field
-                current_user.profile_image = profile_image_filename
-                
-                # Log da alteração da imagem
-                log_action(
-                    'Atualização de Foto de Perfil',
-                    'user',
-                    current_user.id,
-                    'Foto de perfil atualizada'
-                )
+                # Converter imagem para base64
+                try:
+                    img_data = form.profile_image.data.read()
+                    img_base64 = base64.b64encode(img_data).decode('utf-8')
+                    
+                    # Detectar tipo de arquivo para data URL
+                    if file_extension.lower() in ['.jpg', '.jpeg']:
+                        img_type = 'jpeg'
+                    elif file_extension.lower() == '.png':
+                        img_type = 'png'
+                    elif file_extension.lower() == '.gif':
+                        img_type = 'gif'
+                    else:
+                        img_type = 'jpeg'  # padrão
+                    
+                    # Criar data URL
+                    data_url = f"data:image/{img_type};base64,{img_base64}"
+                    
+                    # Salvar no banco de dados
+                    current_user.profile_image_data = data_url
+                    current_user.profile_image = f"user_{current_user.id}_{int(datetime.now().timestamp())}{file_extension}"
+                    
+                    # Log da alteração da imagem
+                    log_action(
+                        'Atualização de Foto de Perfil',
+                        'user',
+                        current_user.id,
+                        'Foto de perfil atualizada (base64)'
+                    )
+                    
+                    flash('Foto de perfil atualizada com sucesso!', 'success')
+                    
+                except Exception as e:
+                    flash(f'Erro ao processar imagem: {str(e)}', 'danger')
+                    return render_template('profile/index.html', form=form)
             
             # Update password if provided
             if form.new_password.data:
