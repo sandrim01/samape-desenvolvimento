@@ -97,17 +97,6 @@ class Client(db.Model):
     equipment = db.relationship('Equipment', backref='client', lazy=True)
     service_orders = db.relationship('ServiceOrder', backref='client', lazy=True)
 
-class PontoFuncionario(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    data_hora = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
-    foto_base64 = db.Column(db.Text, nullable=False)
-    justificado = db.Column(db.Boolean, default=False, nullable=False)
-    observacao = db.Column(db.String(255))
-    criado_em = db.Column(db.DateTime, default=datetime.utcnow)
-    atualizado_em = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
-    user = db.relationship('User', backref='pontos', lazy=True)
 
 # ...existing code...
 class Equipment(db.Model):
