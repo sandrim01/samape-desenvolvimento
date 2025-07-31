@@ -21,7 +21,7 @@
             <textarea class="form-control" id="observacao" name="observacao" rows="2">{{ ponto.observacao or '' }}</textarea>
         </div>
         <button type="submit" class="btn btn-primary">Salvar</button>
-        <a href="{{ url_for('bater_ponto') }}" class="btn btn-secondary">Cancelar</a>
+        <a href="{{ url_for('ponto.bater_ponto') }}" class="btn btn-secondary">Cancelar</a>
     </form>
 </div>
 {% endblock %}
