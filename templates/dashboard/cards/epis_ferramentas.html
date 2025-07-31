@@ -1,0 +1,31 @@
+<div class="card compact-card">
+    <div class="card-header bg-primary text-white">
+        <h5 class="card-title mb-0">
+            <i class="fas fa-hard-hat me-2"></i>EPIs e Ferramentas
+        </h5>
+    </div>
+    <div class="card-body">
+        {% if low_stock_items %}
+        <div class="stock-alerts">
+            {% for item in low_stock_items %}
+            <div class="stock-alert-item">
+                <div class="stock-name">{{ item.name }}</div>
+                <div class="stock-qty {{ 'warning' if item.quantity > 0 else 'danger' }}">
+                    {{ item.quantity }}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <a href="{{ url_for('stock_items') }}" class="btn btn-sm btn-outline-primary mt-2 w-100">
+            <i class="fas fa-toolbox me-1"></i>Gerenciar EPIs
+        </a>
+        {% else %}
+        <div class="alert alert-success mt-1 mb-1 p-2">
+            <i class="fas fa-check-circle me-1"></i>Sem alertas de estoque
+        </div>
+        <a href="{{ url_for('stock_items') }}" class="btn btn-sm btn-outline-primary mt-2 w-100">
+            <i class="fas fa-toolbox me-1"></i>Ver EPIs
+        </a>
+        {% endif %}
+    </div>
+</div>

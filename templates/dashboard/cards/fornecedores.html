@@ -1,0 +1,24 @@
+<div class="card compact-card">
+    <div class="card-header bg-primary text-white">
+        <h5 class="card-title mb-0">
+            <i class="fas fa-shipping-fast me-2"></i>Fornecedores
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="status-indicator">
+            <div class="indicator-label">Pedidos Abertos</div>
+            <div class="indicator-value">{{ metrics.open_orders }}</div>
+        </div>
+        <div class="status-indicator">
+            <div class="indicator-label">Aguard. Entrega</div>
+            <div class="indicator-value">{{ metrics.pending_delivery }}</div>
+        </div>
+        <div class="status-indicator">
+            <div class="indicator-label">Entregues (mês)</div>
+            <div class="indicator-value">{{ metrics.delivered_this_month }}</div>
+        </div>
+        <a href="{{ url_for('supplier_orders') }}" class="btn btn-sm btn-outline-primary mt-2 w-100">
+            <i class="fas fa-eye me-1"></i>Ver Pedidos
+        </a>
+    </div>
+</div>

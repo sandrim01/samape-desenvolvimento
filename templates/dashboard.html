@@ -25,266 +25,32 @@
 
 <!-- Dashboard Grid System -->
 <div class="dashboard-grid">
-    <!-- Primeira linha: 3 cards principais -->
-    <!-- Indicadores de Manutenção em Andamento -->
-    <div class="dashboard-col-3">
-        <div class="card compact-card">
-            <div class="card-header bg-primary text-white">
-                <h5 class="card-title mb-0">
-                    <i class="fas fa-tools me-2"></i>Manutenções
-                </h5>
-            </div>
-            <div class="card-body">
-                <div class="status-indicator">
-                    <div class="indicator-label">OS em Espera</div>
-                    <div class="indicator-value">{{ metrics.pending_orders }}</div>
-                </div>
-                <div class="status-indicator">
-                    <div class="indicator-label">OS em Andamento</div>
-                    <div class="indicator-value">{{ metrics.in_progress_orders }}</div>
-                </div>
-                <div class="status-indicator">
-                    <div class="indicator-label">OS Finalizadas</div>
-                    <div class="indicator-value">{{ metrics.closed_orders }}</div>
-                </div>
-                <a href="{{ url_for('service_orders') }}" class="btn btn-sm btn-outline-primary mt-2 w-100">
-                    <i class="fas fa-eye me-1"></i>Ver Todas
-                </a>
-            </div>
-        </div>
-    </div>
+  <!-- Primeira linha: 4 cards -->
+  <div class="dashboard-row">
+    <div class="dashboard-col-3">{% include 'dashboard/cards/manutencoes.html' %}</div>
+    <div class="dashboard-col-3">{% include 'dashboard/cards/distribuicao_os.html' %}</div>
+    <div class="dashboard-col-3">{% include 'dashboard/cards/tempo_medio.html' %}</div>
+    <div class="dashboard-col-3">{% include 'dashboard/cards/fornecedores.html' %}</div>
+  </div>
 
-    <!-- Gráfico de distribuição de ordens de serviço -->
-    <div class="dashboard-col-3">
-        <div class="card compact-card">
-            <div class="card-header bg-primary text-white">
-                <h5 class="card-title mb-0">
-                    <i class="fas fa-chart-pie me-2"></i>Distribuição de OS
-                </h5>
-            </div>
-            <div class="card-body">
-                <div class="chart-container">
-                    <canvas id="orderDistributionChart"></canvas>
-                </div>
-                <div class="text-center mt-2">
-                    <small class="text-muted">Visão geral por status</small>
-                </div>
-            </div>
-        </div>
-    </div>
+  <!-- Segunda linha: 2 cards largos -->
+  <div class="dashboard-row">
+    <div class="dashboard-col-6">{% include 'dashboard/cards/pedidos_fornecedores.html' %}</div>
+    <div class="dashboard-col-6">{% include 'dashboard/cards/resumo_financeiro.html' %}</div>
+  </div>
 
-    <!-- Tempo Médio de Conclusão -->
-    <div class="dashboard-col-3">
-        <div class="card compact-card">
-            <div class="card-header bg-primary text-white">
-                <h5 class="card-title mb-0">
-                    <i class="fas fa-clock me-2"></i>Tempo Médio
-                </h5>
-            </div>
-            <div class="card-body text-center">
-                <div class="avg-time-container">
-                    <div class="avg-time">
-                        <span class="avg-time-value">{{ metrics.avg_completion_time }}</span>
-                        <span class="avg-time-label">dias</span>
-                    </div>
-                </div>
-                <div class="progress mt-3" style="height: 6px;">
-                    <div class="progress-bar bg-success" role="progressbar" style="width: {{ metrics.efficiency_percentage }}%"></div>
-                </div>
-                <div class="d-flex justify-content-between mt-1">
-                    <small class="text-muted">Mais rápido</small>
-                    <small class="text-muted">Mais lento</small>
-                </div>
-            </div>
-        </div>
-    </div>
+  <!-- Terceira linha: 3 cards -->
+  <div class="dashboard-row">
+    <div class="dashboard-col-4">{% include 'dashboard/cards/status_frota.html' %}</div>
+    <div class="dashboard-col-4">{% include 'dashboard/cards/estoque_pecas.html' %}</div>
+    <div class="dashboard-col-4">{% include 'dashboard/cards/epis_ferramentas.html' %}</div>
+  </div>
 
-    <!-- Pedidos a fornecedores -->
-    <div class="dashboard-col-3">
-        <div class="card compact-card">
-            <div class="card-header bg-primary text-white">
-                <h5 class="card-title mb-0">
-                    <i class="fas fa-shipping-fast me-2"></i>Fornecedores
-                </h5>
-            </div>
-            <div class="card-body">
-                <div class="status-indicator">
-                    <div class="indicator-label">Pedidos Abertos</div>
-                    <div class="indicator-value">{{ metrics.open_orders }}</div>
-                </div>
-                <div class="status-indicator">
-                    <div class="indicator-label">Aguard. Entrega</div>
-                    <div class="indicator-value">{{ metrics.pending_delivery }}</div>
-                </div>
-                <div class="status-indicator">
-                    <div class="indicator-label">Entregues (mês)</div>
-                    <div class="indicator-value">{{ metrics.delivered_this_month }}</div>
-                </div>
-                <a href="{{ url_for('supplier_orders') }}" class="btn btn-sm btn-outline-primary mt-2 w-100">
-                    <i class="fas fa-eye me-1"></i>Ver Pedidos
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Segunda linha: Financeiro + 2 colunas de estoque -->
-    <!-- Resumo financeiro -->
-    <div class="dashboard-col-4">
-        <div class="card compact-card">
-            <div class="card-header bg-primary text-white">
-                <h5 class="card-title mb-0">
-                    <i class="fas fa-chart-line me-2"></i>Resumo Financeiro
-                </h5>
-            </div>
-            <div class="card-body">
-                <div class="chart-container">
-                    <canvas id="financialChart"></canvas>
-                </div>
-                <div class="row mt-2 text-center">
-                    <div class="col-6">
-                        <small class="text-success">Receitas</small>
-                        <p class="mb-0">R$ {{ "%.2f"|format(metrics.monthly_income) }}</p>
-                    </div>
-                    <div class="col-6">
-                        <small class="text-danger">Despesas</small>
-                        <p class="mb-0">R$ {{ "%.2f"|format(metrics.monthly_expenses) }}</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Alertas de Estoque - Peças -->
-    <div class="dashboard-col-4">
-        <div class="card compact-card">
-            <div class="card-header bg-primary text-white">
-                <h5 class="card-title mb-0">
-                    <i class="fas fa-boxes me-2"></i>Estoque de Peças
-                </h5>
-            </div>
-            <div class="card-body">
-                {% if low_stock_parts %}
-                <div class="stock-alerts">
-                    {% for part in low_stock_parts %}
-                    <div class="stock-alert-item">
-                        <div class="stock-name">{{ part.name }}</div>
-                        <div class="stock-qty {{ 'warning' if part.stock_quantity > 0 else 'danger' }}">
-                            {{ part.stock_quantity }}
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-                <a href="{{ url_for('parts') }}" class="btn btn-sm btn-outline-primary mt-2 w-100">
-                    <i class="fas fa-boxes me-1"></i>Gerenciar Peças
-                </a>
-                {% else %}
-                <div class="alert alert-success mt-1 mb-1 p-2">
-                    <i class="fas fa-check-circle me-1"></i>Sem alertas de estoque
-                </div>
-                <a href="{{ url_for('parts') }}" class="btn btn-sm btn-outline-primary mt-2 w-100">
-                    <i class="fas fa-boxes me-1"></i>Ver Peças
-                </a>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-
-    <!-- Alertas de Estoque - EPIs e Ferramentas -->
-    <div class="dashboard-col-4">
-        <div class="card compact-card">
-            <div class="card-header bg-primary text-white">
-                <h5 class="card-title mb-0">
-                    <i class="fas fa-hard-hat me-2"></i>EPIs e Ferramentas
-                </h5>
-            </div>
-            <div class="card-body">
-                {% if low_stock_items %}
-                <div class="stock-alerts">
-                    {% for item in low_stock_items %}
-                    <div class="stock-alert-item">
-                        <div class="stock-name">{{ item.name }}</div>
-                        <div class="stock-qty {{ 'warning' if item.quantity > 0 else 'danger' }}">
-                            {{ item.quantity }}
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-                <a href="{{ url_for('stock_items') }}" class="btn btn-sm btn-outline-primary mt-2 w-100">
-                    <i class="fas fa-toolbox me-1"></i>Gerenciar EPIs
-                </a>
-                {% else %}
-                <div class="alert alert-success mt-1 mb-1 p-2">
-                    <i class="fas fa-check-circle me-1"></i>Sem alertas de estoque
-                </div>
-                <a href="{{ url_for('stock_items') }}" class="btn btn-sm btn-outline-primary mt-2 w-100">
-                    <i class="fas fa-toolbox me-1"></i>Ver EPIs
-                </a>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-    
-    <!-- Status da Frota -->
-    <div class="dashboard-col-4">
-        <div class="card compact-card">
-            <div class="card-header bg-primary text-white">
-                <h5 class="card-title mb-0">
-                    <i class="fas fa-truck me-2"></i>Status da Frota
-                </h5>
-            </div>
-            <div class="card-body">
-                <div class="d-flex align-items-center mb-2">
-                    <div class="fleet-status">
-                        <span class="status-label">Ativos:</span>
-                        <span class="status-value text-success fw-bold">{{ metrics.fleet_active }}</span>
-                    </div>
-                    <div class="fleet-status ms-3">
-                        <span class="status-label">Manutenção:</span>
-                        <span class="status-value text-warning fw-bold">{{ metrics.fleet_maintenance }}</span>
-                    </div>
-                </div>
-                <div class="d-flex align-items-center mb-3">
-                    <div class="fleet-status">
-                        <span class="status-label">Reservados:</span>
-                        <span class="status-value text-info fw-bold">{{ metrics.fleet_reserved }}</span>
-                    </div>
-                    <div class="fleet-status ms-3">
-                        <span class="status-label">Inativos:</span>
-                        <span class="status-value text-secondary fw-bold">{{ metrics.fleet_inactive }}</span>
-                    </div>
-                </div>
-                
-                <!-- Barra de progresso de veículos -->
-                <div class="progress mb-2" style="height: 8px;">
-                    {% set active_percent = (metrics.fleet_active / metrics.fleet_total * 100) if metrics.fleet_total > 0 else 0 %}
-                    {% set maint_percent = (metrics.fleet_maintenance / metrics.fleet_total * 100) if metrics.fleet_total > 0 else 0 %}
-                    {% set reserved_percent = (metrics.fleet_reserved / metrics.fleet_total * 100) if metrics.fleet_total > 0 else 0 %}
-                    {% set inactive_percent = (metrics.fleet_inactive / metrics.fleet_total * 100) if metrics.fleet_total > 0 else 0 %}
-                    
-                    <div class="progress-bar bg-success" role="progressbar" style="width: {{ active_percent }}%" 
-                        aria-valuenow="{{ active_percent }}" aria-valuemin="0" aria-valuemax="100" 
-                        title="Ativos: {{ metrics.fleet_active }}"></div>
-                    <div class="progress-bar bg-warning" role="progressbar" style="width: {{ maint_percent }}%" 
-                        aria-valuenow="{{ maint_percent }}" aria-valuemin="0" aria-valuemax="100"
-                        title="Em manutenção: {{ metrics.fleet_maintenance }}"></div>
-                    <div class="progress-bar bg-info" role="progressbar" style="width: {{ reserved_percent }}%" 
-                        aria-valuenow="{{ reserved_percent }}" aria-valuemin="0" aria-valuemax="100"
-                        title="Reservados: {{ metrics.fleet_reserved }}"></div>
-                    <div class="progress-bar bg-secondary" role="progressbar" style="width: {{ inactive_percent }}%" 
-                        aria-valuenow="{{ inactive_percent }}" aria-valuemin="0" aria-valuemax="100"
-                        title="Inativos: {{ metrics.fleet_inactive }}"></div>
-                </div>
-                
-                <div class="text-center small text-muted mb-2">
-                    Total: {{ metrics.fleet_total }} veículos
-                </div>
-                
-                <a href="{{ url_for('fleet') }}" class="btn btn-sm btn-outline-primary mt-1 w-100">
-                    <i class="fas fa-truck me-1"></i>Gerenciar Frota
-                </a>
-            </div>
-        </div>
-    </div>
+  <!-- Quarta linha: 2 cards largos -->
+  <div class="dashboard-row">
+    <div class="dashboard-col-6">{% include 'dashboard/cards/ordens_recentes.html' %}</div>
+    <div class="dashboard-col-6">{% include 'dashboard/cards/atividades_recentes.html' %}</div>
+  </div>
 </div>
 
 <!-- Terceira linha: Tabelas mais compactas -->
