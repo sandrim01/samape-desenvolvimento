@@ -52,7 +52,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
 <script>
-    // Order Distribution Chart - visual melhorado
+    // Gráfico de Pizza - Distribuição de OS
     const orderCtx = document.getElementById('orderDistributionChart').getContext('2d');
     const orderData = [{{ metrics.pending_orders }}, {{ metrics.in_progress_orders }}, {{ metrics.closed_orders }}];
     const orderLabels = ['Em Espera', 'Em Andamento', 'Concluídas'];
@@ -60,14 +60,14 @@
     const orderTotal = orderData.reduce((a, b) => a + b, 0);
 
     const orderDistributionChart = new Chart(orderCtx, {
-        type: 'doughnut',
+        type: 'pie',
         data: {
             labels: orderLabels,
             datasets: [{
                 data: orderData,
                 backgroundColor: orderColors,
                 borderWidth: 2,
-                borderColor: '#222',
+                borderColor: '#181a1b',
                 hoverOffset: 10
             }]
         },
@@ -76,35 +76,19 @@
             maintainAspectRatio: false,
             plugins: {
                 legend: {
-                    position: 'bottom',
+                    display: true,
+                    position: 'right',
                     labels: {
-                        padding: 18,
-                        boxWidth: 18,
                         color: '#fff',
-                        font: { size: 14, weight: 'bold' },
-                        generateLabels: function(chart) {
-                            const data = chart.data;
-                            if (data.labels.length && data.datasets.length) {
-                                return data.labels.map((label, i) => {
-                                    const value = data.datasets[0].data[i];
-                                    const percent = orderTotal > 0 ? Math.round((value/orderTotal)*100) : 0;
-                                    return {
-                                        text: `${label} (${value} - ${percent}%)`,
-                                        fillStyle: data.datasets[0].backgroundColor[i],
-                                        strokeStyle: '#222',
-                                        lineWidth: 2,
-                                        hidden: isNaN(data.datasets[0].data[i]),
-                                        index: i
-                                    };
-                                });
-                            }
-                            return [];
-                        }
+                        font: { size: 15, weight: 'bold' },
+                        usePointStyle: true,
+                        padding: 18,
+                        boxWidth: 18
                     }
                 },
                 datalabels: {
                     color: '#fff',
-                    font: { weight: 'bold', size: 13 },
+                    font: { weight: 'bold', size: 18 },
                     formatter: function(value, ctx) {
                         if (orderTotal === 0) return '';
                         const percent = Math.round((value/orderTotal)*100);
@@ -112,23 +96,23 @@
                     },
                     anchor: 'center',
                     align: 'center',
-                    backgroundColor: function(ctx) {
-                        return ctx.dataset.backgroundColor[ctx.dataIndex];
-                    },
-                    borderRadius: 4,
-                    padding: 4
+                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    borderRadius: 6,
+                    padding: 8
                 },
                 tooltip: {
+                    backgroundColor: '#222',
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
                     callbacks: {
                         label: function(context) {
                             const value = context.parsed;
                             const percent = orderTotal > 0 ? Math.round((value/orderTotal)*100) : 0;
-                            return `${context.label}: ${value} (${percent}%)`;
+                            return `${context.label}: ${percent}%`;
                         }
                     }
                 }
             },
-            cutout: '65%',
             layout: { padding: 10 },
         },
         plugins: [ChartDataLabels]
