@@ -135,3 +135,35 @@ cookies.txt
 # IDE
 .vscode/
 .idea/
+
+# === SAMAPE SPECIFIC ===
+# Arquivos temporários de desenvolvimento
+test_*.py
+debug_*.py
+check_*.py
+diagnose_*.py
+fix_*.py
+verify_*.py
+setup_*.py
+
+# Scripts de migração (uma vez executados)
+migrate_*.py
+create_*.py
+insert_*.py
+update_db.py
+
+# Backups e duplicatas
+*.bak
+main.py
+start_server.py
+
+# Assets temporários
+attached_assets/image_*.png
+attached_assets/Screenshot_*.png
+attached_assets/Captura*.png
+attached_assets/Pasted-*.txt
+
+# Documentação temporária
+*_TROUBLESHOOTING.md
+*_SETUP.md
+*_IMPROVEMENTS.md
