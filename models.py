@@ -178,6 +178,23 @@ class LoginAttempt(db.Model):
     ip_address = db.Column(db.String(45))
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
+# Modelo de Controle de Ponto
+class Ponto(db.Model):
+    __tablename__ = 'ponto'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    data = db.Column(db.Date, nullable=False, default=datetime.utcnow)
+    hora_entrada = db.Column(db.DateTime, nullable=False)
+    hora_saida = db.Column(db.DateTime)
+    observacao = db.Column(db.String(255))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    user = db.relationship('User', backref='pontos')
+
+    def __repr__(self):
+        return f'<Ponto {self.id} - Usuário {self.user_id}>'
+
 class Supplier(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
