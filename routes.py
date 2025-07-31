@@ -21,8 +21,38 @@ from models import (
     UserRole, ServiceOrderStatus, FinancialEntryType, Supplier, Part, PartSale,
     SupplierOrder, OrderItem, OrderStatus, ServiceOrderImage, equipment_service_orders,
     StockItem, StockMovement, StockItemType, StockItemStatus, VehicleType, VehicleStatus,
-    Vehicle, VehicleMaintenance, FuelType, MaintenanceType, Refueling, VehicleTravelLog
+    Vehicle, VehicleMaintenance, FuelType, MaintenanceType, Refueling, VehicleTravelLog,
+    PontoFuncionario
 )
+from base64 import b64encode
+@app.route('/funcionarios/ponto', methods=['GET', 'POST'])
+@admin_required
+def bater_ponto():
+    if request.method == 'POST':
+        foto = request.files.get('foto')
+        if not foto:
+            flash('Foto é obrigatória para bater o ponto.', 'danger')
+            return redirect(url_for('bater_ponto'))
+        foto_bytes = foto.read()
+        foto_base64 = b64encode(foto_bytes).decode('utf-8')
+        ponto = PontoFuncionario(user_id=current_user.id, foto_base64=foto_base64)
+        db.session.add(ponto)
+        db.session.commit()
+        flash('Ponto registrado com sucesso!', 'success')
+        return redirect(url_for('bater_ponto'))
+    pontos = PontoFuncionario.query.order_by(PontoFuncionario.data_hora.desc()).limit(50).all()
+    return render_template('employees/ponto.html', pontos=pontos)
+
+@app.route('/funcionarios/ponto/<int:id>/editar', methods=['GET', 'POST'])
+@admin_required
+def editar_ponto(id):
+    ponto = PontoFuncionario.query.get_or_404(id)
+    if request.method == 'POST':
+        ponto.observacao = request.form.get('observacao')
+        db.session.commit()
+        flash('Registro de ponto atualizado!', 'success')
+        return redirect(url_for('bater_ponto'))
+    return render_template('employees/editar_ponto.html', ponto=ponto)
 from utils import get_system_setting
 from utils import log_action
 from forms import (
