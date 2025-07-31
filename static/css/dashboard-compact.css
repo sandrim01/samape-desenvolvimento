@@ -116,34 +116,31 @@
 }
 
 /* Layout para ordenamento das cards */
+
 .dashboard-grid {
-    display: grid;
-    grid-template-columns: repeat(12, 1fr);
-    gap: 1rem;
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 1rem;
 }
+.dashboard-col-3 { grid-column: span 3; }
+.dashboard-col-4 { grid-column: span 4; }
+.dashboard-col-6 { grid-column: span 6; }
+.dashboard-col-12 { grid-column: span 12; }
 
-.dashboard-col-3 {
-    grid-column: span 3;
+/* Responsividade aprimorada */
+@media (max-width: 1200px) {
+  .dashboard-grid { grid-template-columns: repeat(6, 1fr); }
+  .dashboard-col-6 { grid-column: span 6; }
+  .dashboard-col-4 { grid-column: span 3; }
+  .dashboard-col-3 { grid-column: span 3; }
 }
-
-.dashboard-col-4 {
-    grid-column: span 4;
+@media (max-width: 900px) {
+  .dashboard-grid { grid-template-columns: repeat(2, 1fr); }
+  .dashboard-col-6, .dashboard-col-4, .dashboard-col-3 { grid-column: span 2; }
 }
-
-.dashboard-col-6 {
-    grid-column: span 6;
-}
-
-.dashboard-col-8 {
-    grid-column: span 8;
-}
-
-.dashboard-col-9 {
-    grid-column: span 9;
-}
-
-.dashboard-col-12 {
-    grid-column: span 12;
+@media (max-width: 600px) {
+  .dashboard-grid { grid-template-columns: 1fr; }
+  .dashboard-col-6, .dashboard-col-4, .dashboard-col-3, .dashboard-col-12 { grid-column: span 1; }
 }
 
 /* Ajustes para gráficos */

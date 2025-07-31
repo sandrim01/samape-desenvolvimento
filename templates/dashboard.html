@@ -24,33 +24,25 @@
 </div>
 
 <!-- Dashboard Grid System -->
-<div class="dashboard-grid">
-  <!-- Primeira linha: 4 cards -->
-  <div class="dashboard-row">
-    <div class="dashboard-col-3">{% include 'dashboard/cards/manutencoes.html' %}</div>
-    <div class="dashboard-col-3">{% include 'dashboard/cards/distribuicao_os.html' %}</div>
-    <div class="dashboard-col-3">{% include 'dashboard/cards/tempo_medio.html' %}</div>
-    <div class="dashboard-col-3">{% include 'dashboard/cards/fornecedores.html' %}</div>
-  </div>
+<div class="dashboard-grid dashboard-responsive">
+  <!-- Primeira linha: [MANUTENÇÕES] [DISTRIBUIÇÃO DE OS] [TEMPO MÉDIO] [FORNECEDORES] -->
+  <div class="dashboard-col-3">{% include 'dashboard/cards/manutencoes.html' %}</div>
+  <div class="dashboard-col-3">{% include 'dashboard/cards/distribuicao_os.html' %}</div>
+  <div class="dashboard-col-3">{% include 'dashboard/cards/tempo_medio.html' %}</div>
+  <div class="dashboard-col-3">{% include 'dashboard/cards/fornecedores.html' %}</div>
 
-  <!-- Segunda linha: 2 cards largos -->
-  <div class="dashboard-row">
-    <div class="dashboard-col-6">{% include 'dashboard/cards/pedidos_fornecedores.html' %}</div>
-    <div class="dashboard-col-6">{% include 'dashboard/cards/resumo_financeiro.html' %}</div>
-  </div>
+  <!-- Segunda linha: [PEDIDOS A FORNECEDORES] [RESUMO FINANCEIRO] -->
+  <div class="dashboard-col-6">{% include 'dashboard/cards/pedidos_fornecedores.html' %}</div>
+  <div class="dashboard-col-6">{% include 'dashboard/cards/resumo_financeiro.html' %}</div>
 
-  <!-- Terceira linha: 3 cards -->
-  <div class="dashboard-row">
-    <div class="dashboard-col-4">{% include 'dashboard/cards/status_frota.html' %}</div>
-    <div class="dashboard-col-4">{% include 'dashboard/cards/estoque_pecas.html' %}</div>
-    <div class="dashboard-col-4">{% include 'dashboard/cards/epis_ferramentas.html' %}</div>
-  </div>
+  <!-- Terceira linha: [STATUS DA FROTA] [ESTOQUE DE PEÇAS] [EPIS E FERRAMENTAS] -->
+  <div class="dashboard-col-4">{% include 'dashboard/cards/status_frota.html' %}</div>
+  <div class="dashboard-col-4">{% include 'dashboard/cards/estoque_pecas.html' %}</div>
+  <div class="dashboard-col-4">{% include 'dashboard/cards/epis_ferramentas.html' %}</div>
 
-  <!-- Quarta linha: 2 cards largos -->
-  <div class="dashboard-row">
-    <div class="dashboard-col-6">{% include 'dashboard/cards/ordens_recentes.html' %}</div>
-    <div class="dashboard-col-6">{% include 'dashboard/cards/atividades_recentes.html' %}</div>
-  </div>
+  <!-- Quarta linha: [ORDENS RECENTES] [ATIVIDADES RECENTES] -->
+  <div class="dashboard-col-6">{% include 'dashboard/cards/ordens_recentes.html' %}</div>
+  <div class="dashboard-col-6">{% include 'dashboard/cards/atividades_recentes.html' %}</div>
 </div>
 
 <!-- Terceira linha: Tabelas mais compactas -->
