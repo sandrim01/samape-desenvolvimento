@@ -77,9 +77,14 @@ app.jinja_env.filters['format_currency'] = format_currency
 app.jinja_env.filters['status_color'] = status_color
 app.jinja_env.filters['abs'] = absolute_value
 
+
 # Import and register routes
 from routes import register_routes
 register_routes(app)
+
+# Importa e registra o blueprint do controle de ponto
+from ponto import bp_ponto
+app.register_blueprint(bp_ponto)
 
 # Create initial admin user if needed
 with app.app_context():
