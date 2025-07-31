@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Meus Pontos</h2>
+<a href="{{ url_for('ponto.registrar') }}" class="btn btn-primary">Bater Ponto</a>
+<table class="table mt-3">
+    <thead>
+        <tr>
+            <th>Data</th>
+            <th>Hora Entrada</th>
+            <th>Latitude</th>
+            <th>Longitude</th>
+            <th>Observação</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for ponto in pontos %}
+        <tr>
+            <td>{{ ponto.data.strftime('%d/%m/%Y') }}</td>
+            <td>{{ ponto.hora_entrada.strftime('%H:%M:%S') }}</td>
+            <td>{{ ponto.latitude }}</td>
+            <td>{{ ponto.longitude }}</td>
+            <td>{{ ponto.observacao or '' }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
