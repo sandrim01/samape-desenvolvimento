@@ -1,0 +1,45 @@
+<div class="dashboard-card dashboard-card-notas-fiscais">
+    <div class="dashboard-card-header">
+        <i class="fas fa-file-invoice-dollar me-2"></i> Notas Fiscais
+    </div>
+    <div class="dashboard-card-body">
+        <div class="notas-fiscais-info">
+            <div class="notas-fiscais-total">
+                <span class="notas-fiscais-valor">{{ metrics.nf_total or 0 }}</span>
+                <span class="notas-fiscais-label">Total Emitidas</span>
+            </div>
+            <div class="notas-fiscais-status">
+                <span class="badge bg-success">Aprovadas: {{ metrics.nf_aprovadas or 0 }}</span>
+                <span class="badge bg-warning text-dark">Pendentes: {{ metrics.nf_pendentes or 0 }}</span>
+                <span class="badge bg-danger">Rejeitadas: {{ metrics.nf_rejeitadas or 0 }}</span>
+            </div>
+        </div>
+    </div>
+    <div class="dashboard-card-footer text-center">
+        <a href="{{ url_for('notas_fiscais') }}" class="btn btn-sm btn-outline-light">Ver detalhes</a>
+    </div>
+</div>
+<style>
+.dashboard-card-notas-fiscais .notas-fiscais-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+.dashboard-card-notas-fiscais .notas-fiscais-total {
+    font-size: 2.2rem;
+    font-weight: bold;
+    color: #43d17a;
+}
+.dashboard-card-notas-fiscais .notas-fiscais-label {
+    font-size: 1rem;
+    color: #aaa;
+    margin-left: 8px;
+}
+.dashboard-card-notas-fiscais .notas-fiscais-status {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+</style>
