@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Controle de Ponto{% endblock %}
+{% block content %}
+<div class="card mt-4">
+    <div class="card-header">
+        <i class="fas fa-clock me-1"></i> Controle de Ponto dos Funcionários
+    </div>
+    <div class="card-body">
+        <form id="form-bater-ponto" method="post" enctype="multipart/form-data" action="{{ url_for('bater_ponto') }}">
+            <div class="mb-3">
+                <label for="foto" class="form-label">Foto para validação</label>
+                <input type="file" class="form-control" id="foto" name="foto" accept="image/*" capture="user" required>
+            </div>
+            <button type="submit" class="btn btn-success">Bater Ponto</button>
+        </form>
+        <hr>
+        <h5 class="mt-4">Registros de Ponto</h5>
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>Funcionário</th>
+                        <th>Data/Hora</th>
+                        <th>Foto</th>
+                        <th>Observação</th>
+                        {% if current_user.is_admin() %}<th>Ações</th>{% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ponto in pontos %}
+                    <tr>
+                        <td>{{ ponto.user.name }}</td>
+                        <td>{{ ponto.data_hora.strftime('%d/%m/%Y %H:%M') }}</td>
+                        <td><img src="data:image/png;base64,{{ ponto.foto_base64 }}" alt="Foto" width="60"></td>
+                        <td>{{ ponto.observacao or '' }}</td>
+                        {% if current_user.is_admin() %}
+                        <td>
+                            <a href="{{ url_for('editar_ponto', id=ponto.id) }}" class="btn btn-sm btn-warning">Editar</a>
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
