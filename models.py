@@ -187,6 +187,7 @@ class Ponto(db.Model):
     hora_entrada = db.Column(db.DateTime, nullable=False)
     hora_saida = db.Column(db.DateTime)
     observacao = db.Column(db.String(255))
+    foto_base64 = db.Column(db.Text)  # Foto capturada na batida de ponto
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
