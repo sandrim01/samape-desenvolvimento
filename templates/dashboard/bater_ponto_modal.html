@@ -9,11 +9,10 @@
       <div class="modal-body">
         <form id="form-bater-ponto" method="post" enctype="multipart/form-data" action="{{ url_for('ponto.bater_ponto') }}">
           <div class="mb-3 text-center">
-            <video id="video" width="100%" height="240" autoplay playsinline style="border-radius: 10px; background: #222;"></video>
-            <canvas id="canvas" width="320" height="240" style="display:none;"></canvas>
+            <div id="localizacao-status" class="mb-2 text-secondary">Obtendo localização...</div>
+            <input type="hidden" name="latitude" id="latitude">
+            <input type="hidden" name="longitude" id="longitude">
           </div>
-          <input type="hidden" name="foto" id="foto-base64">
-          <button type="button" class="btn btn-primary w-100 mb-2" id="btn-capturar">Capturar Foto</button>
           <button type="submit" class="btn btn-success w-100" id="btn-enviar" disabled>Registrar Ponto</button>
         </form>
       </div>
@@ -22,42 +21,37 @@
 </div>
 
 <script>
-// Abrir modal e iniciar câmera
+// Abrir modal e obter localização
 const modalBaterPonto = document.getElementById('modalBaterPonto');
-const video = document.getElementById('video');
-const canvas = document.getElementById('canvas');
-const btnCapturar = document.getElementById('btn-capturar');
 const btnEnviar = document.getElementById('btn-enviar');
-const fotoBase64 = document.getElementById('foto-base64');
-
-let stream;
+const latitudeInput = document.getElementById('latitude');
+const longitudeInput = document.getElementById('longitude');
+const localizacaoStatus = document.getElementById('localizacao-status');
 
 if (modalBaterPonto) {
-  modalBaterPonto.addEventListener('show.bs.modal', async function () {
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-      stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      video.srcObject = stream;
+  modalBaterPonto.addEventListener('show.bs.modal', function () {
+    if (navigator.geolocation) {
+      localizacaoStatus.textContent = 'Obtendo localização...';
       btnEnviar.disabled = true;
-      fotoBase64.value = '';
-      canvas.style.display = 'none';
-      video.style.display = 'block';
+      navigator.geolocation.getCurrentPosition(function (position) {
+        latitudeInput.value = position.coords.latitude;
+        longitudeInput.value = position.coords.longitude;
+        localizacaoStatus.textContent = `Localização obtida! Latitude: ${position.coords.latitude.toFixed(5)}, Longitude: ${position.coords.longitude.toFixed(5)}`;
+        btnEnviar.disabled = false;
+      }, function (error) {
+        localizacaoStatus.textContent = 'Não foi possível obter a localização.';
+        btnEnviar.disabled = true;
+      });
+    } else {
+      localizacaoStatus.textContent = 'Geolocalização não suportada.';
+      btnEnviar.disabled = true;
     }
   });
   modalBaterPonto.addEventListener('hidden.bs.modal', function () {
-    if (stream) {
-      stream.getTracks().forEach(track => track.stop());
-    }
-  });
-}
-
-if (btnCapturar) {
-  btnCapturar.addEventListener('click', function (e) {
-    e.preventDefault();
-    canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
-    fotoBase64.value = canvas.toDataURL('image/png');
-    canvas.style.display = 'block';
-    video.style.display = 'none';
-    btnEnviar.disabled = false;
+    latitudeInput.value = '';
+    longitudeInput.value = '';
+    localizacaoStatus.textContent = 'Obtendo localização...';
+    btnEnviar.disabled = true;
   });
 }
 </script>

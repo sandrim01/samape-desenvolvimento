@@ -16,11 +16,10 @@ def ponto_index():
 @bp_ponto.route('/bater', methods=['POST'])
 @login_required
 def bater_ponto():
-    foto_base64 = request.form.get('foto')
+    latitude = request.form.get('latitude', type=float)
+    longitude = request.form.get('longitude', type=float)
     agora = datetime.datetime.now()
-    novo_ponto = Ponto(user_id=current_user.id, data=agora.date(), hora_entrada=agora, observacao=None)
-    if hasattr(novo_ponto, 'foto_base64'):
-        novo_ponto.foto_base64 = foto_base64
+    novo_ponto = Ponto(user_id=current_user.id, data=agora.date(), hora_entrada=agora, observacao=None, latitude=latitude, longitude=longitude)
     db.session.add(novo_ponto)
     db.session.commit()
     flash('Ponto registrado com sucesso!', 'success')
