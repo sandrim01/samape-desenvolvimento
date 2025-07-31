@@ -9,17 +9,8 @@
 {% block content %}
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4">
     <h1 class="page-title">Painel de Controle</h1>
-    <div class="btn-toolbar mb-2 mb-md-0">
-        <div class="btn-group me-2">
-            <a href="{{ url_for('service_orders') }}" class="btn btn-sm btn-outline-secondary">
-                <i class="fas fa-clipboard-list me-1"></i> Ordens de Serviço
-            </a>
-            {% if current_user.role == UserRole.admin or current_user.role == UserRole.gerente %}
-            <a href="{{ url_for('financial') }}" class="btn btn-sm btn-outline-secondary">
-                <i class="fas fa-dollar-sign me-1"></i> Financeiro
-            </a>
-            {% endif %}
-        </div>
+    <div class="dashboard-clock-container ms-auto">
+        <div id="dashboard-clock" class="dashboard-clock"></div>
     </div>
 </div>
 
@@ -49,12 +40,45 @@
 
 {% block scripts %}
 
+<script>
+// Relógio do Dashboard
+function updateDashboardClock() {
+    const now = new Date();
+    const options = { weekday: 'short', year: 'numeric', month: 'short', day: '2-digit' };
+    const dateStr = now.toLocaleDateString('pt-BR', options);
+    const timeStr = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    document.getElementById('dashboard-clock').innerHTML = `<span style='font-size:1.2rem;font-weight:bold;'>${dateStr}</span><br><span style='font-size:2rem;font-weight:bold;'>${timeStr}</span>`;
+}
+setInterval(updateDashboardClock, 1000);
+updateDashboardClock();
+</script>
+
+<style>
+.dashboard-clock-container {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    min-width: 220px;
+    margin-bottom: 10px;
+}
+.dashboard-clock {
+    color: #fff;
+    background: #23272b;
+    border-radius: 8px;
+    padding: 8px 18px;
+    box-shadow: 0 1px 6px #0002;
+    text-align: center;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    letter-spacing: 1px;
+}
+</style>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
 <script>
     // Gráfico de Pizza - Distribuição de OS
     const orderCtx = document.getElementById('orderDistributionChart').getContext('2d');
-    const orderData = [{{ metrics.pending_orders }}, {{ metrics.in_progress_orders }}, {{ metrics.closed_orders }}];
+    const orderData = {{ [metrics.pending_orders, metrics.in_progress_orders, metrics.closed_orders]|tojson }};
     const orderLabels = ['Em Espera', 'Em Andamento', 'Concluídas'];
     const orderColors = ['#ffc107', '#0d6efd', '#43d17a'];
     const orderTotal = orderData.reduce((a, b) => a + b, 0);
