@@ -11,9 +11,10 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4">
     <h1 class="page-title">Painel de Controle</h1>
     <div class="d-flex align-items-center ms-auto">
-        <a href="{{ url_for('ponto.bater_ponto') }}" class="btn btn-lg btn-success me-3 d-flex align-items-center" style="font-size:1.2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.15); border-radius: 2rem; padding: 0.75rem 2rem;">
+        <button type="button" class="btn btn-lg btn-success me-3 d-flex align-items-center" style="font-size:1.2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.15); border-radius: 2rem; padding: 0.75rem 2rem;" data-bs-toggle="modal" data-bs-target="#modalBaterPonto">
             <i class="fas fa-clock me-2"></i> Bater Ponto
-        </a>
+        </button>
+{% include 'dashboard/bater_ponto_modal.html' %}
         <div class="dashboard-clock-container">
             <div id="dashboard-clock" class="dashboard-clock"></div>
         </div>
