@@ -167,3 +167,13 @@ attached_assets/Pasted-*.txt
 *_TROUBLESHOOTING.md
 *_SETUP.md
 *_IMPROVEMENTS.md
+# === RAILWAY DEPLOYMENT ===
+*.log
+.env.local
+.env.production
+
+# Replit vestígios (não usar)
+.replit*
+replit.nix
+poetry.lock
+Pipfile*
