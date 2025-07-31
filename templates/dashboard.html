@@ -80,15 +80,36 @@
                     position: 'right',
                     labels: {
                         color: '#fff',
-                        font: { size: 15, weight: 'bold' },
+                        font: { size: 13, weight: 'bold' }, // fonte menor
                         usePointStyle: true,
-                        padding: 18,
-                        boxWidth: 18
+                        padding: 10,
+                        boxWidth: 14,
+                        boxHeight: 14,
+                        textAlign: 'left',
+                        // Garante que as legendas não sejam cortadas
+                        generateLabels: function(chart) {
+                            const data = chart.data;
+                            if (data.labels.length && data.datasets.length) {
+                                return data.labels.map(function(label, i) {
+                                    const meta = chart.getDatasetMeta(0);
+                                    const style = meta.controller.getStyle(i);
+                                    return {
+                                        text: label,
+                                        fillStyle: style.backgroundColor,
+                                        strokeStyle: style.borderColor,
+                                        lineWidth: style.borderWidth,
+                                        hidden: isNaN(data.datasets[0].data[i]) || meta.data[i].hidden,
+                                        index: i
+                                    };
+                                });
+                            }
+                            return [];
+                        }
                     }
                 },
                 datalabels: {
                     color: '#fff',
-                    font: { weight: 'bold', size: 18 },
+                    font: { weight: 'bold', size: 13 }, // porcentagem menor
                     formatter: function(value, ctx) {
                         if (orderTotal === 0) return '';
                         const percent = Math.round((value/orderTotal)*100);
@@ -98,7 +119,7 @@
                     align: 'center',
                     backgroundColor: 'rgba(0,0,0,0.5)',
                     borderRadius: 6,
-                    padding: 8
+                    padding: 4
                 },
                 tooltip: {
                     backgroundColor: '#222',
@@ -113,7 +134,7 @@
                     }
                 }
             },
-            layout: { padding: 10 },
+            layout: { padding: 30 }, // aumenta o padding para o gráfico ficar maior
         },
         plugins: [ChartDataLabels]
     });
@@ -130,14 +151,14 @@
                     backgroundColor: 'rgba(25, 135, 84, 0.7)',
                     borderColor: 'rgba(25, 135, 84, 1)',
                     borderWidth: 1,
-                    data: {{ metrics.income_data }}
+                    data: {{ metrics.income_data|tojson }},
                 },
                 {
                     label: 'Despesas',
                     backgroundColor: 'rgba(220, 53, 69, 0.7)',
                     borderColor: 'rgba(220, 53, 69, 1)',
                     borderWidth: 1,
-                    data: {{ metrics.expense_data }}
+                    data: {{ metrics.expense_data|tojson }}
                 }
             ]
         },
