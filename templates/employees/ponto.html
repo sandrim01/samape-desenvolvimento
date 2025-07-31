@@ -6,7 +6,7 @@
         <i class="fas fa-clock me-1"></i> Controle de Ponto dos Funcionários
     </div>
     <div class="card-body">
-        <form id="form-bater-ponto" method="post" enctype="multipart/form-data" action="{{ url_for('bater_ponto') }}">
+        <form id="form-bater-ponto" method="post" enctype="multipart/form-data" action="{{ url_for('ponto.bater_ponto') }}">
             <div class="mb-3">
                 <label for="foto" class="form-label">Foto para validação</label>
                 <input type="file" class="form-control" id="foto" name="foto" accept="image/*" capture="user" required>
