@@ -4653,3 +4653,4 @@ def register_routes(app):
             data_fim=data_fim_str,
             view_type=view_type
         )
+

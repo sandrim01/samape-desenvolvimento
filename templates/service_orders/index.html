@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 
 {% block title %}Ordens de Serviço - SAMAPE{% endblock %}
 
@@ -199,7 +199,7 @@
                     </div>
                 </div>
                 <div class="order-actions">
-                    <a href="{{ url_for('view_service_order_basic', id=order.id) }}" class="btn btn-sm btn-primary" title="Visualizar OS">
+                    <a href="{{ url_for('view_service_order', id=order.id) }}" class="btn btn-sm btn-primary" title="Visualizar OS">
                         <i class="fas fa-eye me-1"></i> Ver
                     </a>
                     <a href="{{ url_for('edit_service_order', id=order.id) }}" class="btn btn-sm btn-secondary">
@@ -248,7 +248,7 @@
                         <td>{{ order.created_at.strftime('%d/%m/%Y') if order.created_at else 'Data não definida' }}</td>
                         <td>{{ order.closed_at.strftime('%d/%m/%Y') if order.closed_at else '-' }}</td>
                         <td class="table-actions">
-                            <a href="{{ url_for('view_service_order_basic', id=order.id) }}" class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="Visualizar">
+                            <a href="{{ url_for('view_service_order', id=order.id) }}" class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="Visualizar">
                                 <i class="fas fa-eye"></i>
                             </a>
                             <a href="{{ url_for('edit_service_order', id=order.id) }}" class="btn btn-sm btn-outline-secondary" data-bs-toggle="tooltip" data-bs-placement="top" title="Editar">
@@ -419,7 +419,7 @@ $(document).ready(function() {
                             <p>Ocorreu um erro inesperado.</p>
                         </div>
                         <div style="text-align: center;">
-                            <a href="/os_basico/${orderId}" style="padding: 8px 12px; background-color: #007bff; color: white; text-decoration: none; border-radius: 4px;">Ver na Visualização Básica</a>
+                            <a href="/os/${orderId}" style="padding: 8px 12px; background-color: #007bff; color: white; text-decoration: none; border-radius: 4px;">Ver na Visualização Básica</a>
                         </div>
                     `;
                 }
@@ -431,7 +431,7 @@ $(document).ready(function() {
                         <p>Status: ${xhr.status}</p>
                     </div>
                     <div style="text-align: center;">
-                        <a href="/os_basico/${orderId}" style="padding: 8px 12px; background-color: #007bff; color: white; text-decoration: none; border-radius: 4px;">Ver na Visualização Básica</a>
+                        <a href="/os/${orderId}" style="padding: 8px 12px; background-color: #007bff; color: white; text-decoration: none; border-radius: 4px;">Ver na Visualização Básica</a>
                     </div>
                 `;
             }
@@ -445,7 +445,7 @@ $(document).ready(function() {
                     <p>Não foi possível conectar ao servidor para obter os dados da OS.</p>
                 </div>
                 <div style="text-align: center;">
-                    <a href="/os_basico/${orderId}" style="padding: 8px 12px; background-color: #007bff; color: white; text-decoration: none; border-radius: 4px;">Ver na Visualização Básica</a>
+                    <a href="/os/${orderId}" style="padding: 8px 12px; background-color: #007bff; color: white; text-decoration: none; border-radius: 4px;">Ver na Visualização Básica</a>
                 </div>
             `;
         };
@@ -671,3 +671,5 @@ $(document).ready(function() {
 });
 </script>
 {% endblock %}
+
+
