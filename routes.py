@@ -134,8 +134,33 @@ def register_routes(app):
         # Add current timestamp to prevent caching
         from datetime import datetime
         
+        metrics = {
+            **so_stats,
+            **financial_summary,
+            "fleet_active": Vehicle.query.filter_by(status=VehicleStatus.ativo).count(),
+            "fleet_maintenance": Vehicle.query.filter_by(status=VehicleStatus.em_manutencao).count(),
+            "fleet_inactive": Vehicle.query.filter_by(status=VehicleStatus.inativo).count(),
+            "fleet_reserved": 0,
+            "fleet_total": Vehicle.query.count(),
+            "nf_total": 0,
+            "nf_aprovadas": 0,
+            "nf_pendentes": 0,
+            "nf_rejeitadas": 0,
+            "avg_completion_time": "0 dias",
+            "efficiency_percentage": 85,
+            "open_orders": SupplierOrder.query.filter_by(status=OrderStatus.pendente).count(),
+            "pending_delivery": SupplierOrder.query.filter_by(status=OrderStatus.em_transito).count(),
+            "delivered_this_month": SupplierOrder.query.join(OrderItem).filter(
+                SupplierOrder.status == OrderStatus.entregue,
+                SupplierOrder.created_at >= datetime.now().replace(day=1)
+            ).count(),
+            "income_data": [financial_summary.get("monthly_income", 0)],
+            "expense_data": [financial_summary.get("monthly_expenses", 0)]
+        }
+
         return render_template(
             'dashboard.html',
+            metrics=metrics,
             so_stats=so_stats,
             financial_summary=financial_summary,
             recent_orders=recent_orders,
@@ -2489,5 +2514,6 @@ def register_routes(app):
 
     # Register function to be called with app context in app.py
     app.create_initial_admin = create_initial_admin
+
 
 
