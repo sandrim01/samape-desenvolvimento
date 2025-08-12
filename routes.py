@@ -2420,6 +2420,74 @@ def register_routes(app):
             flash(f'Erro ao listar itens de estoque: {str(e)}', 'danger')
             return redirect(url_for('dashboard'))
 
+    
+    @app.route('/frota')
+    @login_required
+    def fleet():
+        """Lista de veículos da frota"""
+        try:
+            app.logger.info("Acessando página de frota")
+            
+            stats = {
+                'active': Vehicle.query.filter_by(status=VehicleStatus.ativo).count(),
+                'maintenance': Vehicle.query.filter_by(status=VehicleStatus.em_manutencao).count(),
+                'inactive': Vehicle.query.filter_by(status=VehicleStatus.inativo).count(),
+                'total': Vehicle.query.count()
+            }
+            
+            page = request.args.get('page', 1, type=int)
+            from utils import get_system_setting
+            per_page = int(get_system_setting('items_per_page', '20'))
+            
+            search = request.args.get('search', '')
+            status_filter = request.args.get('status', '')
+            vehicle_type = request.args.get('type', '')
+            
+            query = Vehicle.query
+            
+            if search:
+                query = query.filter(
+                    Vehicle.license_plate.ilike(f'%{search}%') |
+                    Vehicle.model.ilike(f'%{search}%') |
+                    Vehicle.brand.ilike(f'%{search}%')
+                )
+            
+            if status_filter:
+                query = query.filter(Vehicle.status == status_filter)
+            
+            if vehicle_type:
+                query = query.filter(Vehicle.vehicle_type == vehicle_type)
+            
+            query = query.order_by(Vehicle.license_plate)
+            
+            pagination = query.paginate(
+                page=page,
+                per_page=per_page,
+                error_out=False
+            )
+            
+            vehicles = pagination.items
+            
+            return render_template(
+                'fleet/index.html',
+                vehicles=vehicles,
+                pagination=pagination,
+                stats=stats,
+                vehicle_types=VehicleType,
+                vehicle_statuses=VehicleStatus,
+                active_filters={
+                    'search': search,
+                    'status': status_filter,
+                    'type': vehicle_type
+                }
+            )
+            
+        except Exception as e:
+            app.logger.error(f'Erro ao listar frota: {str(e)}')
+            flash(f'Erro ao listar frota: {str(e)}', 'danger')
+            return redirect(url_for('dashboard'))
+
     # Register function to be called with app context in app.py
     app.create_initial_admin = create_initial_admin
+
 
