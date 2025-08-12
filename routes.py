@@ -1,4 +1,4 @@
-import os
+﻿import os
 import json
 from datetime import datetime
 from functools import wraps
@@ -99,7 +99,7 @@ def register_routes(app):
                 return redirect(next_page)
             else:
                 record_login_attempt(username, False)
-                flash('Nome de usuário ou senha inválidos.', 'danger')
+                flash('Nome de usuÃ¡rio ou senha invÃ¡lidos.', 'danger')
         
         return render_template('login.html', form=form)
 
@@ -108,7 +108,7 @@ def register_routes(app):
     def logout():
         log_action('Logout', 'user', current_user.id)
         logout_user()
-        flash('Você foi desconectado com sucesso.', 'success')
+        flash('VocÃª foi desconectado com sucesso.', 'success')
         return redirect(url_for('login'))
 
     # Dashboard
@@ -228,7 +228,7 @@ def register_routes(app):
             db.session.add(service_order)
             db.session.commit()
             
-            # Processar imagens - verificar se há arquivos enviados
+            # Processar imagens - verificar se hÃ¡ arquivos enviados
             image_files = request.files.getlist('images')
             if image_files and any(f.filename for f in image_files):
                 saved_images = save_service_order_images(
@@ -240,13 +240,13 @@ def register_routes(app):
                     flash(f'{len(saved_images)} imagem(ns) anexada(s) com sucesso!', 'info')
             
             log_action(
-                'Criação de OS',
+                'CriaÃ§Ã£o de OS',
                 'service_order',
                 service_order.id,
                 f"OS criada para cliente {service_order.client.name}"
             )
             
-            flash('Ordem de serviço criada com sucesso!', 'success')
+            flash('Ordem de serviÃ§o criada com sucesso!', 'success')
             return redirect(url_for('service_orders'))
             
         return render_template(
@@ -268,7 +268,7 @@ def register_routes(app):
         
         # Check if order is already closed
         if service_order.status == ServiceOrderStatus.fechada:
-            flash('Não é possível editar uma OS fechada.', 'warning')
+            flash('NÃ£o Ã© possÃ­vel editar uma OS fechada.', 'warning')
             return redirect(url_for('view_service_order', id=id))
             
         form = ServiceOrderForm(obj=service_order)
@@ -307,7 +307,7 @@ def register_routes(app):
             
             db.session.commit()
             
-            # Processar imagens - verificar se há arquivos enviados
+            # Processar imagens - verificar se hÃ¡ arquivos enviados
             image_files = request.files.getlist('images')
             if image_files and any(f.filename for f in image_files):
                 saved_images = save_service_order_images(
@@ -319,13 +319,13 @@ def register_routes(app):
                     flash(f'{len(saved_images)} imagem(ns) adicional(is) anexada(s) com sucesso!', 'info')
             
             log_action(
-                'Edição de OS',
+                'EdiÃ§Ã£o de OS',
                 'service_order',
                 service_order.id,
                 f"OS {id} atualizada"
             )
             
-            flash('Ordem de serviço atualizada com sucesso!', 'success')
+            flash('Ordem de serviÃ§o atualizada com sucesso!', 'success')
             return redirect(url_for('view_service_order', id=service_order.id))
             
         return render_template(
@@ -337,29 +337,29 @@ def register_routes(app):
     @app.route('/os/imagem/<int:image_id>/excluir', methods=['POST'])
     @login_required
     def delete_service_order_image_route(image_id):
-        """Rota para excluir uma imagem de ordem de serviço"""
-        # Criar instância do formulário para validação CSRF
+        """Rota para excluir uma imagem de ordem de serviÃ§o"""
+        # Criar instÃ¢ncia do formulÃ¡rio para validaÃ§Ã£o CSRF
         from forms import DeleteImageForm
         form = DeleteImageForm()
         
-        # Buscar imagem para obter o service_order_id antes de qualquer validação
+        # Buscar imagem para obter o service_order_id antes de qualquer validaÃ§Ã£o
         image = ServiceOrderImage.query.get_or_404(image_id)
         service_order_id = image.service_order_id
         
         if form.validate_on_submit():
-            # Verificar se a OS está fechada
+            # Verificar se a OS estÃ¡ fechada
             service_order = ServiceOrder.query.get(service_order_id)
             if service_order and service_order.status == ServiceOrderStatus.fechada:
-                flash('Não é possível excluir imagens de uma OS fechada.', 'warning')
+                flash('NÃ£o Ã© possÃ­vel excluir imagens de uma OS fechada.', 'warning')
                 return redirect(url_for('view_service_order', id=service_order_id))
             
             # Excluir a imagem
             success, message = delete_service_order_image(image_id)
             
             if success:
-                flash('Imagem excluída com sucesso!', 'success')
+                flash('Imagem excluÃ­da com sucesso!', 'success')
                 log_action(
-                    'Exclusão de imagem',
+                    'ExclusÃ£o de imagem',
                     'service_order_image',
                     image_id,
                     f"Imagem removida da OS #{service_order_id}"
@@ -367,8 +367,8 @@ def register_routes(app):
             else:
                 flash(f'Erro ao excluir imagem: {message}', 'danger')
         else:
-            # Se falhou na validação CSRF
-            flash('Erro de validação do formulário. Tente novamente.', 'danger')
+            # Se falhou na validaÃ§Ã£o CSRF
+            flash('Erro de validaÃ§Ã£o do formulÃ¡rio. Tente novamente.', 'danger')
             
         return redirect(url_for('view_service_order', id=service_order_id))
     
@@ -379,13 +379,13 @@ def register_routes(app):
         
         # Check if order is already closed
         if service_order.status == ServiceOrderStatus.fechada:
-            flash('Esta OS já está fechada.', 'warning')
+            flash('Esta OS jÃ¡ estÃ¡ fechada.', 'warning')
             return redirect(url_for('view_service_order', id=id))
             
         form = CloseServiceOrderForm()
         
         if form.validate_on_submit():
-            # Gerar o número da nota automaticamente
+            # Gerar o nÃºmero da nota automaticamente
             from utils import get_next_invoice_number
             
             service_order.status = ServiceOrderStatus.fechada
@@ -414,7 +414,7 @@ def register_routes(app):
                 f"OS {id} fechada com NF-e {form.invoice_number.data}"
             )
             
-            flash('Ordem de serviço fechada com sucesso!', 'success')
+            flash('Ordem de serviÃ§o fechada com sucesso!', 'success')
             return redirect(url_for('view_service_order', id=id))
             
         return render_template(
@@ -474,7 +474,7 @@ def register_routes(app):
             db.session.commit()
             
             log_action(
-                'Criação de Cliente',
+                'CriaÃ§Ã£o de Cliente',
                 'client',
                 client.id,
                 f"Cliente {client.name} criado"
@@ -522,7 +522,7 @@ def register_routes(app):
             db.session.commit()
             
             log_action(
-                'Edição de Cliente',
+                'EdiÃ§Ã£o de Cliente',
                 'client',
                 client.id,
                 f"Cliente {client.name} atualizado"
@@ -540,12 +540,12 @@ def register_routes(app):
         
         # Check if client has service orders
         if ServiceOrder.query.filter_by(client_id=id).count() > 0:
-            flash('Não é possível excluir um cliente com ordens de serviço.', 'danger')
+            flash('NÃ£o Ã© possÃ­vel excluir um cliente com ordens de serviÃ§o.', 'danger')
             return redirect(url_for('view_client', id=id))
             
         # Check if client has equipment
         if Equipment.query.filter_by(client_id=id).count() > 0:
-            flash('Não é possível excluir um cliente com equipamentos. Remova os equipamentos primeiro.', 'danger')
+            flash('NÃ£o Ã© possÃ­vel excluir um cliente com equipamentos. Remova os equipamentos primeiro.', 'danger')
             return redirect(url_for('view_client', id=id))
             
         client_name = client.name
@@ -553,13 +553,13 @@ def register_routes(app):
         db.session.commit()
         
         log_action(
-            'Exclusão de Cliente',
+            'ExclusÃ£o de Cliente',
             'client',
             id,
-            f"Cliente {client_name} excluído"
+            f"Cliente {client_name} excluÃ­do"
         )
         
-        flash('Cliente excluído com sucesso!', 'success')
+        flash('Cliente excluÃ­do com sucesso!', 'success')
         return redirect(url_for('clients'))
 
     # Equipment API endpoints
@@ -567,8 +567,8 @@ def register_routes(app):
     @login_required
     def get_models_by_brand():
         """
-        Retorna os modelos disponíveis para uma marca específica
-        Utilizado para o preenchimento dinâmico do campo de modelo no formulário de equipamento
+        Retorna os modelos disponÃ­veis para uma marca especÃ­fica
+        Utilizado para o preenchimento dinÃ¢mico do campo de modelo no formulÃ¡rio de equipamento
         """
         brand = request.args.get('brand', '')
         
@@ -629,7 +629,7 @@ def register_routes(app):
         form.client_id.choices = [(c.id, c.name) for c in Client.query.order_by(Client.name).all()]
         
         if form.validate_on_submit():
-            # Usar o valor do select se estiver preenchido, caso contrário usar o valor do campo texto
+            # Usar o valor do select se estiver preenchido, caso contrÃ¡rio usar o valor do campo texto
             equipment_type = form.type_select.data if form.type_select.data else form.type.data
             equipment_brand = form.brand_select.data if form.brand_select.data else form.brand.data
             equipment_model = form.model_select.data if form.model_select.data else form.model.data
@@ -647,7 +647,7 @@ def register_routes(app):
             db.session.commit()
             
             log_action(
-                'Criação de Equipamento',
+                'CriaÃ§Ã£o de Equipamento',
                 'equipment',
                 equipment.id,
                 f"Equipamento {equipment.type} {equipment.brand} {equipment.model} criado para cliente {equipment.client.name}"
@@ -684,15 +684,15 @@ def register_routes(app):
         # Load clients for dropdown
         form.client_id.choices = [(c.id, c.name) for c in Client.query.order_by(Client.name).all()]
         
-        # Adicionar os valores atuais do equipamento às listas de seleção se não estiverem presentes
+        # Adicionar os valores atuais do equipamento Ã s listas de seleÃ§Ã£o se nÃ£o estiverem presentes
         from sqlalchemy import distinct
         
-        # Se o tipo do equipamento não estiver nas opções, adicionar
+        # Se o tipo do equipamento nÃ£o estiver nas opÃ§Ãµes, adicionar
         types = [choice[0] for choice in form.type_select.choices if choice[0]]
         if equipment.type and equipment.type not in types:
             form.type_select.choices.append((equipment.type, equipment.type))
             
-        # Se a marca do equipamento não estiver nas opções, adicionar
+        # Se a marca do equipamento nÃ£o estiver nas opÃ§Ãµes, adicionar
         brands = [choice[0] for choice in form.brand_select.choices if choice[0]]
         if equipment.brand and equipment.brand not in brands:
             form.brand_select.choices.append((equipment.brand, equipment.brand))
@@ -706,11 +706,11 @@ def register_routes(app):
             model_choices = [('', 'Selecione um modelo')] + [(m[0], m[0]) for m in models if m[0]]
             form.model_select.choices = model_choices
             
-        # Preencher o formulário na primeira vez
+        # Preencher o formulÃ¡rio na primeira vez
         if request.method == 'GET':
             form.client_id.data = equipment.client_id
             
-            # Preencher os campos de seleção, se possível
+            # Preencher os campos de seleÃ§Ã£o, se possÃ­vel
             if equipment.type:
                 form.type_select.data = equipment.type
             else:
@@ -722,7 +722,7 @@ def register_routes(app):
                 form.brand.data = equipment.brand
                 
             if equipment.model:
-                # Adicionar o modelo atual às opções se ainda não estiver presente
+                # Adicionar o modelo atual Ã s opÃ§Ãµes se ainda nÃ£o estiver presente
                 model_values = [choice[0] for choice in form.model_select.choices]
                 if equipment.model not in model_values and equipment.model:
                     form.model_select.choices.append((equipment.model, equipment.model))
@@ -760,7 +760,7 @@ def register_routes(app):
             db.session.commit()
             
             log_action(
-                'Edição de Equipamento',
+                'EdiÃ§Ã£o de Equipamento',
                 'equipment',
                 equipment.id,
                 f"Equipamento {equipment.type} {equipment.brand} {equipment.model} atualizado"
@@ -778,7 +778,7 @@ def register_routes(app):
         
         # Check if equipment is used in any service order
         if equipment.service_orders:
-            flash('Não é possível excluir um equipamento associado a ordens de serviço.', 'danger')
+            flash('NÃ£o Ã© possÃ­vel excluir um equipamento associado a ordens de serviÃ§o.', 'danger')
             return redirect(url_for('view_equipment', id=id))
             
         equipment_type = equipment.type
@@ -787,13 +787,13 @@ def register_routes(app):
         db.session.commit()
         
         log_action(
-            'Exclusão de Equipamento',
+            'ExclusÃ£o de Equipamento',
             'equipment',
             id,
-            f"Equipamento {equipment_type} do cliente {client_name} excluído"
+            f"Equipamento {equipment_type} do cliente {client_name} excluÃ­do"
         )
         
-        flash('Equipamento excluído com sucesso!', 'success')
+        flash('Equipamento excluÃ­do com sucesso!', 'success')
         return redirect(url_for('equipment'))
 
     # Employee routes
@@ -823,13 +823,13 @@ def register_routes(app):
             db.session.commit()
             
             log_action(
-                'Criação de Funcionário',
+                'CriaÃ§Ã£o de FuncionÃ¡rio',
                 'user',
                 user.id,
-                f"Funcionário {user.name} criado com papel {user.role.value}"
+                f"FuncionÃ¡rio {user.name} criado com papel {user.role.value}"
             )
             
-            flash('Funcionário cadastrado com sucesso!', 'success')
+            flash('FuncionÃ¡rio cadastrado com sucesso!', 'success')
             return redirect(url_for('employees'))
             
         return render_template('employees/create.html', form=form)
@@ -860,13 +860,13 @@ def register_routes(app):
             db.session.commit()
             
             log_action(
-                'Edição de Funcionário',
+                'EdiÃ§Ã£o de FuncionÃ¡rio',
                 'user',
                 user.id,
-                f"Funcionário {user.name} atualizado com papel {user.role.value}"
+                f"FuncionÃ¡rio {user.name} atualizado com papel {user.role.value}"
             )
             
-            flash('Funcionário atualizado com sucesso!', 'success')
+            flash('FuncionÃ¡rio atualizado com sucesso!', 'success')
             return redirect(url_for('employees'))
             
         return render_template('employees/edit.html', form=form, user=user)
@@ -878,7 +878,7 @@ def register_routes(app):
         
         # Prevent deactivating yourself
         if user.id == current_user.id:
-            flash('Você não pode desativar sua própria conta.', 'danger')
+            flash('VocÃª nÃ£o pode desativar sua prÃ³pria conta.', 'danger')
             return redirect(url_for('employees'))
             
         user.active = not user.active
@@ -887,13 +887,13 @@ def register_routes(app):
         db.session.commit()
         
         log_action(
-            f'Funcionário {action}',
+            f'FuncionÃ¡rio {action}',
             'user',
             user.id,
-            f"Funcionário {user.name} foi {action}"
+            f"FuncionÃ¡rio {user.name} foi {action}"
         )
         
-        flash(f'Funcionário {action} com sucesso!', 'success')
+        flash(f'FuncionÃ¡rio {action} com sucesso!', 'success')
         return redirect(url_for('employees'))
 
     # Financial routes
@@ -983,7 +983,7 @@ def register_routes(app):
         output = StringIO()
         writer = csv.writer(output)
         
-        writer.writerow(['Data', 'Descrição', 'Tipo', 'Valor', 'OS Relacionada'])
+        writer.writerow(['Data', 'DescriÃ§Ã£o', 'Tipo', 'Valor', 'OS Relacionada'])
         
         for entry in entries:
             os_info = f'OS #{entry.service_order_id}' if entry.service_order_id else 'N/A'
@@ -997,7 +997,7 @@ def register_routes(app):
             
         # Create filename with month and year
         month_name = {
-            1: 'Janeiro', 2: 'Fevereiro', 3: 'Março', 4: 'Abril',
+            1: 'Janeiro', 2: 'Fevereiro', 3: 'MarÃ§o', 4: 'Abril',
             5: 'Maio', 6: 'Junho', 7: 'Julho', 8: 'Agosto',
             9: 'Setembro', 10: 'Outubro', 11: 'Novembro', 12: 'Dezembro'
         }[month]
@@ -1005,10 +1005,10 @@ def register_routes(app):
         filename = f'financeiro_{month_name}_{year}.csv'
         
         log_action(
-            'Exportação Financeira',
+            'ExportaÃ§Ã£o Financeira',
             'financial',
             None,
-            f"Exportação dos dados financeiros de {month_name}/{year}"
+            f"ExportaÃ§Ã£o dos dados financeiros de {month_name}/{year}"
         )
         
         # Return CSV file
@@ -1069,7 +1069,7 @@ def register_routes(app):
             if form.email.data != current_user.email:
                 # Check if email is already in use
                 if User.query.filter_by(email=form.email.data).first():
-                    flash('Este email já está em uso por outro usuário.', 'danger')
+                    flash('Este email jÃ¡ estÃ¡ em uso por outro usuÃ¡rio.', 'danger')
                     return render_template('profile/index.html', form=form)
                     
                 current_user.email = form.email.data
@@ -1087,28 +1087,28 @@ def register_routes(app):
                 filename = secure_filename(form.profile_image.data.filename)
                 _, file_extension = os.path.splitext(filename)
                 
-                # Verificar extensão de arquivo
+                # Verificar extensÃ£o de arquivo
                 if file_extension.lower() not in ['.jpg', '.jpeg', '.png', '.gif']:
-                    flash('Formato de arquivo não permitido. Apenas JPG, JPEG, PNG e GIF são aceitos.', 'danger')
+                    flash('Formato de arquivo nÃ£o permitido. Apenas JPG, JPEG, PNG e GIF sÃ£o aceitos.', 'danger')
                     return render_template('profile/index.html', form=form)
                 
                 # Verificar tamanho do arquivo (max 2MB)
                 form.profile_image.data.seek(0, os.SEEK_END)
                 file_size = form.profile_image.data.tell()
-                form.profile_image.data.seek(0)  # Retornar para o início do arquivo
+                form.profile_image.data.seek(0)  # Retornar para o inÃ­cio do arquivo
                 
                 if file_size > 2 * 1024 * 1024:  # 2MB em bytes
                     flash('Tamanho do arquivo maior que 2MB. Por favor, escolha uma imagem menor.', 'danger')
                     return render_template('profile/index.html', form=form)
                 
-                # Remover imagem anterior se existir e não for a padrão
+                # Remover imagem anterior se existir e nÃ£o for a padrÃ£o
                 if current_user.profile_image and current_user.profile_image != 'default_profile.svg':
                     old_file_path = os.path.join('static/images/profiles', current_user.profile_image)
                     if os.path.exists(old_file_path):
                         try:
                             os.remove(old_file_path)
                         except:
-                            pass  # Se não conseguir remover, apenas continue
+                            pass  # Se nÃ£o conseguir remover, apenas continue
                 
                 # Create a unique filename based on user ID and timestamp para evitar cache do navegador
                 timestamp = int(datetime.now().timestamp())
@@ -1121,9 +1121,9 @@ def register_routes(app):
                 # Update the user's profile_image field
                 current_user.profile_image = profile_image_filename
                 
-                # Log da alteração da imagem
+                # Log da alteraÃ§Ã£o da imagem
                 log_action(
-                    'Atualização de Foto de Perfil',
+                    'AtualizaÃ§Ã£o de Foto de Perfil',
                     'user',
                     current_user.id,
                     'Foto de perfil atualizada'
@@ -1136,7 +1136,7 @@ def register_routes(app):
             db.session.commit()
             
             log_action(
-                'Atualização de Perfil',
+                'AtualizaÃ§Ã£o de Perfil',
                 'user',
                 current_user.id,
                 'Perfil atualizado'
@@ -1152,9 +1152,9 @@ def register_routes(app):
     @login_required
     def invoices():
         page = request.args.get('page', 1, type=int)
-        per_page = 20  # Pode ser ajustado nas configurações do sistema posteriormente
+        per_page = 20  # Pode ser ajustado nas configuraÃ§Ãµes do sistema posteriormente
         
-        # Obtém ordens de serviço fechadas (com nota fiscal)
+        # ObtÃ©m ordens de serviÃ§o fechadas (com nota fiscal)
         query = ServiceOrder.query.filter(
             ServiceOrder.status == ServiceOrderStatus.fechada,
             ServiceOrder.invoice_number.isnot(None)
@@ -1177,7 +1177,7 @@ def register_routes(app):
                 data_inicio = datetime.strptime(data_inicio, '%Y-%m-%d')
                 query = query.filter(ServiceOrder.invoice_date >= data_inicio)
             except ValueError:
-                flash('Data inicial inválida.', 'warning')
+                flash('Data inicial invÃ¡lida.', 'warning')
         
         if data_fim:
             try:
@@ -1185,9 +1185,9 @@ def register_routes(app):
                 data_fim = datetime.combine(data_fim, datetime.max.time())  # Fim do dia
                 query = query.filter(ServiceOrder.invoice_date <= data_fim)
             except ValueError:
-                flash('Data final inválida.', 'warning')
+                flash('Data final invÃ¡lida.', 'warning')
         
-        # Paginação
+        # PaginaÃ§Ã£o
         invoices = query.paginate(page=page, per_page=per_page)
         
         return render_template('invoices/index.html', invoices=invoices)
@@ -1204,13 +1204,13 @@ def register_routes(app):
         from decimal import Decimal
         
         try:
-            # Obtém os mesmos filtros da listagem
+            # ObtÃ©m os mesmos filtros da listagem
             cliente = request.args.get('cliente')
             numero_nf = request.args.get('numero_nf')
             data_inicio = request.args.get('data_inicio')
             data_fim = request.args.get('data_fim')
             
-            # Constrói a query com os mesmos filtros da página de listagem
+            # ConstrÃ³i a query com os mesmos filtros da pÃ¡gina de listagem
             query = ServiceOrder.query.filter(
                 ServiceOrder.status == ServiceOrderStatus.fechada,
                 ServiceOrder.invoice_number.isnot(None)
@@ -1227,7 +1227,7 @@ def register_routes(app):
                     data_inicio = datetime.strptime(data_inicio, '%Y-%m-%d')
                     query = query.filter(ServiceOrder.invoice_date >= data_inicio)
                 except ValueError:
-                    flash('Data inicial inválida.', 'warning')
+                    flash('Data inicial invÃ¡lida.', 'warning')
                     return redirect(url_for('invoices'))
             
             if data_fim:
@@ -1236,17 +1236,17 @@ def register_routes(app):
                     data_fim = datetime.combine(data_fim, datetime.max.time())
                     query = query.filter(ServiceOrder.invoice_date <= data_fim)
                 except ValueError:
-                    flash('Data final inválida.', 'warning')
+                    flash('Data final invÃ¡lida.', 'warning')
                     return redirect(url_for('invoices'))
             
             # Limita a quantidade para evitar arquivos muito grandes
             invoices = query.limit(50).all()
             
             if not invoices:
-                flash('Nenhuma nota fiscal encontrada para exportação.', 'warning')
+                flash('Nenhuma nota fiscal encontrada para exportaÃ§Ã£o.', 'warning')
                 return redirect(url_for('invoices'))
             
-            # Cria um arquivo ZIP em memória
+            # Cria um arquivo ZIP em memÃ³ria
             memory_file = io.BytesIO()
             with zipfile.ZipFile(memory_file, 'w') as zf:
                 # Adiciona cada nota fiscal ao ZIP
@@ -1257,9 +1257,9 @@ def register_routes(app):
                                                   export_mode=True,
                                                   Decimal=Decimal)  # Passando o tipo Decimal para o template
                     
-                    # Cria arquivo PDF temporário
+                    # Cria arquivo PDF temporÃ¡rio
                     with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as temp:
-                        # Configurar tamanho A4 e outras opções para impressão
+                        # Configurar tamanho A4 e outras opÃ§Ãµes para impressÃ£o
                         pdf_options = {
                             'page-size': 'A4',
                             'margin-top': '0.5cm',
@@ -1274,13 +1274,13 @@ def register_routes(app):
                         # Gera PDF do HTML com tamanho A4
                         HTML(string=html_content).write_pdf(temp.name, presentational_hints=True, stylesheets=[], **pdf_options)
                     
-                    # Lê o arquivo PDF e adiciona ao ZIP
+                    # LÃª o arquivo PDF e adiciona ao ZIP
                     with open(temp.name, 'rb') as pdf_file:
                         pdf_data = pdf_file.read()
                         # Adiciona ao ZIP com um nome adequado
                         zf.writestr(f'NF_{so.invoice_number}.pdf', pdf_data)
                     
-                    # Remove o arquivo temporário
+                    # Remove o arquivo temporÃ¡rio
                     os.unlink(temp.name)
             
             # Prepara o arquivo ZIP para download
@@ -1291,12 +1291,12 @@ def register_routes(app):
             response.headers['Content-Type'] = 'application/zip'
             response.headers['Content-Disposition'] = f'attachment; filename=notas_fiscais_{data_str}.zip'
             
-            # Registra a ação
+            # Registra a aÃ§Ã£o
             log_action(
-                'Exportação de Notas Fiscais',
+                'ExportaÃ§Ã£o de Notas Fiscais',
                 None,
                 None,
-                f'Exportação de {len(invoices)} notas fiscais em PDF'
+                f'ExportaÃ§Ã£o de {len(invoices)} notas fiscais em PDF'
             )
             
             return response
@@ -1316,10 +1316,10 @@ def register_routes(app):
         
         # Check if order is closed
         if service_order.status != ServiceOrderStatus.fechada:
-            flash('Esta OS ainda não foi fechada.', 'warning')
+            flash('Esta OS ainda nÃ£o foi fechada.', 'warning')
             return redirect(url_for('view_service_order', id=id))
         
-        # Passamos o tipo Decimal para o template para facilitar operações matemáticas
+        # Passamos o tipo Decimal para o template para facilitar operaÃ§Ãµes matemÃ¡ticas
         return render_template('invoices/view.html', 
                               service_order=service_order,
                               Decimal=Decimal)
@@ -1337,7 +1337,7 @@ def register_routes(app):
         
         # Check if order is closed
         if service_order.status != ServiceOrderStatus.fechada:
-            flash('Esta OS ainda não foi fechada.', 'warning')
+            flash('Esta OS ainda nÃ£o foi fechada.', 'warning')
             return redirect(url_for('view_service_order', id=id))
         
         # Render the invoice template to HTML
@@ -1349,7 +1349,7 @@ def register_routes(app):
         try:
             # Create a temporary file
             with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as temp:
-                # Configurar tamanho A4 e outras opções para impressão
+                # Configurar tamanho A4 e outras opÃ§Ãµes para impressÃ£o
                 pdf_options = {
                     'page-size': 'A4',
                     'margin-top': '0.5cm',
@@ -1375,7 +1375,7 @@ def register_routes(app):
             
             # Log the successful export
             log_action(
-                'Exportação de Nota Fiscal',
+                'ExportaÃ§Ã£o de Nota Fiscal',
                 'service_order',
                 service_order.id,
                 f'Nota fiscal {service_order.invoice_number} exportada com sucesso'
@@ -1414,7 +1414,7 @@ def register_routes(app):
         # Ordenar fornecedores
         query = query.order_by(Supplier.name)
         
-        # Paginação
+        # PaginaÃ§Ã£o
         from utils import get_system_setting
         pagination = query.paginate(
             page=page,
@@ -1468,7 +1468,7 @@ def register_routes(app):
     def view_supplier(id):
         supplier = Supplier.query.get_or_404(id)
         
-        # Buscar peças do fornecedor
+        # Buscar peÃ§as do fornecedor
         parts = Part.query.filter_by(supplier_id=supplier.id).all()
         
         return render_template(
@@ -1507,7 +1507,7 @@ def register_routes(app):
             db.session.commit()
             
             log_action(
-                'Edição de Fornecedor',
+                'EdiÃ§Ã£o de Fornecedor',
                 'supplier',
                 supplier.id,
                 f'Fornecedor {supplier.name} atualizado'
@@ -1524,9 +1524,9 @@ def register_routes(app):
     def delete_supplier(id):
         supplier = Supplier.query.get_or_404(id)
         
-        # Verificar se o fornecedor tem peças cadastradas
+        # Verificar se o fornecedor tem peÃ§as cadastradas
         if supplier.parts:
-            flash('Não é possível excluir um fornecedor com peças cadastradas!', 'danger')
+            flash('NÃ£o Ã© possÃ­vel excluir um fornecedor com peÃ§as cadastradas!', 'danger')
             return redirect(url_for('view_supplier', id=supplier.id))
         
         name = supplier.name
@@ -1534,17 +1534,17 @@ def register_routes(app):
         db.session.commit()
         
         log_action(
-            'Exclusão de Fornecedor',
+            'ExclusÃ£o de Fornecedor',
             'supplier',
             id,
-            f'Fornecedor {name} excluído'
+            f'Fornecedor {name} excluÃ­do'
         )
         
-        flash('Fornecedor excluído com sucesso!', 'success')
+        flash('Fornecedor excluÃ­do com sucesso!', 'success')
         return redirect(url_for('suppliers'))
     
     # =====================================================================
-    # Rotas para Peças e Vendas
+    # Rotas para PeÃ§as e Vendas
     # =====================================================================
     @app.route('/pecas')
     @login_required
@@ -1574,10 +1574,10 @@ def register_routes(app):
         if low_stock:
             query = query.filter(Part.stock_quantity <= Part.minimum_stock)
         
-        # Ordenar peças
+        # Ordenar peÃ§as
         query = query.order_by(Part.name)
         
-        # Paginação
+        # PaginaÃ§Ã£o
         from utils import get_system_setting
         pagination = query.paginate(
             page=page,
@@ -1611,7 +1611,7 @@ def register_routes(app):
             image_filename = None
             if form.image.data:
                 image = form.image.data
-                # Gerar nome de arquivo único
+                # Gerar nome de arquivo Ãºnico
                 from werkzeug.utils import secure_filename
                 filename = secure_filename(f"{form.name.data.replace(' ', '_').lower()}_{datetime.now().strftime('%Y%m%d%H%M%S')}.{image.filename.split('.')[-1]}")
                 image_path = os.path.join('static', 'uploads', 'parts', filename)
@@ -1638,13 +1638,13 @@ def register_routes(app):
             db.session.commit()
             
             log_action(
-                'Cadastro de Peça',
+                'Cadastro de PeÃ§a',
                 'part',
                 part.id,
-                f'Peça {part.name} cadastrada'
+                f'PeÃ§a {part.name} cadastrada'
             )
             
-            flash('Peça cadastrada com sucesso!', 'success')
+            flash('PeÃ§a cadastrada com sucesso!', 'success')
             return redirect(url_for('view_part', id=part.id))
         
         return render_template('parts/create.html', form=form)
@@ -1654,7 +1654,7 @@ def register_routes(app):
     def view_part(id):
         part = Part.query.get_or_404(id)
         
-        # Buscar histórico de vendas
+        # Buscar histÃ³rico de vendas
         sales = PartSale.query.filter_by(part_id=part.id).order_by(PartSale.sale_date.desc()).all()
         
         return render_template(
@@ -1687,7 +1687,7 @@ def register_routes(app):
             # Processar upload de imagem, se houver
             if form.image.data:
                 image = form.image.data
-                # Gerar nome de arquivo único
+                # Gerar nome de arquivo Ãºnico
                 from werkzeug.utils import secure_filename
                 filename = secure_filename(f"{form.name.data.replace(' ', '_').lower()}_{datetime.now().strftime('%Y%m%d%H%M%S')}.{image.filename.split('.')[-1]}")
                 image_path = os.path.join('static', 'uploads', 'parts', filename)
@@ -1710,13 +1710,13 @@ def register_routes(app):
             db.session.commit()
             
             log_action(
-                'Edição de Peça',
+                'EdiÃ§Ã£o de PeÃ§a',
                 'part',
                 part.id,
-                f'Peça {part.name} atualizada'
+                f'PeÃ§a {part.name} atualizada'
             )
             
-            flash('Peça atualizada com sucesso!', 'success')
+            flash('PeÃ§a atualizada com sucesso!', 'success')
             return redirect(url_for('view_part', id=part.id))
         
         return render_template('parts/edit.html', form=form, part=part)
@@ -1727,9 +1727,9 @@ def register_routes(app):
     def delete_part(id):
         part = Part.query.get_or_404(id)
         
-        # Verificar se a peça tem vendas registradas
+        # Verificar se a peÃ§a tem vendas registradas
         if part.sales:
-            flash('Não é possível excluir uma peça com vendas registradas!', 'danger')
+            flash('NÃ£o Ã© possÃ­vel excluir uma peÃ§a com vendas registradas!', 'danger')
             return redirect(url_for('view_part', id=part.id))
         
         name = part.name
@@ -1744,13 +1744,13 @@ def register_routes(app):
         db.session.commit()
         
         log_action(
-            'Exclusão de Peça',
+            'ExclusÃ£o de PeÃ§a',
             'part',
             id,
-            f'Peça {name} excluída'
+            f'PeÃ§a {name} excluÃ­da'
         )
         
-        flash('Peça excluída com sucesso!', 'success')
+        flash('PeÃ§a excluÃ­da com sucesso!', 'success')
         return redirect(url_for('parts'))
     
     @app.route('/vendas-pecas')
@@ -1777,14 +1777,14 @@ def register_routes(app):
         if client_id:
             query = query.filter(PartSale.client_id == client_id)
         
-        # Filtrar por ordem de serviço
+        # Filtrar por ordem de serviÃ§o
         if service_order_id:
             query = query.filter(PartSale.service_order_id == service_order_id)
         
         # Ordenar vendas
         query = query.order_by(PartSale.sale_date.desc())
         
-        # Paginação
+        # PaginaÃ§Ã£o
         from utils import get_system_setting
         pagination = query.paginate(
             page=page,
@@ -1797,7 +1797,7 @@ def register_routes(app):
         # Obter clientes para filtro
         clients = Client.query.order_by(Client.name).all()
         
-        # Obter ordens de serviço para filtro
+        # Obter ordens de serviÃ§o para filtro
         service_orders = ServiceOrder.query.order_by(ServiceOrder.id.desc()).all()
         
         return render_template(
@@ -1816,7 +1816,7 @@ def register_routes(app):
     def new_part_sale():
         form = PartSaleForm()
         
-        # Pré-preencher dados se vier de uma ordem de serviço
+        # PrÃ©-preencher dados se vier de uma ordem de serviÃ§o
         service_order_id = request.args.get('service_order_id', None, type=int)
         if service_order_id:
             form.service_order_id.data = service_order_id
@@ -1824,7 +1824,7 @@ def register_routes(app):
             if service_order:
                 form.client_id.data = service_order.client_id
         
-        # Pré-preencher dados se vier de uma peça específica
+        # PrÃ©-preencher dados se vier de uma peÃ§a especÃ­fica
         part_id = request.args.get('part_id', None, type=int)
         if part_id:
             form.part_id.data = part_id
@@ -1834,14 +1834,14 @@ def register_routes(app):
                 form.total_price.data = part.selling_price
         
         if form.validate_on_submit():
-            # Obter a peça e verificar estoque
+            # Obter a peÃ§a e verificar estoque
             part = Part.query.get(form.part_id.data)
             if not part:
-                flash('Peça não encontrada!', 'danger')
+                flash('PeÃ§a nÃ£o encontrada!', 'danger')
                 return redirect(url_for('new_part_sale'))
             
             if part.stock_quantity < form.quantity.data:
-                flash(f'Estoque insuficiente! Disponível: {part.stock_quantity}', 'danger')
+                flash(f'Estoque insuficiente! DisponÃ­vel: {part.stock_quantity}', 'danger')
                 return render_template('part_sales/create.html', form=form)
             
             # Criar a venda
@@ -1857,11 +1857,11 @@ def register_routes(app):
                 created_by=current_user.id
             )
             
-            # Atualizar o estoque da peça
+            # Atualizar o estoque da peÃ§a
             part.stock_quantity -= form.quantity.data
             
             # Adicionar entrada financeira sempre, independentemente de estar associada a uma OS
-            description = f"Venda de peça: {part.name} (x{sale.quantity})"
+            description = f"Venda de peÃ§a: {part.name} (x{sale.quantity})"
             if sale.client_id:
                 client = Client.query.get(sale.client_id)
                 if client:
@@ -1884,7 +1884,7 @@ def register_routes(app):
             db.session.commit()
             
             log_action(
-                'Venda de Peça',
+                'Venda de PeÃ§a',
                 'part_sale',
                 sale.id,
                 f'Venda de {sale.quantity}x {part.name} realizada'
@@ -1892,7 +1892,7 @@ def register_routes(app):
             
             flash('Venda registrada com sucesso!', 'success')
             
-            # Redirecionar para a ordem de serviço, se associada
+            # Redirecionar para a ordem de serviÃ§o, se associada
             if sale.service_order_id:
                 return redirect(url_for('view_service_order', id=sale.service_order_id))
             return redirect(url_for('part_sales'))
@@ -1917,7 +1917,7 @@ def register_routes(app):
             part.stock_quantity += sale.quantity
         
         # Remover entrada financeira associada, sempre
-        # Primeiro tenta buscar pela ordem de serviço, se tiver
+        # Primeiro tenta buscar pela ordem de serviÃ§o, se tiver
         financial_entry = None
         if sale.service_order_id:
             financial_entry = FinancialEntry.query.filter_by(
@@ -1926,9 +1926,9 @@ def register_routes(app):
                 type=FinancialEntryType.entrada
             ).first()
         
-        # Se não encontrou, tenta buscar pela descrição contendo o nome da peça e quantidade
+        # Se nÃ£o encontrou, tenta buscar pela descriÃ§Ã£o contendo o nome da peÃ§a e quantidade
         if not financial_entry:
-            description_pattern = f"Venda de peça: {part.name} (x{sale.quantity})"
+            description_pattern = f"Venda de peÃ§a: {part.name} (x{sale.quantity})"
             financial_entry = FinancialEntry.query.filter(
                 FinancialEntry.description.like(f"%{description_pattern}%"),
                 FinancialEntry.amount == sale.total_price,
@@ -1965,7 +1965,7 @@ def register_routes(app):
             reason = request.form.get('reason')
             
             if not quantity:
-                flash('Quantidade inválida!', 'danger')
+                flash('Quantidade invÃ¡lida!', 'danger')
                 return redirect(url_for('view_part', id=part.id))
             
             old_quantity = part.stock_quantity
@@ -1990,7 +1990,7 @@ def register_routes(app):
     @login_required
     def supplier_orders():
         page = request.args.get('page', 1, type=int)
-        per_page = 20  # Itens por página
+        per_page = 20  # Itens por pÃ¡gina
         
         query = SupplierOrder.query
         
@@ -2024,7 +2024,7 @@ def register_routes(app):
     def new_supplier_order():
         form = SupplierOrderForm()
         
-        # Buscar peças para o dropdown no modal de adicionar item
+        # Buscar peÃ§as para o dropdown no modal de adicionar item
         parts = Part.query.order_by(Part.name).all()
         
         if form.validate_on_submit():
@@ -2034,7 +2034,7 @@ def register_routes(app):
                 try:
                     expected_delivery_date = datetime.strptime(form.expected_delivery_date.data, '%d/%m/%Y').date()
                 except ValueError:
-                    flash('Formato de data inválido. Use DD/MM/AAAA', 'danger')
+                    flash('Formato de data invÃ¡lido. Use DD/MM/AAAA', 'danger')
                     return render_template('supplier_orders/create.html', form=form)
             
             delivery_date = None
@@ -2042,7 +2042,7 @@ def register_routes(app):
                 try:
                     delivery_date = datetime.strptime(form.delivery_date.data, '%d/%m/%Y').date()
                 except ValueError:
-                    flash('Formato de data inválido. Use DD/MM/AAAA', 'danger')
+                    flash('Formato de data invÃ¡lido. Use DD/MM/AAAA', 'danger')
                     return render_template('supplier_orders/create.html', form=form)
             
             # Criar o pedido
@@ -2082,7 +2082,7 @@ def register_routes(app):
                 app.logger.error(f"Erro ao processar itens do pedido: {str(e)}")
             
             log_action(
-                'Criação de Pedido',
+                'CriaÃ§Ã£o de Pedido',
                 'supplier_order',
                 order.id,
                 f'Pedido para {order.supplier.name} criado'
@@ -2113,7 +2113,7 @@ def register_routes(app):
         order = SupplierOrder.query.get_or_404(id)
         form = SupplierOrderForm(obj=order)
         
-        # Formatar datas para exibição no formulário
+        # Formatar datas para exibiÃ§Ã£o no formulÃ¡rio
         if order.expected_delivery_date:
             form.expected_delivery_date.data = order.expected_delivery_date.strftime('%d/%m/%Y')
         
@@ -2127,7 +2127,7 @@ def register_routes(app):
                 try:
                     expected_delivery_date = datetime.strptime(form.expected_delivery_date.data, '%d/%m/%Y').date()
                 except ValueError:
-                    flash('Formato de data inválido. Use DD/MM/AAAA', 'danger')
+                    flash('Formato de data invÃ¡lido. Use DD/MM/AAAA', 'danger')
                     return render_template('supplier_orders/edit.html', form=form, order=order)
             
             delivery_date = None
@@ -2135,7 +2135,7 @@ def register_routes(app):
                 try:
                     delivery_date = datetime.strptime(form.delivery_date.data, '%d/%m/%Y').date()
                 except ValueError:
-                    flash('Formato de data inválido. Use DD/MM/AAAA', 'danger')
+                    flash('Formato de data invÃ¡lido. Use DD/MM/AAAA', 'danger')
                     return render_template('supplier_orders/edit.html', form=form, order=order)
             
             # Atualizar os campos do pedido
@@ -2143,7 +2143,7 @@ def register_routes(app):
             order.order_number = form.order_number.data
             
             # Garantir que o valor total seja tratado corretamente
-            # Se não houver valor informado, definir como 0
+            # Se nÃ£o houver valor informado, definir como 0
             order.total_value = form.total_value.data if form.total_value.data is not None else 0
             
             order.status = form.status.data
@@ -2154,7 +2154,7 @@ def register_routes(app):
             db.session.commit()
             
             log_action(
-                'Edição de Pedido',
+                'EdiÃ§Ã£o de Pedido',
                 'supplier_order',
                 order.id,
                 f'Pedido para {order.supplier.name} atualizado'
@@ -2172,21 +2172,21 @@ def register_routes(app):
         order = SupplierOrder.query.get_or_404(id)
         supplier_name = order.supplier.name
         
-        # Registrar a ação antes de excluir
+        # Registrar a aÃ§Ã£o antes de excluir
         log_action(
-            'Exclusão de Pedido',
+            'ExclusÃ£o de Pedido',
             'supplier_order',
             order.id,
-            f'Pedido {order.order_number or "#" + str(order.id)} para {supplier_name} excluído'
+            f'Pedido {order.order_number or "#" + str(order.id)} para {supplier_name} excluÃ­do'
         )
         
         db.session.delete(order)
         db.session.commit()
         
-        flash('Pedido excluído com sucesso!', 'success')
+        flash('Pedido excluÃ­do com sucesso!', 'success')
         return redirect(url_for('supplier_orders'))
     
-    # Função para recalcular o valor total do pedido
+    # FunÃ§Ã£o para recalcular o valor total do pedido
     def recalculate_supplier_order_total(order_id):
         # Somar todos os itens
         total = db.session.query(func.sum(OrderItem.total_price)).filter(OrderItem.order_id == order_id).scalar() or 0
@@ -2238,7 +2238,7 @@ def register_routes(app):
         form = OrderItemForm(obj=item)
         
         if request.method == 'GET':
-            # Preencher o formulário com os valores atuais
+            # Preencher o formulÃ¡rio com os valores atuais
             if item.part_id:
                 form.part_id.data = item.part_id
         
@@ -2280,10 +2280,10 @@ def register_routes(app):
         # Recalcular o valor total do pedido
         recalculate_supplier_order_total(order_id)
         
-        flash('Item excluído com sucesso!', 'success')
+        flash('Item excluÃ­do com sucesso!', 'success')
         return redirect(url_for('view_supplier_order', id=order_id))
     
-# Esta seção foi removida para evitar conflitos com a rota duplicada
+# Esta seÃ§Ã£o foi removida para evitar conflitos com a rota duplicada
     
     # System Settings
     @app.route('/configuracoes', methods=['GET', 'POST'])
@@ -2316,16 +2316,16 @@ def register_routes(app):
             set_system_setting('date_format', form.date_format.data, current_user.id)
             set_system_setting('items_per_page', str(form.items_per_page.data), current_user.id)
             
-            log_action('Atualização de Configurações', 'system', None, 'Configurações do sistema atualizadas')
+            log_action('AtualizaÃ§Ã£o de ConfiguraÃ§Ãµes', 'system', None, 'ConfiguraÃ§Ãµes do sistema atualizadas')
             
-            flash('Configurações atualizadas com sucesso!', 'success')
+            flash('ConfiguraÃ§Ãµes atualizadas com sucesso!', 'success')
             return redirect(url_for('system_settings'))
             
         return render_template('settings/index.html', form=form, settings=current_settings)
 
     # Initialize the first admin user if no users exist
     def create_initial_admin():
-        # Verificar se a tabela de usuários existe
+        # Verificar se a tabela de usuÃ¡rios existe
         from sqlalchemy import inspect
         inspector = inspect(db.engine)
         if not inspector.has_table('user'):
@@ -2334,12 +2334,12 @@ def register_routes(app):
         # Verificar se a coluna username existe
         columns = [c['name'] for c in inspector.get_columns('user')]
         if 'username' not in columns:
-            print("Coluna username não existe. Migrando o banco de dados...")
-            # A coluna username não existe, então precisamos criar o esquema do zero
+            print("Coluna username nÃ£o existe. Migrando o banco de dados...")
+            # A coluna username nÃ£o existe, entÃ£o precisamos criar o esquema do zero
             db.drop_all()
             db.create_all()
             
-        # Criar o admin se não houver usuários
+        # Criar o admin se nÃ£o houver usuÃ¡rios
         if User.query.count() == 0:
             admin = User(
                 username='admin',
@@ -2355,5 +2355,71 @@ def register_routes(app):
             
             print("Admin user created: username=admin, password=admin123")
             
+    
+    @app.route('/estoque')
+    @login_required
+    def stock_items():
+        """Lista de itens de estoque"""
+        try:
+            search = request.args.get('search', '')
+            item_type = request.args.get('type', '')
+            status = request.args.get('status', '')
+            supplier_id = request.args.get('supplier_id', type=int)
+            page = request.args.get('page', 1, type=int)
+            
+            query = StockItem.query
+            
+            if search:
+                query = query.filter(
+                    StockItem.name.ilike(f'%{search}%') |
+                    StockItem.description.ilike(f'%{search}%')
+                )
+            
+            if item_type:
+                query = query.filter(StockItem.item_type == item_type)
+            
+            if status:
+                query = query.filter(StockItem.status == status)
+            
+            if supplier_id:
+                query = query.filter(StockItem.supplier_id == supplier_id)
+            
+            query = query.order_by(StockItem.name)
+            
+            from utils import get_system_setting
+            per_page = int(get_system_setting('items_per_page', '20'))
+            pagination = query.paginate(
+                page=page,
+                per_page=per_page,
+                error_out=False
+            )
+            
+            items = pagination.items
+            suppliers = Supplier.query.all()
+            all_stock_items = StockItem.query.all()
+            
+            return render_template(
+                'stock/index.html',
+                items=items,
+                pagination=pagination,
+                all_stock_items=all_stock_items,
+                item_types=StockItemType,
+                item_statuses=StockItemStatus,
+                suppliers=suppliers,
+                active_filters={
+                    'type': item_type,
+                    'status': status,
+                    'search': search,
+                    'supplier_id': supplier_id
+                },
+                type_filter=item_type
+            )
+            
+        except Exception as e:
+            app.logger.error(f'Erro ao listar itens de estoque: {str(e)}')
+            flash(f'Erro ao listar itens de estoque: {str(e)}', 'danger')
+            return redirect(url_for('dashboard'))
+
     # Register function to be called with app context in app.py
     app.create_initial_admin = create_initial_admin
+
