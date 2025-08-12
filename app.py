@@ -1,4 +1,4 @@
-
+﻿
  
 
 
@@ -53,14 +53,14 @@ app.config["WTF_CSRF_SSL_STRICT"] = False  # Para ambiente de desenvolvimento
 db.init_app(app)
 login_manager.init_app(app)
 
-# Adicionar exceção CSRF para as rotas de exclusão de cliente
+# Adicionar exceÃ§Ã£o CSRF para as rotas de exclusÃ£o de cliente
 csrf.init_app(app)
 csrf.exempt('/clientes/<int:id>/excluir')
 csrf.exempt('/admin/clientes/<int:id>/excluir-direto')
 
 # Configure login manager
 login_manager.login_view = "login"
-login_manager.login_message = "Por favor, faça login para acessar esta página."
+login_manager.login_message = "Por favor, faÃ§a login para acessar esta pÃ¡gina."
 login_manager.login_message_category = "warning"
 
 # Import models 
@@ -83,6 +83,7 @@ app.jinja_env.filters['format_document'] = format_document
 app.jinja_env.filters['format_currency'] = format_currency
 app.jinja_env.filters['status_color'] = status_color
 app.jinja_env.filters['abs'] = absolute_value
+app.jinja_env.globals['hasattr'] = hasattr
 
 
 # Import and register routes
@@ -97,3 +98,4 @@ app.register_blueprint(bp_ponto)
 with app.app_context():
     if hasattr(app, 'create_initial_admin'):
         app.create_initial_admin()
+
