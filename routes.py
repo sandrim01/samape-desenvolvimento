@@ -365,9 +365,33 @@ def register_routes(app):
             form=form,
             service_order=service_order
         )
+    @app.route('/ordens-servico/<int:id>/excluir', methods=['POST'])
+    @login_required  
+    @admin_required
+    def delete_service_order(id):
+        """Rota para excluir uma ordem de serviço"""
+        try:
+            service_order = ServiceOrder.query.get_or_404(id)
+            
+            # Excluir registros financeiros relacionados
+            FinancialRecord.query.filter_by(service_order_id=id).delete()
+            
+            # Excluir imagens relacionadas
+            ServiceOrderImage.query.filter_by(service_order_id=id).delete()
+            
+            # Excluir a ordem de serviço
+            db.session.delete(service_order)
+            db.session.commit()
+            
+            flash('Ordem de serviço excluída com sucesso!', 'success')
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Erro ao excluir ordem de serviço: {str(e)}', 'danger')
+        
+        return redirect(url_for('service_orders'))
+
 
     @app.route('/os/imagem/<int:image_id>/excluir', methods=['POST'])
-    @login_required
     def delete_service_order_image_route(image_id):
         """Rota para excluir uma imagem de ordem de serviÃ§o"""
         # Criar instÃ¢ncia do formulÃ¡rio para validaÃ§Ã£o CSRF
@@ -2521,6 +2545,10 @@ def register_routes(app):
 
     # Register function to be called with app context in app.py
     app.create_initial_admin = create_initial_admin
+
+
+
+
 
 
 
