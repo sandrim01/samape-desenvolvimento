@@ -33,4 +33,20 @@ def migrate_tables():
         print(f'Erro geral na migração: {e}')
 
 if __name__ == '__main__':
-    migrate_tables()
+    DATABASE_URL = os.getenv("DATABASE_URL")
+    if not DATABASE_URL:
+        print("DATABASE_URL não encontrada. Configure a variável de ambiente corretamente.")
+        return
+    engine = create_engine(DATABASE_URL)
+    try:
+        with engine.connect() as conn:
+            # Adiciona coluna profile_image_data na tabela user, se não existir
+            conn.execute(text('ALTER TABLE "user" ADD COLUMN IF NOT EXISTS profile_image_data TEXT;'))
+            print('Coluna profile_image_data garantida na tabela user.')
+            # Adiciona latitude na tabela ponto, se não existir
+            conn.execute(text('ALTER TABLE ponto ADD COLUMN IF NOT EXISTS latitude DOUBLE PRECISION;'))
+            print('Coluna latitude garantida na tabela ponto.')
+            # Adiciona longitude na tabela ponto, se não existir
+            conn.execute(text('ALTER TABLE ponto ADD COLUMN IF NOT EXISTS longitude DOUBLE PRECISION;'))
+            print('Coluna longitude garantida na tabela ponto.')
+            conn.commit()

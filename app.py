@@ -1,3 +1,10 @@
+
+ 
+
+
+# Executa o servidor Flask localmente
+if __name__ == "__main__":
+    app.run(debug=True, host="0.0.0.0", port=5000)
 import os
 import logging
 from datetime import timedelta
