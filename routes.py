@@ -157,7 +157,12 @@ def register_routes(app):
                 SupplierOrder.created_at >= datetime.now().replace(day=1)
             ).count(),
             "income_data": [(financial_summary.get("monthly_income", 0) if isinstance(financial_summary, dict) else 0)],
-            "expense_data": [(financial_summary.get("monthly_expenses", 0) if isinstance(financial_summary, dict) else 0)]
+            "expense_data": [(financial_summary.get("monthly_expenses", 0) if isinstance(financial_summary, dict) else 0)],
+            "monthly_income": (financial_summary.get("monthly_income", 0) if isinstance(financial_summary, dict) else 0),
+            "monthly_expenses": (financial_summary.get("monthly_expenses", 0) if isinstance(financial_summary, dict) else 0),
+            "pending_orders": so_stats.get("open", 0),
+            "in_progress_orders": so_stats.get("in_progress", 0),
+            "closed_orders": so_stats.get("closed", 0)
         }
 
         return render_template(
@@ -2516,6 +2521,8 @@ def register_routes(app):
 
     # Register function to be called with app context in app.py
     app.create_initial_admin = create_initial_admin
+
+
 
 
 
