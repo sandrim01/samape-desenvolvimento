@@ -1,4 +1,4 @@
-import os
+﻿import os
 import re
 import json
 import io
@@ -370,8 +370,7 @@ def register_routes(app):
             SELECT 
                 so.id, so.description, so.status, so.created_at, so.closed_at,
                 so.invoice_number, so.invoice_amount, so.service_details, 
-                so.estimated_value, so.discount_amount, so.original_amount, 
-                so.total_value, so.client_id, so.responsible_id,
+                so.estimated_value, so.estimated_value so.client_id, so.responsible_id,
                 c.name as client_name, c.document as client_document, 
                 c.email as client_email, c.phone as client_phone, 
                 c.address as client_address,
@@ -445,7 +444,7 @@ def register_routes(app):
                 """
                 SELECT 
                     so.id, so.description, so.status, so.created_at, so.closed_at,
-                    so.client_id, so.responsible_id, so.total_value, so.original_amount, so.discount_amount
+                    so.client_id, so.responsible_id,   
                 FROM service_order so
                 WHERE so.id = %s
                 """, 
@@ -464,9 +463,9 @@ def register_routes(app):
             closed_at = order[4].strftime('%d/%m/%Y %H:%M') if order[4] else None
             client_id = order[5]
             responsible_id = order[6]
-            total_value = order[7] or 0
-            original_amount = order[8] or 0
-            discount_amount = order[9] or 0
+            
+            invoice_amount = order[8] or 0
+            estimated_value = order[7] or 0
             
             # Recuperar nome do cliente
             client_name = "Cliente não especificado"
@@ -610,8 +609,7 @@ def register_routes(app):
             SELECT 
                 so.id, so.description, so.status, so.created_at, so.closed_at,
                 so.invoice_number, so.invoice_amount, so.service_details, 
-                so.estimated_value, so.discount_amount, so.original_amount, 
-                so.total_value, so.client_id, so.responsible_id,
+                so.estimated_value, so.estimated_value so.client_id, so.responsible_id,
                 c.name as client_name, c.document as client_document, 
                 c.email as client_email, c.phone as client_phone, 
                 c.address as client_address,
@@ -704,7 +702,7 @@ def register_routes(app):
                 SELECT 
                     so.id, so.description, so.status, so.created_at, so.closed_at,
                     so.invoice_number, so.invoice_amount, so.service_details, 
-                    so.estimated_value, so.discount_amount, so.original_amount, so.total_value,
+                    so.estimated_value, so.estimated_value
                     c.id as client_id, c.name as client_name, c.document as client_document,
                     c.email as client_email, c.phone as client_phone, c.address as client_address,
                     u.name as responsible_name
@@ -4653,4 +4651,6 @@ def register_routes(app):
             data_fim=data_fim_str,
             view_type=view_type
         )
+
+
 
