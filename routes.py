@@ -13,7 +13,9 @@ from app import db
 from models import (
     User, Client, Equipment, ServiceOrder, FinancialEntry, ActionLog,
     UserRole, ServiceOrderStatus, FinancialEntryType, Supplier, Part, PartSale,
-    SupplierOrder, OrderItem, OrderStatus, ServiceOrderImage
+    SupplierOrder, OrderItem, OrderStatus, ServiceOrderImage, equipment_service_orders,
+    StockItem, StockMovement, StockItemType, StockItemStatus, VehicleType, VehicleStatus,
+    Vehicle, VehicleMaintenance, Refueling, VehicleTravelLog, MaintenanceType, FuelType
 )
 from forms import (
     LoginForm, UserForm, ClientForm, EquipmentForm, ServiceOrderForm,
@@ -2514,6 +2516,7 @@ def register_routes(app):
 
     # Register function to be called with app context in app.py
     app.create_initial_admin = create_initial_admin
+
 
 
 
