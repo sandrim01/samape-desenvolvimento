@@ -151,9 +151,9 @@ def register_routes(app):
             "avg_completion_time": "0 dias",
             "efficiency_percentage": 85,
             "open_orders": SupplierOrder.query.filter_by(status=OrderStatus.pendente).count(),
-            "pending_delivery": SupplierOrder.query.filter_by(status=OrderStatus.em_transito).count(),
+            "pending_delivery": SupplierOrder.query.filter_by(status=OrderStatus.enviado).count(),
             "delivered_this_month": SupplierOrder.query.join(OrderItem).filter(
-                SupplierOrder.status == OrderStatus.entregue,
+                SupplierOrder.status == OrderStatus.recebido,
                 SupplierOrder.created_at >= datetime.now().replace(day=1)
             ).count(),
             "income_data": [financial_summary.get("monthly_income", 0)],
@@ -2516,6 +2516,8 @@ def register_routes(app):
 
     # Register function to be called with app context in app.py
     app.create_initial_admin = create_initial_admin
+
+
 
 
 
