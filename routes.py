@@ -370,7 +370,7 @@ def register_routes(app):
             SELECT 
                 so.id, so.description, so.status, so.created_at, so.closed_at,
                 so.invoice_number, so.invoice_amount, so.service_details, 
-                so.estimated_value, so.estimated_value so.client_id, so.responsible_id,
+                so.estimated_value, so.client_id, so.responsible_id,
                 c.name as client_name, c.document as client_document, 
                 c.email as client_email, c.phone as client_phone, 
                 c.address as client_address,
@@ -609,7 +609,7 @@ def register_routes(app):
             SELECT 
                 so.id, so.description, so.status, so.created_at, so.closed_at,
                 so.invoice_number, so.invoice_amount, so.service_details, 
-                so.estimated_value, so.estimated_value so.client_id, so.responsible_id,
+                so.estimated_value, so.client_id, so.responsible_id,
                 c.name as client_name, c.document as client_document, 
                 c.email as client_email, c.phone as client_phone, 
                 c.address as client_address,
@@ -4651,6 +4651,7 @@ def register_routes(app):
             data_fim=data_fim_str,
             view_type=view_type
         )
+
 
 
 
