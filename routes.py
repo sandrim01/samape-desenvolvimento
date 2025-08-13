@@ -2530,7 +2530,7 @@ def register_routes(app):
                 )
             
             if item_type:
-                query = query.filter(StockItem.item_type == item_type)
+                query = query.filter(StockItem.type == item_type)
             
             if status:
                 query = query.filter(StockItem.status == status)
