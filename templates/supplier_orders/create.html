@@ -204,12 +204,40 @@
 
 {% block scripts %}
 <script>
+// Variáveis globais
+let orderItems = [];
+let itemCounter = 0;
+
+// Aguardar DOM carregar
 document.addEventListener('DOMContentLoaded', function() {
-    // Array para armazenar os itens do pedido
-    let orderItems = [];
-    let itemCounter = 0;
+    console.log('DOM carregado, inicializando scripts...');
     
-    // Adicionar máscara para data
+    // Inicializar funções básicas
+    initializeDateMasks();
+    initializeMoneyMasks();
+    initializePartSelection();
+    initializeItemModal();
+    
+    console.log('Scripts inicializados com sucesso');
+});
+
+// Funções auxiliares
+function formatCurrency(value) {
+    if (!value || isNaN(value)) return 'R$ 0,00';
+    return new Intl.NumberFormat('pt-BR', { 
+        style: 'currency', 
+        currency: 'BRL' 
+    }).format(value);
+}
+
+function currencyToFloat(currencyStr) {
+    if (!currencyStr) return 0;
+    const cleanStr = currencyStr.toString().replace(/[^\d,.-]/g, '');
+    return parseFloat(cleanStr.replace(',', '.')) || 0;
+}
+
+// Inicializar máscaras de data
+function initializeDateMasks() {
     const dateFields = document.querySelectorAll('#expected_delivery_date, #delivery_date');
     dateFields.forEach(field => {
         field.addEventListener('input', function(e) {
@@ -225,79 +253,55 @@ document.addEventListener('DOMContentLoaded', function() {
             e.target.value = value;
         });
     });
+}
+
+// Inicializar máscaras de moeda
+function initializeMoneyMasks() {
+    const moneyFields = ['total_value', 'itemUnitPrice'];
     
-    // Função para formatar valor como moeda
-    function formatCurrency(value) {
-        if (!value || isNaN(value)) return 'R$ 0,00';
-        return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-    }
-    
-    // Função para converter string de moeda para número
-    function currencyToFloat(currencyStr) {
-        if (!currencyStr) return 0;
-        return parseFloat(currencyStr.replace(/[^\d,]/g, '').replace(',', '.')) || 0;
-    }
-    
-    // Aplicar máscara de moeda
-    function applyMoneyMask(input) {
-        input.addEventListener('input', function(e) {
-            let value = e.target.value.replace(/\D/g, '');
-            if (value === '') {
-                e.target.value = '';
-                return;
-            }
-            
-            value = parseFloat(value) / 100;
-            e.target.value = value.toLocaleString('pt-BR', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
+    moneyFields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            field.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value === '') {
+                    e.target.value = '';
+                    return;
+                }
+                
+                value = parseFloat(value) / 100;
+                e.target.value = value.toLocaleString('pt-BR', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
             });
-        });
-    }
+        }
+    });
     
-    // Formatar campo de valor do pedido
-    const valueField = document.getElementById('total_value');
-    if (valueField) {
-        applyMoneyMask(valueField);
-    }
-    
-    // Formatar campo de valor unitário do item
+    // Listener especial para calcular total do item
     const unitPriceField = document.getElementById('itemUnitPrice');
+    const quantityField = document.getElementById('itemQuantity');
+    
     if (unitPriceField) {
-        applyMoneyMask(unitPriceField);
-        
-        // Calcular o valor total ao alterar o valor unitário ou quantidade
         unitPriceField.addEventListener('input', calculateItemTotal);
     }
     
-    // Calcular o total do item ao alterar a quantidade
-    const quantityField = document.getElementById('itemQuantity');
     if (quantityField) {
         quantityField.addEventListener('input', calculateItemTotal);
     }
-    
-    // Função para calcular o total do item
-    function calculateItemTotal() {
-        const quantity = parseInt(document.getElementById('itemQuantity').value) || 0;
-        const unitPrice = currencyToFloat(document.getElementById('itemUnitPrice').value);
-        const totalPrice = quantity * unitPrice;
-        
-        document.getElementById('itemTotalPrice').value = totalPrice.toLocaleString('pt-BR', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
-    }
-    
-    // Capturar selecção de peça e preencher dados automaticamente
+}
+
+// Inicializar seleção de peça
+function initializePartSelection() {
     const partSelect = document.getElementById('itemPartId');
     if (partSelect) {
         partSelect.addEventListener('change', function() {
             const selectedOption = this.options[this.selectedIndex];
             if (selectedOption.value) {
-                const description = selectedOption.getAttribute('data-description');
-                const price = selectedOption.getAttribute('data-price');
+                const description = selectedOption.getAttribute('data-description') || '';
+                const price = selectedOption.getAttribute('data-price') || '0';
                 
-                document.getElementById('itemDescription').value = description || '';
+                document.getElementById('itemDescription').value = description;
                 
                 if (price && !isNaN(parseFloat(price))) {
                     const formattedPrice = parseFloat(price).toLocaleString('pt-BR', {
@@ -311,22 +315,47 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+}
+
+// Calcular total do item
+function calculateItemTotal() {
+    const quantityField = document.getElementById('itemQuantity');
+    const unitPriceField = document.getElementById('itemUnitPrice');
+    const totalPriceField = document.getElementById('itemTotalPrice');
     
-    // Adicionar item ao pedido
+    if (!quantityField || !unitPriceField || !totalPriceField) return;
+    
+    const quantity = parseInt(quantityField.value) || 0;
+    const unitPrice = currencyToFloat(unitPriceField.value);
+    const totalPrice = quantity * unitPrice;
+    
+    totalPriceField.value = totalPrice.toLocaleString('pt-BR', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+}
+
+// Inicializar modal de item
+function initializeItemModal() {
     const addItemBtn = document.getElementById('addItemBtn');
-    if (addItemBtn) {
-        addItemBtn.addEventListener('click', function() {
-            console.log('Botão adicionar item clicado'); // Debug
+    if (!addItemBtn) {
+        console.error('Botão addItemBtn não encontrado');
+        return;
+    }
+    
+    addItemBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        console.log('Botão adicionar item clicado');
+        
+        try {
+            // Pegar valores dos campos
+            const partId = document.getElementById('itemPartId')?.value || '';
+            const description = document.getElementById('itemDescription')?.value?.trim() || '';
+            const quantity = parseInt(document.getElementById('itemQuantity')?.value) || 0;
+            const unitPrice = currencyToFloat(document.getElementById('itemUnitPrice')?.value || '0');
+            const totalPrice = currencyToFloat(document.getElementById('itemTotalPrice')?.value || '0');
             
-            const partId = document.getElementById('itemPartId').value;
-            const description = document.getElementById('itemDescription').value.trim();
-            const quantity = parseInt(document.getElementById('itemQuantity').value) || 0;
-            const unitPrice = currencyToFloat(document.getElementById('itemUnitPrice').value);
-            const totalPrice = currencyToFloat(document.getElementById('itemTotalPrice').value);
-            
-            console.log('Dados do item:', { partId, description, quantity, unitPrice, totalPrice }); // Debug
-            
-            // Validar campos
+            // Validar
             if (!description) {
                 alert('Por favor, informe a descrição do item.');
                 return;
@@ -337,139 +366,128 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            try {
-                // Criar objeto do item
-                itemCounter++;
-                const newItem = {
-                    id: itemCounter,
-                    part_id: partId || null,
-                    description: description,
-                    quantity: quantity,
-                    unit_price: unitPrice,
-                    total_price: totalPrice
-                };
-                
-                console.log('Novo item criado:', newItem); // Debug
-                
-                // Adicionar ao array
-                orderItems.push(newItem);
-                console.log('Array de itens atualizado:', orderItems); // Debug
-                
-                // Atualizar a tabela
-                updateItemsTable();
-                
-                // Atualizar o valor total do pedido
-                updateOrderTotal();
-                
-                // Limpar formulário
-                document.getElementById('itemPartId').value = '';
-                document.getElementById('itemDescription').value = '';
-                document.getElementById('itemQuantity').value = '1';
-                document.getElementById('itemUnitPrice').value = '';
-                document.getElementById('itemTotalPrice').value = '';
-                
-                // Fechar modal
-                const modal = bootstrap.Modal.getInstance(document.getElementById('addItemModal'));
-                if (modal) {
-                    modal.hide();
-                }
-                
-                console.log('Item adicionado com sucesso!'); // Debug
-                
-            } catch (error) {
-                console.error('Erro ao adicionar item:', error);
-                alert('Erro ao adicionar item: ' + error.message);
-            }
+            // Criar item
+            itemCounter++;
+            const newItem = {
+                id: itemCounter,
+                part_id: partId || null,
+                description: description,
+                quantity: quantity,
+                unit_price: unitPrice,
+                total_price: totalPrice
+            };
+            
+            console.log('Adicionando item:', newItem);
+            
+            // Adicionar ao array
+            orderItems.push(newItem);
+            
+            // Atualizar interface
+            updateItemsTable();
+            updateOrderTotal();
+            clearItemForm();
+            closeModal();
+            
+            console.log('Item adicionado com sucesso');
+            
+        } catch (error) {
+            console.error('Erro ao adicionar item:', error);
+            alert('Erro ao adicionar item. Verifique o console para mais detalhes.');
+        }
+    });
+}
+
+// Atualizar tabela de itens
+function updateItemsTable() {
+    const tbody = document.getElementById('itemsList');
+    if (!tbody) {
+        console.error('Elemento itemsList não encontrado');
+        return;
+    }
+    
+    // Limpar tabela
+    tbody.innerHTML = '';
+    
+    if (orderItems.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center">Nenhum item adicionado ao pedido</td></tr>';
+        return;
+    }
+    
+    // Adicionar itens
+    orderItems.forEach((item, index) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${index + 1}</td>
+            <td>${item.description}</td>
+            <td>${item.quantity}</td>
+            <td>${formatCurrency(item.unit_price)}</td>
+            <td>${formatCurrency(item.total_price)}</td>
+            <td>
+                <button type="button" class="btn btn-sm btn-danger" onclick="removeItem(${item.id})">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
+    
+    // Atualizar campo oculto
+    const itemsJsonField = document.getElementById('itemsJson');
+    if (itemsJsonField) {
+        itemsJsonField.value = JSON.stringify(orderItems);
+    }
+}
+
+// Atualizar total do pedido
+function updateOrderTotal() {
+    const total = orderItems.reduce((sum, item) => sum + (parseFloat(item.total_price) || 0), 0);
+    
+    const orderTotalDisplay = document.getElementById('orderTotalDisplay');
+    const totalValueField = document.getElementById('total_value');
+    
+    if (orderTotalDisplay) {
+        orderTotalDisplay.textContent = formatCurrency(total);
+    }
+    
+    if (totalValueField) {
+        totalValueField.value = total.toLocaleString('pt-BR', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
         });
     }
-    
-    // Função para remover um item
-    window.removeItem = function(itemId) {
-        orderItems = orderItems.filter(item => item.id !== itemId);
-        updateItemsTable();
-        updateOrderTotal();
-    };
-    
-    // Função para atualizar a tabela de itens
-    function updateItemsTable() {
-        try {
-            const tbody = document.getElementById('itemsList');
-            if (!tbody) {
-                console.error('Elemento itemsList não encontrado');
-                return;
+}
+
+// Limpar formulário do item
+function clearItemForm() {
+    const fields = ['itemPartId', 'itemDescription', 'itemQuantity', 'itemUnitPrice', 'itemTotalPrice'];
+    fields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            if (fieldId === 'itemQuantity') {
+                field.value = '1';
+            } else {
+                field.value = '';
             }
-            
-            // Limpar tabela
-            tbody.innerHTML = '';
-            
-            // Verificar se há itens
-            if (orderItems.length === 0) {
-                tbody.innerHTML = `
-                    <tr id="noItemsRow">
-                        <td colspan="6" class="text-center">Nenhum item adicionado ao pedido</td>
-                    </tr>
-                `;
-                return;
-            }
-            
-            // Adicionar itens à tabela
-            orderItems.forEach((item, index) => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${index + 1}</td>
-                    <td>${item.description || ''}</td>
-                    <td>${item.quantity || 0}</td>
-                    <td>${formatCurrency(parseFloat(item.unit_price) || 0)}</td>
-                    <td>${formatCurrency(parseFloat(item.total_price) || 0)}</td>
-                    <td>
-                        <button type="button" class="btn btn-sm btn-danger" onclick="removeItem(${item.id})">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
-            
-            // Atualizar JSON para envio
-            const itemsJsonField = document.getElementById('itemsJson');
-            if (itemsJsonField) {
-                itemsJsonField.value = JSON.stringify(orderItems);
-            }
-            
-            console.log('Tabela de itens atualizada'); // Debug
-        } catch (error) {
-            console.error('Erro ao atualizar tabela de itens:', error);
+        }
+    });
+}
+
+// Fechar modal
+function closeModal() {
+    const modal = document.getElementById('addItemModal');
+    if (modal) {
+        const bsModal = bootstrap.Modal.getInstance(modal);
+        if (bsModal) {
+            bsModal.hide();
         }
     }
-    
-    // Função para atualizar o total do pedido
-    function updateOrderTotal() {
-        try {
-            const total = orderItems.reduce((sum, item) => sum + (parseFloat(item.total_price) || 0), 0);
-            
-            const orderTotalDisplay = document.getElementById('orderTotalDisplay');
-            const totalValueField = document.getElementById('total_value');
-            
-            if (orderTotalDisplay) {
-                orderTotalDisplay.innerText = formatCurrency(total);
-            }
-            
-            if (totalValueField) {
-                totalValueField.value = total.toLocaleString('pt-BR', {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                });
-            }
-            
-            console.log('Total do pedido atualizado:', total); // Debug
-        } catch (error) {
-            console.error('Erro ao atualizar total do pedido:', error);
-        }
-    }
-    
-    // Inicializar modais Bootstrap
-    const modals = document.querySelectorAll('.modal');
-    modals.forEach(modal => new bootstrap.Modal(modal));
-});
+}
+
+// Remover item (função global)
+window.removeItem = function(itemId) {
+    orderItems = orderItems.filter(item => item.id !== itemId);
+    updateItemsTable();
+    updateOrderTotal();
+};
 </script>
 {% endblock %}
