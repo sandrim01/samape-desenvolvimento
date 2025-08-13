@@ -2309,6 +2309,44 @@ def register_routes(app):
             order.total_value = total
             db.session.commit()
     
+    @app.route('/pedidos-fornecedor/<int:id>/registrar-pagamento', methods=['POST'])
+    @login_required
+    @admin_or_manager_required
+    def register_supplier_order_payment(id):
+        order = SupplierOrder.query.get_or_404(id)
+        
+        try:
+            # Atualizar status do pedido para recebido
+            order.status = OrderStatus.recebido
+            
+            # Criar entrada financeira (despesa)
+            financial_entry = FinancialEntry(
+                description=f"Pagamento do pedido #{order.order_number} - {order.supplier.name}",
+                value=order.total_value,
+                entry_type=FinancialEntryType.saida,
+                category='Compras',
+                date=datetime.now(),
+                created_by=current_user.id
+            )
+            
+            db.session.add(financial_entry)
+            db.session.commit()
+            
+            # Registrar log
+            log_action(
+                f'Pagamento registrado para pedido #{order.order_number}',
+                'supplier_order',
+                order.id
+            )
+            
+            flash(f'Pagamento do pedido #{order.order_number} registrado com sucesso!', 'success')
+            
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Erro ao registrar pagamento: {str(e)}', 'error')
+        
+        return redirect(url_for('view_supplier_order', id=order.id))
+    
     @app.route('/pedidos-fornecedor/item/<int:id>/adicionar', methods=['POST'])
     @login_required
     @admin_or_manager_required
