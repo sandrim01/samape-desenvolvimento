@@ -1,11 +1,4 @@
-﻿
- 
-
-
-# Executa o servidor Flask localmente
-if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=5000)
-import os
+﻿import os
 import logging
 from datetime import timedelta
 
@@ -16,7 +9,6 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 
 from database import db
 from jinja_filters import nl2br, format_document, format_currency, status_color, absolute_value
-
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -85,7 +77,6 @@ app.jinja_env.filters['status_color'] = status_color
 app.jinja_env.filters['abs'] = absolute_value
 app.jinja_env.globals['hasattr'] = hasattr
 
-
 # Import and register routes
 from routes import register_routes
 register_routes(app)
@@ -98,4 +89,8 @@ app.register_blueprint(bp_ponto)
 with app.app_context():
     if hasattr(app, 'create_initial_admin'):
         app.create_initial_admin()
+
+# Executa o servidor Flask localmente
+if __name__ == "__main__":
+    app.run(debug=True, host="0.0.0.0", port=5000)
 
