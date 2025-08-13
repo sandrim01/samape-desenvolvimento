@@ -526,10 +526,8 @@ function updateOrderTotal() {
     }
     
     if (totalValueField) {
-        totalValueField.value = total.toLocaleString('pt-BR', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
+        // Para campos input[type="number"], usar ponto como separador decimal
+        totalValueField.value = total.toFixed(2);
     }
 }
 
