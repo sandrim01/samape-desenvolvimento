@@ -198,6 +198,7 @@ class PartForm(FlaskForm):
         Optional(),
         FileAllowed(['jpg', 'jpeg', 'png'], 'Apenas imagens são permitidas!')
     ])
+    is_active = BooleanField('Peça Ativa', default=True)
     id = HiddenField()
     
     def __init__(self, *args, **kwargs):
