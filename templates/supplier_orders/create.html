@@ -282,7 +282,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const unitPrice = currencyToFloat(document.getElementById('itemUnitPrice').value);
         const totalPrice = quantity * unitPrice;
         
-        document.getElementById('itemTotalPrice').value = formatCurrency(totalPrice).replace('R$', '').trim();
+        document.getElementById('itemTotalPrice').value = totalPrice.toLocaleString('pt-BR', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
     }
     
     // Capturar selecção de peça e preencher dados automaticamente
@@ -313,11 +316,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const addItemBtn = document.getElementById('addItemBtn');
     if (addItemBtn) {
         addItemBtn.addEventListener('click', function() {
+            console.log('Botão adicionar item clicado'); // Debug
+            
             const partId = document.getElementById('itemPartId').value;
             const description = document.getElementById('itemDescription').value.trim();
             const quantity = parseInt(document.getElementById('itemQuantity').value) || 0;
             const unitPrice = currencyToFloat(document.getElementById('itemUnitPrice').value);
             const totalPrice = currencyToFloat(document.getElementById('itemTotalPrice').value);
+            
+            console.log('Dados do item:', { partId, description, quantity, unitPrice, totalPrice }); // Debug
             
             // Validar campos
             if (!description) {
@@ -330,36 +337,49 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            // Criar objeto do item
-            itemCounter++;
-            const newItem = {
-                id: itemCounter,
-                part_id: partId || null,
-                description: description,
-                quantity: quantity,
-                unit_price: unitPrice,
-                total_price: totalPrice
-            };
-            
-            // Adicionar ao array
-            orderItems.push(newItem);
-            
-            // Atualizar a tabela
-            updateItemsTable();
-            
-            // Atualizar o valor total do pedido
-            updateOrderTotal();
-            
-            // Limpar formulário
-            document.getElementById('itemPartId').value = '';
-            document.getElementById('itemDescription').value = '';
-            document.getElementById('itemQuantity').value = '1';
-            document.getElementById('itemUnitPrice').value = '';
-            document.getElementById('itemTotalPrice').value = '';
-            
-            // Fechar modal
-            const modal = bootstrap.Modal.getInstance(document.getElementById('addItemModal'));
-            modal.hide();
+            try {
+                // Criar objeto do item
+                itemCounter++;
+                const newItem = {
+                    id: itemCounter,
+                    part_id: partId || null,
+                    description: description,
+                    quantity: quantity,
+                    unit_price: unitPrice,
+                    total_price: totalPrice
+                };
+                
+                console.log('Novo item criado:', newItem); // Debug
+                
+                // Adicionar ao array
+                orderItems.push(newItem);
+                console.log('Array de itens atualizado:', orderItems); // Debug
+                
+                // Atualizar a tabela
+                updateItemsTable();
+                
+                // Atualizar o valor total do pedido
+                updateOrderTotal();
+                
+                // Limpar formulário
+                document.getElementById('itemPartId').value = '';
+                document.getElementById('itemDescription').value = '';
+                document.getElementById('itemQuantity').value = '1';
+                document.getElementById('itemUnitPrice').value = '';
+                document.getElementById('itemTotalPrice').value = '';
+                
+                // Fechar modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('addItemModal'));
+                if (modal) {
+                    modal.hide();
+                }
+                
+                console.log('Item adicionado com sucesso!'); // Debug
+                
+            } catch (error) {
+                console.error('Erro ao adicionar item:', error);
+                alert('Erro ao adicionar item: ' + error.message);
+            }
         });
     }
     
@@ -372,51 +392,79 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Função para atualizar a tabela de itens
     function updateItemsTable() {
-        const tbody = document.getElementById('itemsList');
-        
-        // Limpar tabela
-        tbody.innerHTML = '';
-        
-        // Verificar se há itens
-        if (orderItems.length === 0) {
-            tbody.innerHTML = `
-                <tr id="noItemsRow">
-                    <td colspan="6" class="text-center">Nenhum item adicionado ao pedido</td>
-                </tr>
-            `;
-            return;
+        try {
+            const tbody = document.getElementById('itemsList');
+            if (!tbody) {
+                console.error('Elemento itemsList não encontrado');
+                return;
+            }
+            
+            // Limpar tabela
+            tbody.innerHTML = '';
+            
+            // Verificar se há itens
+            if (orderItems.length === 0) {
+                tbody.innerHTML = `
+                    <tr id="noItemsRow">
+                        <td colspan="6" class="text-center">Nenhum item adicionado ao pedido</td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            // Adicionar itens à tabela
+            orderItems.forEach((item, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${item.description || ''}</td>
+                    <td>${item.quantity || 0}</td>
+                    <td>${formatCurrency(parseFloat(item.unit_price) || 0)}</td>
+                    <td>${formatCurrency(parseFloat(item.total_price) || 0)}</td>
+                    <td>
+                        <button type="button" class="btn btn-sm btn-danger" onclick="removeItem(${item.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            // Atualizar JSON para envio
+            const itemsJsonField = document.getElementById('itemsJson');
+            if (itemsJsonField) {
+                itemsJsonField.value = JSON.stringify(orderItems);
+            }
+            
+            console.log('Tabela de itens atualizada'); // Debug
+        } catch (error) {
+            console.error('Erro ao atualizar tabela de itens:', error);
         }
-        
-        // Adicionar itens à tabela
-        orderItems.forEach((item, index) => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${index + 1}</td>
-                <td>${item.description}</td>
-                <td>${item.quantity}</td>
-                <td>${formatCurrency(item.unit_price)}</td>
-                <td>${formatCurrency(item.total_price)}</td>
-                <td>
-                    <button type="button" class="btn btn-sm btn-danger" onclick="removeItem(${item.id})">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </td>
-            `;
-            tbody.appendChild(row);
-        });
-        
-        // Atualizar JSON para envio
-        document.getElementById('itemsJson').value = JSON.stringify(orderItems);
     }
     
     // Função para atualizar o total do pedido
     function updateOrderTotal() {
-        const total = orderItems.reduce((sum, item) => sum + item.total_price, 0);
-        document.getElementById('orderTotalDisplay').innerText = formatCurrency(total);
-        document.getElementById('total_value').value = total.toLocaleString('pt-BR', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
+        try {
+            const total = orderItems.reduce((sum, item) => sum + (parseFloat(item.total_price) || 0), 0);
+            
+            const orderTotalDisplay = document.getElementById('orderTotalDisplay');
+            const totalValueField = document.getElementById('total_value');
+            
+            if (orderTotalDisplay) {
+                orderTotalDisplay.innerText = formatCurrency(total);
+            }
+            
+            if (totalValueField) {
+                totalValueField.value = total.toLocaleString('pt-BR', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+            }
+            
+            console.log('Total do pedido atualizado:', total); // Debug
+        } catch (error) {
+            console.error('Erro ao atualizar total do pedido:', error);
+        }
     }
     
     // Inicializar modais Bootstrap
