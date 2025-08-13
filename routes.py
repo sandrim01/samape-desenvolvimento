@@ -374,7 +374,7 @@ def register_routes(app):
             service_order = ServiceOrder.query.get_or_404(id)
             
             # Excluir registros financeiros relacionados
-            FinancialRecord.query.filter_by(service_order_id=id).delete()
+            FinancialEntry.query.filter_by(service_order_id=id).delete()
             
             # Excluir imagens relacionadas
             ServiceOrderImage.query.filter_by(service_order_id=id).delete()
