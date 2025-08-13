@@ -752,10 +752,15 @@ def register_routes(app):
         equipment = Equipment.query.get_or_404(id)
         service_orders = equipment.service_orders
         
+        # Criar um form vazio para o CSRF token
+        from forms import FlaskForm
+        form = FlaskForm()
+
         return render_template(
             'equipment/view.html',
             equipment=equipment,
-            service_orders=service_orders
+            service_orders=service_orders,
+            form=form
         )
 
     @app.route('/maquinarios/<int:id>/editar', methods=['GET', 'POST'])
@@ -2005,7 +2010,9 @@ def register_routes(app):
     @login_required
     def view_part_sale(id):
         sale = PartSale.query.get_or_404(id)
-        return render_template('part_sales/view.html', sale=sale)
+        from forms import FlaskForm
+        form = FlaskForm()
+        return render_template('part_sales/view.html', sale=sale, form=form)
     
     @app.route('/vendas-pecas/<int:id>/cancelar', methods=['POST'])
     @login_required
@@ -2591,6 +2598,9 @@ def register_routes(app):
 
     # Register function to be called with app context in app.py
     app.create_initial_admin = create_initial_admin
+
+
+
 
 
 
