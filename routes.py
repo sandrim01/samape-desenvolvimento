@@ -713,15 +713,11 @@ def register_routes(app):
         
         if form.validate_on_submit():
             # Usar o valor do select se estiver preenchido, caso contrÃ¡rio usar o valor do campo texto
-            equipment_type = form.type_select.data if form.type_select.data else form.type.data
-            equipment_brand = form.brand_select.data if form.brand_select.data else form.brand.data
-            equipment_model = form.model_select.data if form.model_select.data else form.model.data
+            
             
             equipment = Equipment(
                 client_id=form.client_id.data,
-                type=equipment_type,
-                brand=equipment_brand,
-                model=equipment_model,
+                type=form.type.data, brand=form.brand.data, model=form.model.data,
                 serial_number=form.serial_number.data,
                 year=form.year.data
             )
@@ -776,23 +772,23 @@ def register_routes(app):
         from sqlalchemy import distinct
         
         # Se o tipo do equipamento nÃ£o estiver nas opÃ§Ãµes, adicionar
-        types = [choice[0] for choice in form.type_select.choices if choice[0]]
+        types = [choice[0] for choice in form.type.choices if choice[0]]
         if equipment.type and equipment.type not in types:
-            form.type_select.choices.append((equipment.type, equipment.type))
+            form.type.choices.append((equipment.type, equipment.type))
             
         # Se a marca do equipamento nÃ£o estiver nas opÃ§Ãµes, adicionar
-        brands = [choice[0] for choice in form.brand_select.choices if choice[0]]
+        brands = [choice[0] for choice in form.brand.choices if choice[0]]
         if equipment.brand and equipment.brand not in brands:
-            form.brand_select.choices.append((equipment.brand, equipment.brand))
+            form.brand.choices.append((equipment.brand, equipment.brand))
             
-        # Adicionar modelos da marca atual para o campo model_select
+        # Adicionar modelos da marca atual para o campo model
         if equipment.brand:
             models = db.session.query(distinct(Equipment.model))\
                 .filter(Equipment.brand == equipment.brand)\
                 .order_by(Equipment.model)\
                 .all()
             model_choices = [('', 'Selecione um modelo')] + [(m[0], m[0]) for m in models if m[0]]
-            form.model_select.choices = model_choices
+            form.model.choices = model_choices
             
         # Preencher o formulÃ¡rio na primeira vez
         if request.method == 'GET':
@@ -800,21 +796,21 @@ def register_routes(app):
             
             # Preencher os campos de seleÃ§Ã£o, se possÃ­vel
             if equipment.type:
-                form.type_select.data = equipment.type
+                form.type.data = equipment.type
             else:
                 form.type.data = equipment.type
                 
             if equipment.brand:
-                form.brand_select.data = equipment.brand
+                form.brand.data = equipment.brand
             else:
                 form.brand.data = equipment.brand
                 
             if equipment.model:
                 # Adicionar o modelo atual Ã s opÃ§Ãµes se ainda nÃ£o estiver presente
-                model_values = [choice[0] for choice in form.model_select.choices]
+                model_values = [choice[0] for choice in form.model.choices]
                 if equipment.model not in model_values and equipment.model:
-                    form.model_select.choices.append((equipment.model, equipment.model))
-                form.model_select.data = equipment.model
+                    form.model.choices.append((equipment.model, equipment.model))
+                form.model.data = equipment.model
             else:
                 form.model.data = equipment.model
                 
@@ -825,22 +821,22 @@ def register_routes(app):
             equipment.client_id = form.client_id.data
             
             # Processar o tipo (usar o campo de texto se 'outro' for selecionado)
-            if form.type_select.data == 'outro':
+            if form.type.data == 'outro':
                 equipment.type = form.type.data
             else:
-                equipment.type = form.type_select.data
+                equipment.type = form.type.data
                 
             # Processar a marca (usar o campo de texto se 'outro' for selecionado)
-            if form.brand_select.data == 'outro':
+            if form.brand.data == 'outro':
                 equipment.brand = form.brand.data
             else:
-                equipment.brand = form.brand_select.data
+                equipment.brand = form.brand.data
                 
             # Processar o modelo (usar o campo de texto se 'outro' for selecionado)
-            if form.model_select.data == 'outro':
+            if form.model.data == 'outro':
                 equipment.model = form.model.data
             else:
-                equipment.model = form.model_select.data
+                equipment.model = form.model.data
                 
             equipment.serial_number = form.serial_number.data
             equipment.year = form.year.data
@@ -2598,6 +2594,9 @@ def register_routes(app):
 
     # Register function to be called with app context in app.py
     app.create_initial_admin = create_initial_admin
+
+
+
 
 
 
