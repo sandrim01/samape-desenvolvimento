@@ -2,7 +2,7 @@
 import json
 from datetime import datetime
 from functools import wraps
-from flask import render_template, redirect, url_for, flash, request, jsonify, session, abort
+from flask import render_template, redirect, url_for, flash, request, jsonify, session, abort, Response
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash
 from sqlalchemy import func, desc, or_
@@ -543,6 +543,7 @@ def register_routes(app):
 
     @app.route('/clientes/<int:id>')
     @login_required
+    @login_required
     def view_client(id):
         client = Client.query.get_or_404(id)
         equipment = Equipment.query.filter_by(client_id=id).all()
@@ -878,6 +879,25 @@ def register_routes(app):
         flash('Equipamento excluÃ­do com sucesso!', 'success')
         return redirect(url_for('equipment'))
 
+
+    @app.route('/maquinarios/imagem/<int:image_id>')
+    @login_required
+    def view_equipment_image(image_id):
+        try:
+            # Buscar imagem do equipamento
+            from models import EquipmentImage
+            image = EquipmentImage.query.get_or_404(image_id)
+            
+            # Retornar imagem como resposta
+            if image.image_base64:
+                import base64
+                image_data = base64.b64decode(image.image_base64)
+                return Response(image_data, mimetype='image/jpeg')
+            else:
+                # Retornar imagem padrão ou erro
+                return 'Imagem não encontrada', 404
+        except Exception as e:
+            return f'Erro ao carregar imagem: {str(e)}', 500
     # Employee routes
     @app.route('/funcionarios')
     @manager_required
@@ -2571,6 +2591,11 @@ def register_routes(app):
 
     # Register function to be called with app context in app.py
     app.create_initial_admin = create_initial_admin
+
+
+
+
+
 
 
 
