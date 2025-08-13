@@ -281,6 +281,7 @@ class SupplierOrderForm(FlaskForm):
 
 
 class OrderItemForm(FlaskForm):
+    part_id = SelectField('Peça', validators=[Optional()], coerce=lambda x: int(x) if x else None)
     stock_item_id = SelectField('Item de Estoque', validators=[Optional()], coerce=lambda x: int(x) if x else None)
     description = StringField('Descrição', validators=[DataRequired(), Length(max=200)])
     quantity = IntegerField('Quantidade', validators=[DataRequired(), NumberRange(min=1)], default=1)
@@ -292,9 +293,17 @@ class OrderItemForm(FlaskForm):
 
     def __init__(self, *args, **kwargs):
         super(OrderItemForm, self).__init__(*args, **kwargs)
+        
+        # Peças para o dropdown
+        from models import Part
+        self.part_id.choices = [('', 'Selecione uma peça (opcional)')] + [
+            (part.id, f"{part.name} - R$ {part.sell_price:.2f}".replace('.', ',')) 
+            for part in Part.query.filter_by(is_active=True).order_by(Part.name).all()
+        ]
+        
         # Itens de estoque para o dropdown (EPIs, ferramentas e material de consumo)
         from models import StockItem
-        self.stock_item_id.choices = [('', 'Selecione um item de estoque ou digite a descrição')] + [
+        self.stock_item_id.choices = [('', 'Selecione um item de estoque (opcional)')] + [
             (item.id, f"{item.name} - {item.type.value} - {item.quantity} em estoque") 
             for item in StockItem.query.order_by(StockItem.name).all()
         ]
