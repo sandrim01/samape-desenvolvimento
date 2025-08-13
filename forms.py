@@ -297,7 +297,7 @@ class OrderItemForm(FlaskForm):
         # Peças para o dropdown
         from models import Part
         self.part_id.choices = [('', 'Selecione uma peça (opcional)')] + [
-            (part.id, f"{part.name} - R$ {part.sell_price:.2f}".replace('.', ',')) 
+            (part.id, f"{part.name} - R$ {part.selling_price:.2f}".replace('.', ',')) 
             for part in Part.query.filter_by(is_active=True).order_by(Part.name).all()
         ]
         
