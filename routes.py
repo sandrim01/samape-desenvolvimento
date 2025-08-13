@@ -772,15 +772,7 @@ def register_routes(app):
         from sqlalchemy import distinct
         
         # Se o tipo do equipamento nÃ£o estiver nas opÃ§Ãµes, adicionar
-        types = [choice[0] for choice in form.type.choices if choice[0]]
-        if equipment.type and equipment.type not in types:
-            form.type.choices.append((equipment.type, equipment.type))
-            
         # Se a marca do equipamento nÃ£o estiver nas opÃ§Ãµes, adicionar
-        brands = [choice[0] for choice in form.brand.choices if choice[0]]
-        if equipment.brand and equipment.brand not in brands:
-            form.brand.choices.append((equipment.brand, equipment.brand))
-            
         # Adicionar modelos da marca atual para o campo model
         if equipment.brand:
             models = db.session.query(distinct(Equipment.model))\
@@ -788,7 +780,6 @@ def register_routes(app):
                 .order_by(Equipment.model)\
                 .all()
             model_choices = [('', 'Selecione um modelo')] + [(m[0], m[0]) for m in models if m[0]]
-            form.model.choices = model_choices
             
         # Preencher o formulÃ¡rio na primeira vez
         if request.method == 'GET':
@@ -807,10 +798,7 @@ def register_routes(app):
                 
             if equipment.model:
                 # Adicionar o modelo atual Ã s opÃ§Ãµes se ainda nÃ£o estiver presente
-                model_values = [choice[0] for choice in form.model.choices]
-                if equipment.model not in model_values and equipment.model:
-                    form.model.choices.append((equipment.model, equipment.model))
-                form.model.data = equipment.model
+                                form.model.data = equipment.model
             else:
                 form.model.data = equipment.model
                 
@@ -2594,6 +2582,9 @@ def register_routes(app):
 
     # Register function to be called with app context in app.py
     app.create_initial_admin = create_initial_admin
+
+
+
 
 
 
