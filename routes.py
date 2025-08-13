@@ -20,7 +20,8 @@ from models import (
 from forms import (
     LoginForm, UserForm, ClientForm, EquipmentForm, ServiceOrderForm,
     CloseServiceOrderForm, FinancialEntryForm, ProfileForm, SystemSettingsForm,
-    SupplierForm, PartForm, PartSaleForm, SupplierOrderForm, OrderItemForm
+    SupplierForm, PartForm, PartSaleForm, SupplierOrderForm, OrderItemForm,
+    StockItemForm
 )
 from utils import (
     role_required, admin_required, manager_required, log_action,
@@ -2573,6 +2574,49 @@ def register_routes(app):
             flash(f'Erro ao listar itens de estoque: {str(e)}', 'danger')
             return redirect(url_for('dashboard'))
 
+    @app.route('/estoque/novo', methods=['GET', 'POST'])
+    @login_required
+    @admin_or_manager_required
+    def new_stock_item():
+        """Criar novo item de estoque"""
+        form = StockItemForm()
+        
+        if form.validate_on_submit():
+            try:
+                stock_item = StockItem(
+                    name=form.name.data,
+                    description=form.description.data,
+                    type=form.type.data,
+                    quantity=form.quantity.data,
+                    unit=form.unit.data,
+                    unit_cost=form.unit_cost.data,
+                    supplier_id=form.supplier_id.data,
+                    minimum_quantity=form.minimum_quantity.data,
+                    expiry_date=form.expiry_date.data,
+                    location=form.location.data,
+                    status=form.status.data,
+                    created_by=current_user.id
+                )
+                
+                db.session.add(stock_item)
+                db.session.commit()
+                
+                # Registrar log
+                log_action(
+                    'Novo Item de Estoque',
+                    'stock_item',
+                    stock_item.id,
+                    f'Item {stock_item.name} criado'
+                )
+                
+                flash(f'Item de estoque {stock_item.name} criado com sucesso!', 'success')
+                return redirect(url_for('stock_items'))
+                
+            except Exception as e:
+                db.session.rollback()
+                flash(f'Erro ao criar item de estoque: {str(e)}', 'error')
+        
+        return render_template('stock/create.html', form=form)
     
     @app.route('/frota')
     @login_required
