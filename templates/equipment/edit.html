@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 
 {% block title %}Editar Equipamento - SAMAPE{% endblock %}
 
@@ -29,17 +29,17 @@
             
             <div class="row mb-3">
                 <div class="col-md-6">
-                    <label for="type_select" class="form-label">Tipo *</label>
-                    {{ form.type_select(class="form-select", id="type_select") }}
-                    {% if form.type_select.errors %}
+                    <label for="type" class="form-label">Tipo *</label>
+                    {{ form.type(class="form-select", id="type") }}
+                    {% if form.type.errors %}
                         <div class="invalid-feedback d-block">
-                            {% for error in form.type_select.errors %}
+                            {% for error in form.type.errors %}
                                 {{ error }}
                             {% endfor %}
                         </div>
                     {% endif %}
                     
-                    <!-- Campo extra para outro tipo não listado -->
+                    <!-- Campo extra para outro tipo nÃ£o listado -->
                     <div class="mt-2" id="other_type_container" style="display: none;">
                         <label for="type" class="form-label">Outro Tipo</label>
                         {{ form.type(class="form-control", id="type", placeholder="Informe o tipo") }}
@@ -64,7 +64,7 @@
                         </div>
                     {% endif %}
                     
-                    <!-- Campo extra para outra marca não listada -->
+                    <!-- Campo extra para outra marca nÃ£o listada -->
                     <div class="mt-2" id="other_brand_container" style="display: none;">
                         <label for="brand" class="form-label">Outra Marca</label>
                         {{ form.brand(class="form-control", id="brand", placeholder="Informe a marca") }}
@@ -91,7 +91,7 @@
                         </div>
                     {% endif %}
                     
-                    <!-- Campo extra para outro modelo não listado -->
+                    <!-- Campo extra para outro modelo nÃ£o listado -->
                     <div class="mt-2" id="other_model_container" style="display: none;">
                         <label for="model" class="form-label">Outro Modelo</label>
                         {{ form.model(class="form-control", id="model", placeholder="Informe o modelo") }}
@@ -106,7 +106,7 @@
                 </div>
                 
                 <div class="col-md-6">
-                    <label for="serial_number" class="form-label">Número de Série</label>
+                    <label for="serial_number" class="form-label">NÃºmero de SÃ©rie</label>
                     {{ form.serial_number(class="form-control", id="serial_number") }}
                     {% if form.serial_number.errors %}
                         <div class="invalid-feedback d-block">
@@ -144,13 +144,13 @@
     document.addEventListener('DOMContentLoaded', function() {
         const brandSelect = document.getElementById('brand_select');
         const modelSelect = document.getElementById('model_select');
-        const typeSelect = document.getElementById('type_select');
+        const typeSelect = document.getElementById('type');
         
         const otherBrandContainer = document.getElementById('other_brand_container');
         const otherModelContainer = document.getElementById('other_model_container');
         const otherTypeContainer = document.getElementById('other_type_container');
         
-        // Adicionar opção "Outro" ao final de cada select
+        // Adicionar opÃ§Ã£o "Outro" ao final de cada select
         function addOtherOption(selectElement) {
             const otherOption = document.createElement('option');
             otherOption.value = 'outro';
@@ -162,7 +162,7 @@
         addOtherOption(typeSelect);
         addOtherOption(modelSelect);
         
-        // Função para mostrar/ocultar o campo de texto dependendo da seleção
+        // FunÃ§Ã£o para mostrar/ocultar o campo de texto dependendo da seleÃ§Ã£o
         function toggleOtherField(selectElement, otherContainer) {
             if (selectElement.value === 'outro') {
                 otherContainer.style.display = 'block';
@@ -175,7 +175,7 @@
         brandSelect.addEventListener('change', function() {
             toggleOtherField(brandSelect, otherBrandContainer);
             
-            // Se não for "Outro", buscar modelos para a marca selecionada
+            // Se nÃ£o for "Outro", buscar modelos para a marca selecionada
             if (brandSelect.value && brandSelect.value !== 'outro') {
                 // Limpar e desabilitar o select de modelos enquanto carrega
                 modelSelect.innerHTML = '<option value="">Carregando...</option>';
@@ -196,7 +196,7 @@
                             modelSelect.appendChild(option);
                         });
                         
-                        // Adicionar a opção "Outro"
+                        // Adicionar a opÃ§Ã£o "Outro"
                         addOtherOption(modelSelect);
                         
                         // Habilitar novamente o select
@@ -227,7 +227,7 @@
         toggleOtherField(typeSelect, otherTypeContainer);
         toggleOtherField(modelSelect, otherModelContainer);
         
-        // Acionar o evento change da marca para carregar os modelos se já tiver uma marca selecionada
+        // Acionar o evento change da marca para carregar os modelos se jÃ¡ tiver uma marca selecionada
         if (brandSelect.value && brandSelect.value !== 'outro') {
             brandSelect.dispatchEvent(new Event('change'));
         }
@@ -235,3 +235,4 @@
 </script>
 {% endblock %}
 {% endblock %}
+

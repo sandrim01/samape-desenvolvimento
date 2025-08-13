@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 
 {% block title %}Novo Equipamento - SAMAPE{% endblock %}
 
@@ -67,7 +67,7 @@
                 </div>
                 
                 <div class="col-md-6">
-                    <label for="serial_number" class="form-label">Número de Série</label>
+                    <label for="serial_number" class="form-label">NÃºmero de SÃ©rie</label>
                     {{ form.serial_number(class="form-control", id="serial_number") }}
                     {% if form.serial_number.errors %}
                         <div class="invalid-feedback d-block">
@@ -105,13 +105,13 @@
     document.addEventListener('DOMContentLoaded', function() {
         const brandSelect = document.getElementById('brand_select');
         const modelSelect = document.getElementById('model_select');
-        const typeSelect = document.getElementById('type_select');
+        const typeSelect = document.getElementById('type');
         
         const otherBrandContainer = document.getElementById('other_brand_container');
         const otherModelContainer = document.getElementById('other_model_container');
         const otherTypeContainer = document.getElementById('other_type_container');
         
-        // Adicionar opção "Outro" ao final de cada select
+        // Adicionar opÃ§Ã£o "Outro" ao final de cada select
         function addOtherOption(selectElement) {
             const otherOption = document.createElement('option');
             otherOption.value = 'outro';
@@ -123,7 +123,7 @@
         addOtherOption(typeSelect);
         addOtherOption(modelSelect);
         
-        // Função para mostrar/ocultar o campo de texto dependendo da seleção
+        // FunÃ§Ã£o para mostrar/ocultar o campo de texto dependendo da seleÃ§Ã£o
         function toggleOtherField(selectElement, otherContainer) {
             if (selectElement.value === 'outro') {
                 otherContainer.style.display = 'block';
@@ -136,7 +136,7 @@
         brandSelect.addEventListener('change', function() {
             toggleOtherField(brandSelect, otherBrandContainer);
             
-            // Se não for "Outro", buscar modelos para a marca selecionada
+            // Se nÃ£o for "Outro", buscar modelos para a marca selecionada
             if (brandSelect.value && brandSelect.value !== 'outro') {
                 // Limpar e desabilitar o select de modelos enquanto carrega
                 modelSelect.innerHTML = '<option value="">Carregando...</option>';
@@ -157,7 +157,7 @@
                             modelSelect.appendChild(option);
                         });
                         
-                        // Adicionar a opção "Outro"
+                        // Adicionar a opÃ§Ã£o "Outro"
                         addOtherOption(modelSelect);
                         
                         // Habilitar novamente o select
@@ -191,3 +191,4 @@
 </script>
 {% endblock %}
 {% endblock %}
+
