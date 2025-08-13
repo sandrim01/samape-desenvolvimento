@@ -2226,6 +2226,7 @@ def register_routes(app):
     def edit_supplier_order(id):
         order = SupplierOrder.query.get_or_404(id)
         form = SupplierOrderForm(obj=order)
+        item_form = OrderItemForm()
         
         # Formatar datas para exibiÃ§Ã£o no formulÃ¡rio
         if order.expected_delivery_date:
@@ -2242,7 +2243,7 @@ def register_routes(app):
                     expected_delivery_date = datetime.strptime(form.expected_delivery_date.data, '%d/%m/%Y').date()
                 except ValueError:
                     flash('Formato de data invÃ¡lido. Use DD/MM/AAAA', 'danger')
-                    return render_template('supplier_orders/edit.html', form=form, order=order)
+                    return render_template('supplier_orders/edit.html', form=form, order=order, item_form=item_form)
             
             delivery_date = None
             if form.delivery_date.data:
@@ -2250,7 +2251,7 @@ def register_routes(app):
                     delivery_date = datetime.strptime(form.delivery_date.data, '%d/%m/%Y').date()
                 except ValueError:
                     flash('Formato de data invÃ¡lido. Use DD/MM/AAAA', 'danger')
-                    return render_template('supplier_orders/edit.html', form=form, order=order)
+                    return render_template('supplier_orders/edit.html', form=form, order=order, item_form=item_form)
             
             # Atualizar os campos do pedido
             order.supplier_id = form.supplier_id.data
@@ -2277,7 +2278,7 @@ def register_routes(app):
             flash('Pedido atualizado com sucesso!', 'success')
             return redirect(url_for('view_supplier_order', id=order.id))
         
-        return render_template('supplier_orders/edit.html', form=form, order=order)
+        return render_template('supplier_orders/edit.html', form=form, order=order, item_form=item_form)
     
     @app.route('/pedidos-fornecedor/<int:id>/excluir', methods=['POST'])
     @login_required
