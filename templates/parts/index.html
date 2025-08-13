@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block title %}Peças - SAMAPE{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-cog me-2"></i>Peças</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <a href="{{ url_for('new_part') }}" class="btn btn-success">
+                <i class="fas fa-plus me-1"></i> Nova Peça
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Filtros -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-4">
+                <label for="search" class="form-label">Buscar</label>
+                <input type="text" class="form-control" id="search" name="search" 
+                       value="{{ search }}" placeholder="Nome, código ou descrição...">
+            </div>
+            <div class="col-md-3">
+                <label for="category" class="form-label">Categoria</label>
+                <select class="form-select" id="category" name="category">
+                    <option value="">Todas as categorias</option>
+                    {% for cat in categories %}
+                        <option value="{{ cat }}" {% if category == cat %}selected{% endif %}>
+                            {{ cat }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="low_stock" class="form-label">&nbsp;</label>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="low_stock" name="low_stock" 
+                           value="true" {% if low_stock %}checked{% endif %}>
+                    <label class="form-check-label" for="low_stock">
+                        Estoque baixo
+                    </label>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">&nbsp;</label>
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search me-1"></i> Buscar
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if parts %}
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-list me-1"></i> Lista de Peças
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Código</th>
+                        <th>Nome</th>
+                        <th>Categoria</th>
+                        <th>Preço de Venda</th>
+                        <th>Estoque</th>
+                        <th>Estoque Mínimo</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for part in parts %}
+                    <tr>
+                        <td>
+                            <code>{{ part.part_number or 'N/A' }}</code>
+                        </td>
+                        <td>
+                            <strong>{{ part.name }}</strong>
+                            {% if part.description %}
+                                <br><small class="text-muted">{{ part.description[:50] }}{% if part.description|length > 50 %}...{% endif %}</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if part.category %}
+                                <span class="badge bg-secondary">{{ part.category }}</span>
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if part.sale_price %}
+                                <span class="text-success">R$ {{ "%.2f"|format(part.sale_price) }}</span>
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if part.stock_quantity is not none %}
+                                {% if part.minimum_stock and part.stock_quantity <= part.minimum_stock %}
+                                    <span class="badge bg-danger">{{ part.stock_quantity }}</span>
+                                {% elif part.stock_quantity <= 5 %}
+                                    <span class="badge bg-warning">{{ part.stock_quantity }}</span>
+                                {% else %}
+                                    <span class="badge bg-success">{{ part.stock_quantity }}</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {{ part.minimum_stock or '-' }}
+                        </td>
+                        <td>
+                            {% if part.is_active %}
+                                <span class="badge bg-success">Ativo</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Inativo</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('edit_part', id=part.id) }}" class="btn btn-outline-primary" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{{ url_for('view_part', id=part.id) }}" class="btn btn-outline-info" title="Visualizar">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <button type="button" class="btn btn-outline-danger" 
+                                        onclick="confirmDelete({{ part.id }}, '{{ part.name }}')" title="Excluir">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Paginação -->
+{% if pagination.pages > 1 %}
+<nav aria-label="Navegação de páginas" class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if pagination.has_prev %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('parts', page=pagination.prev_num, search=search, category=category, low_stock=low_stock) }}">
+                    <i class="fas fa-chevron-left"></i> Anterior
+                </a>
+            </li>
+        {% endif %}
+        
+        {% for page_num in pagination.iter_pages() %}
+            {% if page_num %}
+                {% if page_num != pagination.page %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('parts', page=page_num, search=search, category=category, low_stock=low_stock) }}">
+                            {{ page_num }}
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ page_num }}</span>
+                    </li>
+                {% endif %}
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">...</span>
+                </li>
+            {% endif %}
+        {% endfor %}
+        
+        {% if pagination.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('parts', page=pagination.next_num, search=search, category=category, low_stock=low_stock) }}">
+                    Próxima <i class="fas fa-chevron-right"></i>
+                </a>
+            </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+{% else %}
+<div class="card">
+    <div class="card-body text-center">
+        <i class="fas fa-cog fa-3x text-muted mb-3"></i>
+        <h5>Nenhuma peça encontrada</h5>
+        <p class="text-muted">
+            {% if search or category or low_stock %}
+                Nenhuma peça corresponde aos filtros aplicados.
+            {% else %}
+                Não há peças cadastradas no sistema.
+            {% endif %}
+        </p>
+        <a href="{{ url_for('new_part') }}" class="btn btn-success">
+            <i class="fas fa-plus me-1"></i> Cadastrar primeira peça
+        </a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+function confirmDelete(partId, partName) {
+    if (confirm('Tem certeza que deseja excluir a peça "' + partName + '"?')) {
+        // Criar form para DELETE
+        var form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/pecas/' + partId + '/delete';
+        
+        // CSRF token
+        var csrfToken = document.querySelector('meta[name=csrf-token]');
+        if (csrfToken) {
+            var input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'csrf_token';
+            input.value = csrfToken.getAttribute('content');
+            form.appendChild(input);
+        }
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+</script>
+{% endblock %}
