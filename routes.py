@@ -1844,6 +1844,27 @@ def register_routes(app):
         flash('PeÃ§a excluÃ­da com sucesso!', 'success')
         return redirect(url_for('parts'))
     
+    @app.route('/pecas/<int:id>/toggle-status', methods=['POST'])
+    @login_required
+    def toggle_part_status(id):
+        part = Part.query.get_or_404(id)
+        
+        # Inverter o status atual
+        part.is_active = not part.is_active
+        db.session.commit()
+        
+        status_text = 'ativada' if part.is_active else 'desativada'
+        
+        log_action(
+            'Alteração de Status de Peça',
+            'part',
+            part.id,
+            f'Peça {part.name} {status_text}'
+        )
+        
+        flash(f'Peça {status_text} com sucesso!', 'success')
+        return redirect(url_for('view_part', id=part.id))
+
     @app.route('/vendas-pecas')
     @login_required
     def part_sales():
