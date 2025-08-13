@@ -249,13 +249,13 @@
             </div>
 
             <!-- Paginação -->
-            {% if items.pages > 1 %}
+            {% if pagination.pages > 1 %}
             <div class="d-flex justify-content-center mt-4">
                 <nav aria-label="Paginação de itens">
                     <ul class="pagination">
-                        {% if items.has_prev %}
+                        {% if pagination.has_prev %}
                             <li class="page-item">
-                                <a class="page-link" href="{{ url_for('stock_items', page=items.prev_num, search=active_filters.search, type=active_filters.type, status=active_filters.status, supplier_id=active_filters.supplier_id) }}">
+                                <a class="page-link" href="{{ url_for('stock_items', page=pagination.prev_num, search=active_filters.search, type=active_filters.type, status=active_filters.status, supplier_id=active_filters.supplier_id) }}">
                                     Anterior
                                 </a>
                             </li>
@@ -265,9 +265,9 @@
                             </li>
                         {% endif %}
                         
-                        {% for page_num in items.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                        {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
                             {% if page_num %}
-                                {% if page_num == items.page %}
+                                {% if page_num == pagination.page %}
                                     <li class="page-item active">
                                         <span class="page-link">{{ page_num }}</span>
                                     </li>
@@ -285,9 +285,9 @@
                             {% endif %}
                         {% endfor %}
                         
-                        {% if items.has_next %}
+                        {% if pagination.has_next %}
                             <li class="page-item">
-                                <a class="page-link" href="{{ url_for('stock_items', page=items.next_num, search=active_filters.search, type=active_filters.type, status=active_filters.status, supplier_id=active_filters.supplier_id) }}">
+                                <a class="page-link" href="{{ url_for('stock_items', page=pagination.next_num, search=active_filters.search, type=active_filters.type, status=active_filters.status, supplier_id=active_filters.supplier_id) }}">
                                     Próximo
                                 </a>
                             </li>
