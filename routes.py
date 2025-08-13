@@ -618,6 +618,32 @@ def register_routes(app):
         flash('Cliente excluÃ­do com sucesso!', 'success')
         return redirect(url_for('clients'))
 
+
+    @app.route('/clientes/<int:id>/excluir-direto', methods=['POST'])
+    @login_required
+    @admin_required
+    def delete_client_direct(id):
+        try:
+            client = Client.query.get_or_404(id)
+            client_name = client.name
+            
+            # Delete client directly (use with caution)
+            db.session.delete(client)
+            db.session.commit()
+            
+            log_action(
+                'Exclusão Direta de Cliente',
+                'client',
+                id,
+                f"Cliente {client_name} excluído diretamente"
+            )
+            
+            flash('Cliente excluído com sucesso!', 'success')
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Erro ao excluir cliente: {str(e)}', 'danger')
+        
+        return redirect(url_for('clients'))
     # Equipment API endpoints
     @app.route('/api/equipamentos/modelos-por-marca', methods=['GET'])
     @login_required
@@ -2545,6 +2571,7 @@ def register_routes(app):
 
     # Register function to be called with app context in app.py
     app.create_initial_admin = create_initial_admin
+
 
 
 
