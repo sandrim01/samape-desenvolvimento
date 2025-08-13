@@ -345,96 +345,172 @@ function initializeItemModal() {
     
     addItemBtn.addEventListener('click', function(e) {
         e.preventDefault();
-        console.log('Botão adicionar item clicado');
+        e.stopPropagation();
+        console.log('=== INICIANDO ADIÇÃO DE ITEM ===');
         
-        try {
-            // Pegar valores dos campos
-            const partId = document.getElementById('itemPartId')?.value || '';
-            const description = document.getElementById('itemDescription')?.value?.trim() || '';
-            const quantity = parseInt(document.getElementById('itemQuantity')?.value) || 0;
-            const unitPrice = currencyToFloat(document.getElementById('itemUnitPrice')?.value || '0');
-            const totalPrice = currencyToFloat(document.getElementById('itemTotalPrice')?.value || '0');
-            
-            // Validar
-            if (!description) {
-                alert('Por favor, informe a descrição do item.');
-                return;
+        // Desabilitar botão temporariamente para evitar clicks duplos
+        addItemBtn.disabled = true;
+        addItemBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
+        
+        setTimeout(() => {
+            try {
+                console.log('1. Coletando dados do formulário...');
+                
+                // Pegar valores dos campos
+                const partId = document.getElementById('itemPartId')?.value || '';
+                const description = document.getElementById('itemDescription')?.value?.trim() || '';
+                const quantity = parseInt(document.getElementById('itemQuantity')?.value) || 0;
+                const unitPrice = currencyToFloat(document.getElementById('itemUnitPrice')?.value || '0');
+                const totalPrice = currencyToFloat(document.getElementById('itemTotalPrice')?.value || '0');
+                
+                console.log('2. Dados coletados:', { partId, description, quantity, unitPrice, totalPrice });
+                
+                // Validar
+                if (!description) {
+                    alert('Por favor, informe a descrição do item.');
+                    resetButton();
+                    return;
+                }
+                
+                if (quantity <= 0) {
+                    alert('A quantidade deve ser maior que zero.');
+                    resetButton();
+                    return;
+                }
+                
+                console.log('3. Validação passou, criando item...');
+                
+                // Criar item
+                itemCounter++;
+                const newItem = {
+                    id: itemCounter,
+                    part_id: partId || null,
+                    description: description,
+                    quantity: quantity,
+                    unit_price: unitPrice,
+                    total_price: totalPrice
+                };
+                
+                console.log('4. Item criado:', newItem);
+                
+                // Adicionar ao array
+                orderItems.push(newItem);
+                console.log('5. Array atualizado. Total de itens:', orderItems.length);
+                
+                // Atualizar interface
+                console.log('6. Atualizando tabela...');
+                updateItemsTable();
+                
+                console.log('7. Atualizando total...');
+                updateOrderTotal();
+                
+                console.log('8. Limpando formulário...');
+                clearItemForm();
+                
+                console.log('9. Fechando modal...');
+                closeModal();
+                
+                console.log('=== ITEM ADICIONADO COM SUCESSO ===');
+                
+                // Mostrar feedback visual
+                const feedback = document.createElement('div');
+                feedback.className = 'alert alert-success alert-dismissible fade show position-fixed';
+                feedback.style.top = '20px';
+                feedback.style.right = '20px';
+                feedback.style.zIndex = '9999';
+                feedback.innerHTML = `
+                    <i class="fas fa-check"></i> Item "${description}" adicionado com sucesso!
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                document.body.appendChild(feedback);
+                
+                // Remover feedback após 3 segundos
+                setTimeout(() => {
+                    if (feedback && feedback.parentNode) {
+                        feedback.remove();
+                    }
+                }, 3000);
+                
+            } catch (error) {
+                console.error('ERRO ao adicionar item:', error);
+                alert('Erro ao adicionar item: ' + error.message);
+            } finally {
+                resetButton();
             }
-            
-            if (quantity <= 0) {
-                alert('A quantidade deve ser maior que zero.');
-                return;
-            }
-            
-            // Criar item
-            itemCounter++;
-            const newItem = {
-                id: itemCounter,
-                part_id: partId || null,
-                description: description,
-                quantity: quantity,
-                unit_price: unitPrice,
-                total_price: totalPrice
-            };
-            
-            console.log('Adicionando item:', newItem);
-            
-            // Adicionar ao array
-            orderItems.push(newItem);
-            
-            // Atualizar interface
-            updateItemsTable();
-            updateOrderTotal();
-            clearItemForm();
-            closeModal();
-            
-            console.log('Item adicionado com sucesso');
-            
-        } catch (error) {
-            console.error('Erro ao adicionar item:', error);
-            alert('Erro ao adicionar item. Verifique o console para mais detalhes.');
+        }, 100); // Pequeno delay para evitar travamentos
+        
+        function resetButton() {
+            addItemBtn.disabled = false;
+            addItemBtn.innerHTML = 'Adicionar Item';
         }
     });
 }
 
 // Atualizar tabela de itens
 function updateItemsTable() {
-    const tbody = document.getElementById('itemsList');
-    if (!tbody) {
-        console.error('Elemento itemsList não encontrado');
-        return;
-    }
-    
-    // Limpar tabela
-    tbody.innerHTML = '';
-    
-    if (orderItems.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center">Nenhum item adicionado ao pedido</td></tr>';
-        return;
-    }
-    
-    // Adicionar itens
-    orderItems.forEach((item, index) => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${index + 1}</td>
-            <td>${item.description}</td>
-            <td>${item.quantity}</td>
-            <td>${formatCurrency(item.unit_price)}</td>
-            <td>${formatCurrency(item.total_price)}</td>
-            <td>
-                <button type="button" class="btn btn-sm btn-danger" onclick="removeItem(${item.id})">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </td>
-        `;
-        tbody.appendChild(row);
-    });
-    
-    // Atualizar campo oculto
-    const itemsJsonField = document.getElementById('itemsJson');
-    if (itemsJsonField) {
-        itemsJsonField.value = JSON.stringify(orderItems);
+    try {
+        console.log('Iniciando atualização da tabela...');
+        
+        const tbody = document.getElementById('itemsList');
+        if (!tbody) {
+            console.error('Elemento itemsList não encontrado');
+            return;
+        }
+        
+        // Limpar tabela
+        tbody.innerHTML = '';
+        
+        if (orderItems.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center">Nenhum item adicionado ao pedido</td></tr>';
+            console.log('Tabela limpa - nenhum item');
+            return;
+        }
+        
+        // Adicionar itens um por um
+        orderItems.forEach((item, index) => {
+            try {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${item.description || 'N/A'}</td>
+                    <td>${item.quantity || 0}</td>
+                    <td>${formatCurrency(parseFloat(item.unit_price) || 0)}</td>
+                    <td>${formatCurrency(parseFloat(item.total_price) || 0)}</td>
+                    <td>
+                        <button type="button" class="btn btn-sm btn-danger" onclick="removeItem(${item.id})" title="Remover item">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+                console.log(`Item ${index + 1} adicionado à tabela`);
+            } catch (itemError) {
+                console.error(`Erro ao adicionar item ${index + 1} à tabela:`, itemError);
+            }
+        });
+        
+        // Atualizar campo oculto
+        try {
+            const itemsJsonField = document.getElementById('itemsJson');
+            if (itemsJsonField) {
+                itemsJsonField.value = JSON.stringify(orderItems);
+                console.log('Campo JSON atualizado');
+            } else {
+                console.warn('Campo itemsJson não encontrado');
+            }
+        } catch (jsonError) {
+            console.error('Erro ao atualizar JSON:', jsonError);
+        }
+        
+        console.log(`Tabela atualizada com ${orderItems.length} itens`);
+        
+    } catch (error) {
+        console.error('ERRO CRÍTICO ao atualizar tabela:', error);
+        // Fallback simples
+        const tbody = document.getElementById('itemsList');
+        if (tbody) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Erro ao carregar itens</td></tr>';
+        }
     }
 }
 
@@ -474,11 +550,43 @@ function clearItemForm() {
 
 // Fechar modal
 function closeModal() {
-    const modal = document.getElementById('addItemModal');
-    if (modal) {
-        const bsModal = bootstrap.Modal.getInstance(modal);
-        if (bsModal) {
-            bsModal.hide();
+    try {
+        const modal = document.getElementById('addItemModal');
+        if (modal) {
+            // Tentar múltiplas formas de fechar o modal
+            const bsModal = bootstrap.Modal.getInstance(modal);
+            if (bsModal) {
+                bsModal.hide();
+            } else {
+                // Fallback: fechar manualmente
+                modal.classList.remove('show');
+                modal.style.display = 'none';
+                modal.setAttribute('aria-hidden', 'true');
+                modal.removeAttribute('aria-modal');
+                modal.removeAttribute('role');
+                
+                // Remover backdrop
+                const backdrop = document.querySelector('.modal-backdrop');
+                if (backdrop) {
+                    backdrop.remove();
+                }
+                
+                // Restaurar scroll do body
+                document.body.classList.remove('modal-open');
+                document.body.style.overflow = '';
+                document.body.style.paddingRight = '';
+            }
+        }
+        console.log('Modal fechado com sucesso');
+    } catch (error) {
+        console.error('Erro ao fechar modal:', error);
+        // Forçar fechamento manual
+        const modal = document.getElementById('addItemModal');
+        if (modal) {
+            modal.style.display = 'none';
+            document.body.classList.remove('modal-open');
+            const backdrop = document.querySelector('.modal-backdrop');
+            if (backdrop) backdrop.remove();
         }
     }
 }
