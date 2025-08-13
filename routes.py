@@ -2618,6 +2618,68 @@ def register_routes(app):
         
         return render_template('stock/create.html', form=form)
     
+    @app.route('/estoque/movimento/ajax', methods=['POST'])
+    @login_required
+    @admin_or_manager_required
+    def add_stock_movement_ajax():
+        """Adicionar movimento de estoque via AJAX"""
+        try:
+            stock_item_id = request.form.get('stock_item_id')
+            quantity = request.form.get('quantity')
+            description = request.form.get('description', '')
+            reference = request.form.get('reference', '')
+            
+            if not stock_item_id or not quantity:
+                return jsonify({
+                    'success': False,
+                    'message': 'Item e quantidade são obrigatórios'
+                }), 400
+                
+            stock_item = StockItem.query.get_or_404(stock_item_id)
+            quantity = int(quantity)
+            
+            # Criar movimento de estoque
+            movement = StockMovement(
+                stock_item_id=stock_item_id,
+                quantity=quantity,
+                description=description,
+                reference=reference,
+                created_by=current_user.id
+            )
+            
+            # Atualizar quantidade do item
+            stock_item.quantity += quantity
+            
+            db.session.add(movement)
+            db.session.commit()
+            
+            # Registrar log
+            movement_type = "Entrada" if quantity > 0 else "Saída"
+            log_action(
+                f'Movimento de Estoque - {movement_type}',
+                'stock_movement',
+                movement.id,
+                f'{movement_type} de {abs(quantity)} unidades - {stock_item.name}'
+            )
+            
+            return jsonify({
+                'success': True,
+                'message': f'Movimento de estoque registrado com sucesso!',
+                'new_quantity': stock_item.quantity
+            })
+            
+        except ValueError:
+            return jsonify({
+                'success': False,
+                'message': 'Quantidade deve ser um número válido'
+            }), 400
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({
+                'success': False,
+                'message': f'Erro ao registrar movimento: {str(e)}'
+            }), 500
+    
     @app.route('/frota')
     @login_required
     def fleet():
