@@ -1,4 +1,4 @@
-<div class="card compact-card">
+﻿<div class="card compact-card">
     <div class="card-header bg-primary text-white">
         <h5 class="card-title mb-0">
             <i class="fas fa-clipboard-list me-2"></i>Ordens Recentes
@@ -23,7 +23,7 @@
                         <td>{{ order.client.name }}</td>
                         <td>
                             {% if order.equipment %}
-                            {{ order.equipment[0].model if order.equipment[0].model else order.equipment[0].model_select }}
+                            {{ order.equipment[0].model if order.equipment[0].model else order.equipment[0].model }}
                             {% else %}
                             -
                             {% endif %}
@@ -44,3 +44,4 @@
         <a href="{{ url_for('service_orders') }}" class="btn btn-sm btn-outline-primary">Ver Todas</a>
     </div>
 </div>
+

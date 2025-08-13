@@ -54,11 +54,11 @@
                 </div>
                 
                 <div class="col-md-6">
-                    <label for="brand_select" class="form-label">Marca *</label>
-                    {{ form.brand_select(class="form-select", id="brand_select") }}
-                    {% if form.brand_select.errors %}
+                    <label for="brand" class="form-label">Marca *</label>
+                    {{ form.brand(class="form-select", id="brand") }}
+                    {% if form.brand.errors %}
                         <div class="invalid-feedback d-block">
-                            {% for error in form.brand_select.errors %}
+                            {% for error in form.brand.errors %}
                                 {{ error }}
                             {% endfor %}
                         </div>
@@ -81,11 +81,11 @@
             
             <div class="row mb-3">
                 <div class="col-md-6">
-                    <label for="model_select" class="form-label">Modelo</label>
-                    {{ form.model_select(class="form-select", id="model_select") }}
-                    {% if form.model_select.errors %}
+                    <label for="model" class="form-label">Modelo</label>
+                    {{ form.model(class="form-select", id="model") }}
+                    {% if form.model.errors %}
                         <div class="invalid-feedback d-block">
-                            {% for error in form.model_select.errors %}
+                            {% for error in form.model.errors %}
                                 {{ error }}
                             {% endfor %}
                         </div>
@@ -142,8 +142,8 @@
 {{ super() }}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const brandSelect = document.getElementById('brand_select');
-        const modelSelect = document.getElementById('model_select');
+        const brandSelect = document.getElementById('brand');
+        const modelSelect = document.getElementById('model');
         const typeSelect = document.getElementById('type');
         
         const otherBrandContainer = document.getElementById('other_brand_container');
@@ -235,4 +235,5 @@
 </script>
 {% endblock %}
 {% endblock %}
+
 
