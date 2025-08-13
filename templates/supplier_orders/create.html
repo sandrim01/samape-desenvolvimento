@@ -549,43 +549,81 @@ function clearItemForm() {
 // Fechar modal
 function closeModal() {
     try {
+        console.log('Iniciando fechamento do modal...');
+        
         const modal = document.getElementById('addItemModal');
-        if (modal) {
-            // Tentar múltiplas formas de fechar o modal
-            const bsModal = bootstrap.Modal.getInstance(modal);
-            if (bsModal) {
-                bsModal.hide();
-            } else {
-                // Fallback: fechar manualmente
-                modal.classList.remove('show');
-                modal.style.display = 'none';
-                modal.setAttribute('aria-hidden', 'true');
-                modal.removeAttribute('aria-modal');
-                modal.removeAttribute('role');
-                
-                // Remover backdrop
-                const backdrop = document.querySelector('.modal-backdrop');
-                if (backdrop) {
-                    backdrop.remove();
-                }
-                
-                // Restaurar scroll do body
-                document.body.classList.remove('modal-open');
-                document.body.style.overflow = '';
-                document.body.style.paddingRight = '';
-            }
+        if (!modal) {
+            console.log('Modal não encontrado');
+            return;
         }
-        console.log('Modal fechado com sucesso');
+
+        // 1. Tentar fechar usando Bootstrap
+        const bsModal = bootstrap.Modal.getInstance(modal);
+        if (bsModal) {
+            console.log('Fechando modal via Bootstrap...');
+            bsModal.hide();
+        }
+
+        // 2. Forçar fechamento manual (sempre executar para garantir)
+        setTimeout(() => {
+            console.log('Executando limpeza forçada...');
+            
+            // Ocultar o modal
+            modal.classList.remove('show');
+            modal.style.display = 'none';
+            modal.setAttribute('aria-hidden', 'true');
+            modal.removeAttribute('aria-modal');
+            modal.removeAttribute('role');
+            
+            // Remover TODOS os backdrops possíveis
+            document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+                console.log('Removendo backdrop:', backdrop);
+                backdrop.remove();
+            });
+            
+            // Limpar classes e estilos do body
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+            
+            // Remover atributos de acessibilidade do body
+            document.body.removeAttribute('data-bs-overflow');
+            document.body.removeAttribute('data-bs-padding-right');
+            
+            // Garantir que não há elementos flutuando
+            document.querySelectorAll('.modal.show').forEach(openModal => {
+                if (openModal.id === 'addItemModal') {
+                    openModal.classList.remove('show');
+                    openModal.style.display = 'none';
+                }
+            });
+            
+            console.log('Limpeza completa realizada');
+            console.log('Modal fechado com sucesso');
+        }, 100);
+        
     } catch (error) {
         console.error('Erro ao fechar modal:', error);
-        // Forçar fechamento manual
-        const modal = document.getElementById('addItemModal');
-        if (modal) {
-            modal.style.display = 'none';
+        
+        // Fallback de emergência
+        setTimeout(() => {
+            console.log('Executando fallback de emergência...');
+            const modal = document.getElementById('addItemModal');
+            if (modal) {
+                modal.style.display = 'none';
+                modal.classList.remove('show');
+            }
+            
+            // Remover tudo relacionado a modals
+            document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
             document.body.classList.remove('modal-open');
-            const backdrop = document.querySelector('.modal-backdrop');
-            if (backdrop) backdrop.remove();
-        }
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+            document.body.removeAttribute('data-bs-overflow');
+            document.body.removeAttribute('data-bs-padding-right');
+            
+            console.log('Fallback executado');
+        }, 200);
     }
 }
 
