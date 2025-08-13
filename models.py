@@ -290,7 +290,6 @@ class OrderItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     order_id = db.Column(db.Integer, db.ForeignKey('supplier_order.id'), nullable=False)
     part_id = db.Column(db.Integer, db.ForeignKey('part.id'))
-    stock_item_id = db.Column(db.Integer, db.ForeignKey('stock_item.id'))
     description = db.Column(db.String(200), nullable=False)
     quantity = db.Column(db.Integer, nullable=False, default=1)
     unit_price = db.Column(db.Numeric(10, 2))
@@ -300,7 +299,6 @@ class OrderItem(db.Model):
     
     # Relacionamentos sem backref para evitar conflitos
     part = db.relationship('Part', foreign_keys=[part_id], overlaps="part_order_items")
-    stock_item = db.relationship('StockItem', foreign_keys=[stock_item_id])
     
 class SystemSettings(db.Model):
     id = db.Column(db.Integer, primary_key=True)
