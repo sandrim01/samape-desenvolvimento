@@ -228,6 +228,7 @@ class Part(db.Model):
     minimum_stock = db.Column(db.Integer, default=0)
     location = db.Column(db.String(50))  # Localização no estoque/almoxarifado
     image = db.Column(db.String(255))
+    is_active = db.Column(db.Boolean, default=True, nullable=False)  # Status ativo/inativo
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
