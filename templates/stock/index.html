@@ -768,27 +768,28 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // FUNÇÃO DE TESTE AJAX SIMPLIFICADA
 function testAjaxDelete(itemId, itemName) {
-    alert(`🚀 testAjaxDelete chamada - ID: ${itemId}`);
+    console.log(`🚀 testAjaxDelete chamada - ID: ${itemId}`);
     
     // Verificar CSRF token
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
     
     if (!csrfToken) {
-        alert('❌ CSRF token não encontrado');
+        console.error('❌ CSRF token não encontrado');
+        alert('❌ ERRO: Token de segurança não encontrado. Recarregue a página.');
         return;
     }
     
-    alert('✅ CSRF token encontrado');
+    console.log('✅ CSRF token encontrado');
     
     // URL da requisição
     const url = `/stock/item/${itemId}/delete`;
-    alert(`🌐 URL da requisição: ${url}`);
+    console.log(`🌐 URL da requisição: ${url}`);
     
     // Dados da requisição
     const formData = new FormData();
     formData.append('csrf_token', csrfToken);
     
-    alert('📤 Enviando requisição AJAX...');
+    console.log('📤 Enviando requisição AJAX...');
     
     fetch(url, {
         method: 'POST',
@@ -798,179 +799,46 @@ function testAjaxDelete(itemId, itemName) {
         }
     })
     .then(response => {
-        alert(`📡 Resposta recebida - Status: ${response.status}`);
-        
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-        
-        return response.json();
-    })
-    .then(data => {
-        alert(`✅ JSON recebido: ${JSON.stringify(data)}`);
-        
-        if (data.success) {
-            alert('🎉 SUCESSO: Item excluído!');
-            window.location.reload();
-        } else {
-            alert(`❌ ERRO do servidor: ${data.message}`);
-        }
-    })
-    .catch(error => {
-        alert(`❌ ERRO na requisição: ${error.message}`);
-        console.error('Erro detalhado:', error);
-    });
-}
-
-// Função original comentada para backup
-/*
-// Função original comentada para backup
-/*
-function deleteStockItemMobile(itemId, itemName, buttonElement, originalText) {
-    console.log(`🚀 deleteStockItemMobile iniciada - ID: ${itemId}, Nome: ${itemName}`);
-    console.log('🔘 Botão:', buttonElement);
-    
-    if (!itemId || !buttonElement) {
-        console.error('❌ Parâmetros inválidos:', { itemId, buttonElement });
-        alert('ERRO: Dados do item não encontrados. Tente novamente.');
-        return;
-    }
-    
-    // Obter token CSRF com múltiplas tentativas
-    let csrfToken = document.querySelector('meta[name=csrf-token]')?.getAttribute('content') || 
-                   document.querySelector('input[name=csrf_token]')?.value;
-    
-    // Tentar outras formas se não encontrou
-    if (!csrfToken) {
-        const csrfMeta = document.querySelector('meta[name="csrf-token"]');
-        if (csrfMeta) {
-            csrfToken = csrfMeta.content || csrfMeta.getAttribute('content');
-        }
-    }
-    
-    console.log('🔒 CSRF Token:', csrfToken ? '✅ Encontrado' : '❌ NÃO encontrado');
-    
-    if (!csrfToken) {
-        console.error('❌ CSRF token não encontrado em nenhuma forma');
-        alert('ERRO: Token de segurança não encontrado. Recarregue a página.');
-        return;
-    }
-    
-    // Encontrar o modal que está sendo usado
-    const modalElement = document.getElementById(`deleteModal${itemId}`) || 
-                        document.getElementById(`deleteModalDesktop${itemId}`);
-    
-    console.log('📱 Modal encontrado:', modalElement ? '✅ Sim' : '❌ Não');
-    
-    // Estado de carregamento mais visual
-    buttonElement.innerHTML = '🗑️ <i class="fas fa-spinner fa-spin"></i> Excluindo...';
-    buttonElement.disabled = true;
-    buttonElement.style.opacity = '0.7';
-    
-    console.log('⏳ Estado de loading ativado');
-    
-    // Alert temporário para debug - será removido após teste
-    alert(`🧪 DEBUG: Tentando excluir item "${itemName}" (ID: ${itemId})`);
-    
-    // Criar form data com CSRF token
-    const formData = new FormData();
-    formData.append('csrf_token', csrfToken);
-    
-    console.log('🌐 Iniciando requisição AJAX...');
-    console.log('📡 URL:', `/stock/item/${itemId}/delete`);
-    
-    // Requisição com timeout maior para mobile (20 segundos)
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => {
-        controller.abort();
-        console.log('⏰ Timeout da requisição após 20 segundos');
-    }, 20000);
-    
-    fetch(`/stock/item/${itemId}/delete`, {
-        method: 'POST',
-        body: formData,
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest',
-        },
-        signal: controller.signal
-    })
-    .then(response => {
-        clearTimeout(timeoutId);
         console.log(`📡 Resposta recebida - Status: ${response.status}`);
         
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
+        
         return response.json();
     })
     .then(data => {
-        console.log('✅ Dados da resposta:', data);
-        
-        // Restaurar botão antes de processar resultado
-        if (buttonElement) {
-            buttonElement.innerHTML = originalText;
-            buttonElement.disabled = false;
-            buttonElement.style.opacity = '1';
-        }
+        console.log(`✅ JSON recebido:`, data);
         
         if (data.success) {
-            console.log('✅ Exclusão bem-sucedida');
+            console.log('🎉 SUCESSO: Item excluído!');
             
-            // Fechar modal
+            // Fechar modal se estiver aberto
+            const modalElement = document.getElementById(`deleteModal${itemId}`) || 
+                                document.getElementById(`deleteModalDesktop${itemId}`);
             if (modalElement) {
                 const modal = bootstrap.Modal.getInstance(modalElement);
                 if (modal) {
                     modal.hide();
-                    console.log('✅ Modal fechado');
                 }
             }
             
-            // Mensagem de sucesso - temporariamente com alert para debug
-            const successMessage = `✅ Item "${itemName}" excluído com sucesso!`;
-            console.log(successMessage);
-            alert(successMessage); // Debug temporário
-            
+            // Mostrar mensagem de sucesso
             showFlashMessage('success', `Item "${itemName}" excluído com sucesso!`);
             
-            // Recarregar a página após delay maior para mobile
+            // Recarregar a página
             setTimeout(() => {
-                console.log('🔄 Recarregando página...');
                 window.location.reload();
-            }, 2000);
-            
+            }, 1500);
         } else {
-            const errorMessage = data.message || 'Erro desconhecido ao excluir item';
-            console.error('❌ Erro retornado pelo servidor:', errorMessage);
-            alert(`❌ ERRO: ${errorMessage}`); // Debug temporário
-            showFlashMessage('danger', errorMessage);
+            console.error(`❌ ERRO do servidor: ${data.message}`);
+            showFlashMessage('danger', data.message || 'Erro ao excluir item');
         }
     })
     .catch(error => {
-        clearTimeout(timeoutId);
-        console.error('❌ Erro na requisição:', error);
-        
-        // Restaurar botão em caso de erro
-        if (buttonElement) {
-            buttonElement.innerHTML = originalText;
-            buttonElement.disabled = false;
-            buttonElement.style.opacity = '1';
-        }
-        
-        let errorMessage = 'Erro ao processar exclusão';
-        if (error.name === 'AbortError') {
-            errorMessage = 'Timeout: Conexão muito lenta. Tente novamente.';
-        } else if (error.message.includes('HTTP')) {
-            errorMessage = `Erro do servidor: ${error.message}`;
-        } else {
-            errorMessage = `Erro de rede: ${error.message}`;
-        }
-        
-        console.error('❌ Mensagem de erro final:', errorMessage);
-        alert(`❌ ERRO: ${errorMessage}`); // Debug temporário
-        showFlashMessage('danger', errorMessage);
+        console.error(`❌ ERRO na requisição:`, error);
+        showFlashMessage('danger', `Erro ao processar exclusão: ${error.message}`);
     });
 }
-*/
-// FIM DA FUNÇÃO COMENTADA
 </script>
 {% endblock %}
