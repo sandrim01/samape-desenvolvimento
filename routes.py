@@ -62,7 +62,7 @@ def register_routes(app):
             'UserRole': UserRole,
             'ServiceOrderStatus': ServiceOrderStatus,
             'FinancialEntryType': FinancialEntryType,
-            'now': datetime.utcnow,
+            'now': datetime.utcnow(),
             'cache_buster': int(datetime.utcnow().timestamp()),
             'get_system_setting': get_system_setting
         }
