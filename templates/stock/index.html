@@ -94,8 +94,8 @@
                     </a>
                 </div>
                 
-                {% if items.items %}
-                    {% for item in items.items %}
+                {% if items %}
+                    {% for item in items %}
                     <div class="mobile-item-card mb-3" data-type="{{ item.type.name }}" data-status="{{ item.status.name }}">
                         <div class="item-header">
                             <h5 class="item-name">{{ item.name }}</h5>
@@ -183,14 +183,12 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% if items.items %}
-                            {% for item in items.items %}
+                        {% if items %}
+                            {% for item in items %}
                             <tr class="{% if item.status == item_statuses.esgotado %}table-danger{% elif item.status == item_statuses.baixo %}table-warning{% elif item.status == item_statuses.vencido %}table-danger{% endif %}">
                                 <td>{{ item.id }}</td>
                                 <td>
-                                    <a href="{{ url_for('view_stock_item', id=item.id) }}">
-                                        {{ item.name }}
-                                    </a>
+                                    {{ item.name }}
                                 </td>
                                 <td>{{ item.type.value }}</td>
                                 <td>{{ item.quantity }}</td>
@@ -388,7 +386,7 @@
                             <label for="stock_item_id" class="form-label">Item</label>
                             <select class="form-control" id="stock_item_id" name="stock_item_id" required>
                                 <option value="">Selecione um item</option>
-                                {% for item in items.items %}
+                                {% for item in items %}
                                 <option value="{{ item.id }}" data-quantity="{{ item.quantity }}">
                                     {{ item.name }} - {{ item.type.value }}
                                 </option>
