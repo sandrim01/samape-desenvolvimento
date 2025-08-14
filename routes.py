@@ -2758,7 +2758,7 @@ def register_routes(app):
             form = StockItemForm(obj=stock_item)
             
             # Configurar choices dos selects
-            form.type_id.choices = [(t.id, t.name) for t in StockItemType.query.all()]
+            form.type_id.choices = [(t.name, t.value) for t in StockItemType]
             form.status.choices = [(s.name, s.value) for s in StockItemStatus]
             
             if form.validate_on_submit():
