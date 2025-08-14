@@ -495,6 +495,7 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                 <form action="{{ url_for('delete_stock_item', id=item.id) }}" method="POST">
+                    {{ csrf_token() }}
                     <button type="submit" class="btn btn-danger">Confirmar Exclusão</button>
                 </form>
             </div>
