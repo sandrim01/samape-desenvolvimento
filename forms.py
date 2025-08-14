@@ -414,12 +414,13 @@ class StockItemForm(FlaskForm):
     quantity = IntegerField('Quantidade em Estoque', validators=[DataRequired(), NumberRange(min=0)], default=0)
     unit = StringField('Unidade', validators=[DataRequired(), Length(min=1, max=20)], default='UN')
     unit_cost = DecimalField('Custo Unitário (R$)', validators=[Optional()], places=2, default=0)
-    min_quantity = IntegerField('Quantidade Mínima', validators=[DataRequired(), NumberRange(min=0)], default=5)
+    minimum_quantity = IntegerField('Quantidade Mínima', validators=[DataRequired(), NumberRange(min=0)], default=5)
     location = StringField('Localização no Depósito', validators=[Optional(), Length(max=100)])
     price = DecimalField('Preço Unitário (R$)', validators=[Optional()], places=2)
     supplier_id = SelectField('Fornecedor', validators=[Optional()], coerce=lambda x: int(x) if x else None)
-    expiration_date = StringField('Data de Validade', validators=[Optional()])
+    expiry_date = StringField('Data de Validade', validators=[Optional()])
     ca_number = StringField('Número do CA (para EPIs)', validators=[Optional(), Length(max=50)])
+    status = SelectField('Status', choices=[(s.name, s.value) for s in StockItemStatus], validators=[DataRequired()], default='disponivel')
     image = FileField('Imagem do Item', validators=[
         Optional(),
         FileAllowed(['jpg', 'jpeg', 'png'], 'Apenas imagens são permitidas!')

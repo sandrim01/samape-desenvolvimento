@@ -2591,9 +2591,10 @@ def register_routes(app):
                     unit=form.unit.data,
                     price=form.unit_cost.data,
                     supplier_id=form.supplier_id.data,
-                    min_quantity=form.min_quantity.data,
-                    expiration_date=form.expiration_date.data,
+                    min_quantity=form.minimum_quantity.data,
+                    expiration_date=form.expiry_date.data,
                     location=form.location.data,
+                    status=form.status.data,
                     created_by=current_user.id
                 )
                 
