@@ -715,62 +715,117 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Adicionar event listeners para botões de exclusão mobile-friendly - versão com debug
-    console.log('🔍 Procurando botões de exclusão...');
+    // VERSÃO SIMPLIFICADA PARA DEBUG - Event listeners
+    console.log('🚀 INICIANDO EVENT LISTENERS SIMPLIFICADOS');
+    
+    // Testar se jQuery está disponível
+    if (typeof $ !== 'undefined') {
+        console.log('✅ jQuery disponível');
+    } else {
+        console.log('❌ jQuery NÃO disponível');
+    }
+    
+    // Procurar botões
     const deleteButtons = document.querySelectorAll('.delete-confirm-btn');
     console.log(`📱 Encontrados ${deleteButtons.length} botões de exclusão`);
     
+    // Listar todos os botões encontrados
     deleteButtons.forEach((button, index) => {
-        console.log(`🔘 Configurando botão ${index + 1}:`, button);
-        
-        // Event listener principal - funciona tanto para touch quanto click
+        const itemId = button.getAttribute('data-item-id');
+        const itemName = button.getAttribute('data-item-name');
+        console.log(`🔘 Botão ${index + 1}: ID=${itemId}, Nome=${itemName}`);
+    });
+    
+    // Event listener SUPER SIMPLES para cada botão
+    deleteButtons.forEach((button, index) => {
         button.addEventListener('click', function(e) {
-            console.log(`👆 Click/Touch detectado no botão ${index + 1}`);
             e.preventDefault();
             e.stopPropagation();
+            
+            alert(`🧪 TESTE: Botão ${index + 1} clicado!`);
             
             const itemId = this.getAttribute('data-item-id');
             const itemName = this.getAttribute('data-item-name');
             
-            console.log(`📋 Dados do item - ID: ${itemId}, Nome: ${itemName}`);
+            alert(`📋 Dados: ID=${itemId}, Nome=${itemName}`);
             
-            if (!itemId || !itemName) {
-                console.error('❌ Dados do item incompletos');
-                alert('ERRO: Dados do item não encontrados');
+            if (!itemId) {
+                alert('❌ ERRO: ID não encontrado');
                 return;
             }
             
-            // Adicionar indicador visual de loading
-            const originalText = this.innerHTML;
-            this.innerHTML = '🗑️ <i class="fas fa-spinner fa-spin"></i> Preparando...';
-            this.disabled = true;
-            
-            console.log('⏳ Iniciando processo de exclusão...');
-            
-            // Pequeno delay para garantir que o loading seja visível
-            setTimeout(() => {
-                deleteStockItemMobile(itemId, itemName, this, originalText);
-            }, 100);
+            // Confirmação básica
+            if (confirm(`Tem certeza que deseja excluir "${itemName}"?`)) {
+                alert('✅ Usuário confirmou exclusão - iniciando processo');
+                testAjaxDelete(itemId, itemName);
+            } else {
+                alert('❌ Usuário cancelou exclusão');
+            }
         });
-        
-        // Touch feedback visual para mobile
-        button.addEventListener('touchstart', function(e) {
-            console.log(`👆 Touch start no botão ${index + 1}`);
-            this.style.transform = 'scale(0.95)';
-            this.classList.add('mobile-touching');
-        }, { passive: true });
-        
-        button.addEventListener('touchend', function(e) {
-            console.log(`👆 Touch end no botão ${index + 1}`);
-            setTimeout(() => {
-                this.style.transform = 'scale(1)';
-                this.classList.remove('mobile-touching');
-            }, 100);
-        }, { passive: true });
+    });
     });
 });
 
-// Função específica para exclusão em mobile - versão com debug detalhado
+// FUNÇÃO DE TESTE AJAX SIMPLIFICADA
+function testAjaxDelete(itemId, itemName) {
+    alert(`🚀 testAjaxDelete chamada - ID: ${itemId}`);
+    
+    // Verificar CSRF token
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+    
+    if (!csrfToken) {
+        alert('❌ CSRF token não encontrado');
+        return;
+    }
+    
+    alert('✅ CSRF token encontrado');
+    
+    // URL da requisição
+    const url = `/stock/item/${itemId}/delete`;
+    alert(`🌐 URL da requisição: ${url}`);
+    
+    // Dados da requisição
+    const formData = new FormData();
+    formData.append('csrf_token', csrfToken);
+    
+    alert('📤 Enviando requisição AJAX...');
+    
+    fetch(url, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+        }
+    })
+    .then(response => {
+        alert(`📡 Resposta recebida - Status: ${response.status}`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        return response.json();
+    })
+    .then(data => {
+        alert(`✅ JSON recebido: ${JSON.stringify(data)}`);
+        
+        if (data.success) {
+            alert('🎉 SUCESSO: Item excluído!');
+            window.location.reload();
+        } else {
+            alert(`❌ ERRO do servidor: ${data.message}`);
+        }
+    })
+    .catch(error => {
+        alert(`❌ ERRO na requisição: ${error.message}`);
+        console.error('Erro detalhado:', error);
+    });
+}
+
+// Função original comentada para backup
+/*
+// Função original comentada para backup
+/*
 function deleteStockItemMobile(itemId, itemName, buttonElement, originalText) {
     console.log(`🚀 deleteStockItemMobile iniciada - ID: ${itemId}, Nome: ${itemName}`);
     console.log('🔘 Botão:', buttonElement);
@@ -914,6 +969,8 @@ function deleteStockItemMobile(itemId, itemName, buttonElement, originalText) {
         alert(`❌ ERRO: ${errorMessage}`); // Debug temporário
         showFlashMessage('danger', errorMessage);
     });
-});
+}
+*/
+// FIM DA FUNÇÃO COMENTADA
 </script>
 {% endblock %}
