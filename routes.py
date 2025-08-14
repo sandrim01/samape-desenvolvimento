@@ -2681,6 +2681,100 @@ def register_routes(app):
                 'message': f'Erro ao registrar movimento: {str(e)}'
             }), 500
     
+    @app.route('/estoque/<int:id>')
+    @login_required
+    def view_stock_item(id):
+        """Visualizar detalhes de um item de estoque"""
+        try:
+            stock_item = StockItem.query.get_or_404(id)
+            
+            # Buscar histórico de movimentos do item
+            movements = StockMovement.query.filter_by(stock_item_id=id)\
+                .order_by(StockMovement.created_at.desc())\
+                .limit(50)\
+                .all()
+            
+            return render_template('stock/view.html', 
+                                 item=stock_item,
+                                 movements=movements)
+                                 
+        except Exception as e:
+            app.logger.error(f"Erro ao visualizar item de estoque {id}: {str(e)}")
+            flash(f'Erro ao carregar item de estoque: {str(e)}', 'error')
+            return redirect(url_for('stock_items'))
+    
+    @app.route('/estoque/<int:id>/editar', methods=['GET', 'POST'])
+    @login_required
+    @admin_or_manager_required
+    def edit_stock_item(id):
+        """Editar um item de estoque"""
+        try:
+            stock_item = StockItem.query.get_or_404(id)
+            form = StockItemForm(obj=stock_item)
+            
+            # Configurar choices dos selects
+            form.type_id.choices = [(t.id, t.name) for t in StockItemType.query.all()]
+            form.status.choices = [(s.name, s.value) for s in StockItemStatus]
+            
+            if form.validate_on_submit():
+                try:
+                    # Salvar dados antigos para log
+                    old_data = {
+                        'name': stock_item.name,
+                        'quantity': stock_item.quantity,
+                        'unit': stock_item.unit,
+                        'unit_cost': stock_item.unit_cost,
+                        'minimum_quantity': stock_item.minimum_quantity,
+                        'type_id': stock_item.type_id,
+                        'status': stock_item.status.name if stock_item.status else None
+                    }
+                    
+                    # Atualizar dados
+                    form.populate_obj(stock_item)
+                    stock_item.updated_by = current_user.id
+                    stock_item.updated_at = datetime.utcnow()
+                    
+                    db.session.commit()
+                    
+                    # Registrar log
+                    changes = []
+                    new_data = {
+                        'name': stock_item.name,
+                        'quantity': stock_item.quantity,
+                        'unit': stock_item.unit,
+                        'unit_cost': stock_item.unit_cost,
+                        'minimum_quantity': stock_item.minimum_quantity,
+                        'type_id': stock_item.type_id,
+                        'status': stock_item.status.name if stock_item.status else None
+                    }
+                    
+                    for key, old_value in old_data.items():
+                        new_value = new_data[key]
+                        if old_value != new_value:
+                            changes.append(f'{key}: {old_value} → {new_value}')
+                    
+                    if changes:
+                        log_action(
+                            'Item de Estoque Editado',
+                            'stock_item',
+                            stock_item.id,
+                            f'Item {stock_item.name} atualizado: {", ".join(changes)}'
+                        )
+                    
+                    flash(f'Item de estoque {stock_item.name} atualizado com sucesso!', 'success')
+                    return redirect(url_for('view_stock_item', id=stock_item.id))
+                    
+                except Exception as e:
+                    db.session.rollback()
+                    flash(f'Erro ao atualizar item de estoque: {str(e)}', 'error')
+            
+            return render_template('stock/edit.html', form=form, item=stock_item)
+            
+        except Exception as e:
+            app.logger.error(f"Erro ao editar item de estoque {id}: {str(e)}")
+            flash(f'Erro ao carregar item de estoque: {str(e)}', 'error')
+            return redirect(url_for('stock_items'))
+    
     @app.route('/frota')
     @login_required
     def fleet():
