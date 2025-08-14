@@ -246,7 +246,7 @@
                 <div class="card-body">
                     <!-- Versão Mobile: Form simplificado -->
                     <div class="d-lg-none">
-                        <form method="POST" action="{{ url_for('add_stock_movement') }}">
+                        <form method="POST" action="{{ url_for('add_stock_movement_ajax') }}">
                             {{ movement_form.hidden_tag() }}
                             {{ movement_form.stock_item_id }}
                             
@@ -318,7 +318,7 @@
                     
                     <!-- Versão Desktop: Form padrão -->
                     <div class="d-none d-lg-block">
-                        <form method="POST" action="{{ url_for('add_stock_movement') }}">
+                        <form method="POST" action="{{ url_for('add_stock_movement_ajax') }}">
                             {{ movement_form.hidden_tag() }}
                             {{ movement_form.stock_item_id }}
 

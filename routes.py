@@ -2658,6 +2658,7 @@ def register_routes(app):
         try:
             stock_item_id = request.form.get('stock_item_id')
             quantity = request.form.get('quantity')
+            direction = request.form.get('direction', 'entrada')
             description = request.form.get('description', '')
             reference = request.form.get('reference', '')
             
@@ -2669,6 +2670,19 @@ def register_routes(app):
                 
             stock_item = StockItem.query.get_or_404(stock_item_id)
             quantity = int(quantity)
+            
+            # Aplicar direção: saída = quantidade negativa
+            if direction == 'saida':
+                quantity = -abs(quantity)
+            else:
+                quantity = abs(quantity)
+            
+            # Verificar se há estoque suficiente para saída
+            if direction == 'saida' and abs(quantity) > stock_item.quantity:
+                return jsonify({
+                    'success': False,
+                    'message': f'Estoque insuficiente. Disponível: {stock_item.quantity}'
+                }), 400
             
             # Criar movimento de estoque
             movement = StockMovement(
