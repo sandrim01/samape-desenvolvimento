@@ -412,6 +412,8 @@ class StockItemForm(FlaskForm):
     description = TextAreaField('Descrição', validators=[Optional()])
     type = SelectField('Tipo', choices=[(t.name, t.value) for t in StockItemType], validators=[DataRequired()])
     quantity = IntegerField('Quantidade em Estoque', validators=[DataRequired(), NumberRange(min=0)], default=0)
+    unit = StringField('Unidade', validators=[DataRequired(), Length(min=1, max=20)], default='UN')
+    unit_cost = DecimalField('Custo Unitário (R$)', validators=[Optional()], places=2, default=0)
     min_quantity = IntegerField('Quantidade Mínima', validators=[DataRequired(), NumberRange(min=0)], default=5)
     location = StringField('Localização no Depósito', validators=[Optional(), Length(max=100)])
     price = DecimalField('Preço Unitário (R$)', validators=[Optional()], places=2)

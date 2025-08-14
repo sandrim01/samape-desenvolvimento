@@ -336,6 +336,7 @@ class StockItem(db.Model):
     description = db.Column(db.Text, nullable=True)
     type = db.Column(Enum(StockItemType), nullable=False)
     quantity = db.Column(db.Integer, default=0)
+    unit = db.Column(db.String(20), default='UN')  # Unidade de medida (UN, KG, M, etc.)
     min_quantity = db.Column(db.Integer, default=5)  # Quantidade mínima desejada em estoque
     location = db.Column(db.String(100), nullable=True)  # Localização física no depósito
     price = db.Column(db.Numeric(10, 2), nullable=True)  # Preço unitário
