@@ -2601,6 +2601,16 @@ def register_routes(app):
                         flash('Formato de data inválido. Use YYYY-MM-DD', 'error')
                         return render_template('stock/create.html', form=form)
                 
+                # Processar valor unitário (converter formato brasileiro se necessário)
+                unit_cost = form.unit_cost.data
+                if isinstance(unit_cost, str):
+                    # Converter formato brasileiro (1.234,56) para formato inglês (1234.56)
+                    unit_cost = unit_cost.replace('.', '').replace(',', '.')
+                    try:
+                        unit_cost = float(unit_cost) if unit_cost else None
+                    except ValueError:
+                        unit_cost = None
+                
                 # Criar item de estoque
                 stock_item = StockItem(
                     name=form.name.data,
@@ -2608,7 +2618,7 @@ def register_routes(app):
                     type=StockItemType[form.type.data] if form.type.data else StockItemType.ferramenta,
                     quantity=form.quantity.data or 0,
                     unit=form.unit.data or 'UN',
-                    price=form.unit_cost.data,
+                    price=unit_cost,
                     supplier_id=form.supplier_id.data if form.supplier_id.data != 0 else None,
                     min_quantity=form.minimum_quantity.data or 5,
                     expiration_date=expiry_date,

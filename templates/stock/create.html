@@ -82,7 +82,7 @@
                 
                 <div class="col-md-4">
                     <label for="unit_cost" class="form-label">Custo Unitário (R$)</label>
-                    {{ form.unit_cost(class="form-control", id="unit_cost", placeholder="0,00") }}
+                    {{ form.unit_cost(class="form-control", id="unit_cost", placeholder="0,00", type="text", step="any") }}
                     {% if form.unit_cost.errors %}
                         <div class="invalid-feedback d-block">
                             {% for error in form.unit_cost.errors %}
@@ -173,7 +173,9 @@
 
 <script>
 // Máscara de moeda para custo unitário
-document.getElementById('unit_cost').addEventListener('input', function(e) {
+const unitCostField = document.getElementById('unit_cost');
+
+unitCostField.addEventListener('input', function(e) {
     let value = e.target.value.replace(/\D/g, '');
     if (value) {
         value = (value / 100).toLocaleString('pt-BR', {
@@ -181,6 +183,29 @@ document.getElementById('unit_cost').addEventListener('input', function(e) {
             currency: 'BRL'
         }).replace('R$', '').trim();
         e.target.value = value;
+    }
+});
+
+// Converter para formato correto no foco perdido
+unitCostField.addEventListener('blur', function(e) {
+    if (e.target.value) {
+        let value = e.target.value;
+        // Converter de formato brasileiro para inglês
+        value = value.replace(/\./g, ''); // Remove separadores de milhares
+        value = value.replace(',', '.'); // Troca vírgula por ponto
+        e.target.value = value;
+        // Converter de volta para exibição
+        setTimeout(() => {
+            if (e.target.value) {
+                const numValue = parseFloat(e.target.value);
+                if (!isNaN(numValue)) {
+                    e.target.value = numValue.toLocaleString('pt-BR', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    });
+                }
+            }
+        }, 100);
     }
 });
 
@@ -194,9 +219,8 @@ document.getElementById('expiry_date').addEventListener('input', function(e) {
 
 // Converter valores para formato correto antes do envio
 document.querySelector('form').addEventListener('submit', function(e) {
-    const unitCostField = document.getElementById('unit_cost');
     if (unitCostField.value) {
-        // Converter de formato brasileiro (1.234,56) para formato inglês (1234.56)
+        // Converter de formato brasileiro para formato inglês
         let value = unitCostField.value;
         value = value.replace(/\./g, ''); // Remove separadores de milhares
         value = value.replace(',', '.'); // Troca vírgula por ponto
