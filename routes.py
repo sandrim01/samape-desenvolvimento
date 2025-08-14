@@ -2894,12 +2894,19 @@ def register_routes(app):
     def ajax_delete_stock_item(id):
         """Excluir item de estoque via AJAX"""
         try:
+            app.logger.info(f"🗑️  Tentativa de exclusão AJAX - Item ID: {id}")
+            app.logger.info(f"📊 Headers da requisição: {dict(request.headers)}")
+            app.logger.info(f"📝 Form data: {dict(request.form)}")
+            
             stock_item = StockItem.query.get_or_404(id)
+            app.logger.info(f"✅ Item encontrado: {stock_item.name}")
             
             # Verificar se há movimentações associadas
             movements_count = StockMovement.query.filter_by(stock_item_id=id).count()
+            app.logger.info(f"📈 Movimentações encontradas: {movements_count}")
             
             if movements_count > 0:
+                app.logger.info(f"❌ Exclusão bloqueada - item possui movimentações")
                 return jsonify({
                     'success': False,
                     'message': f'Não é possível excluir o item "{stock_item.name}" pois possui {movements_count} movimentação(ões) registrada(s).'
@@ -2912,6 +2919,7 @@ def register_routes(app):
             # Excluir o item
             db.session.delete(stock_item)
             db.session.commit()
+            app.logger.info(f"✅ Item excluído com sucesso: {item_name}")
             
             # Registrar log
             log_action(
@@ -2928,7 +2936,7 @@ def register_routes(app):
             
         except Exception as e:
             db.session.rollback()
-            app.logger.error(f"Erro ao excluir item de estoque {id}: {str(e)}")
+            app.logger.error(f"❌ Erro ao excluir item de estoque {id}: {str(e)}")
             return jsonify({
                 'success': False,
                 'message': f'Erro ao excluir item de estoque: {str(e)}'
