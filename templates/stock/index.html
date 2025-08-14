@@ -139,10 +139,9 @@
                                 </div>
                                 <div class="modal-footer">
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                                    <form action="{{ url_for('delete_stock_item', id=item.id) }}" method="POST">
-                                        {{ csrf_token() }}
-                                        <button type="submit" class="btn btn-danger">Confirmar Exclusão</button>
-                                    </form>
+                                    <button type="button" class="btn btn-danger" onclick="deleteStockItem({{ item.id }}, '{{ item.name }}')">
+                                        Confirmar Exclusão
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -228,10 +227,9 @@
                                                 </div>
                                                 <div class="modal-footer">
                                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                                                    <form action="{{ url_for('delete_stock_item', id=item.id) }}" method="POST">
-                                                        {{ csrf_token() }}
-                                                        <button type="submit" class="btn btn-danger">Confirmar Exclusão</button>
-                                                    </form>
+                                                    <button type="button" class="btn btn-danger" onclick="deleteStockItem({{ item.id }}, '{{ item.name }}')">
+                                                        Confirmar Exclusão
+                                                    </button>
                                                 </div>
                                             </div>
                                         </div>
@@ -553,5 +551,76 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+// Função para deletar item via AJAX
+function deleteStockItem(itemId, itemName) {
+    // Obter token CSRF
+    const csrfToken = document.querySelector('meta[name=csrf-token]')?.getAttribute('content') || 
+                     document.querySelector('input[name=csrf_token]')?.value;
+    
+    // Criar form data com CSRF token
+    const formData = new FormData();
+    if (csrfToken) {
+        formData.append('csrf_token', csrfToken);
+    }
+    
+    // Fazer requisição AJAX
+    fetch(`/stock/item/${itemId}/delete`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            return response.json();
+        }
+        throw new Error('Erro na requisição');
+    })
+    .then(data => {
+        if (data.success) {
+            // Fechar modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById(`deleteModal${itemId}`)) ||
+                         bootstrap.Modal.getInstance(document.getElementById(`deleteModalDesktop${itemId}`));
+            if (modal) {
+                modal.hide();
+            }
+            
+            // Mostrar mensagem de sucesso
+            showFlashMessage('success', `Item "${itemName}" excluído com sucesso!`);
+            
+            // Recarregar a página após um breve delay
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        } else {
+            showFlashMessage('danger', data.message || 'Erro ao excluir item');
+        }
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+        showFlashMessage('danger', 'Erro ao processar exclusão. Tente novamente.');
+    });
+}
+
+// Função auxiliar para mostrar mensagens flash
+function showFlashMessage(type, message) {
+    const flashMessage = document.createElement('div');
+    flashMessage.classList.add('alert', `alert-${type}`, 'alert-dismissible', 'fade', 'show', 'mt-3');
+    flashMessage.innerHTML = `
+        <strong>${type === 'success' ? 'Sucesso!' : 'Erro!'}</strong> ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+    
+    document.querySelector('.container-fluid').prepend(flashMessage);
+    
+    // Auto-remover após 5 segundos
+    setTimeout(() => {
+        if (flashMessage.parentNode) {
+            flashMessage.remove();
+        }
+    }, 5000);
+}
 </script>
 {% endblock %}
