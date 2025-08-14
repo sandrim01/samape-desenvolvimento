@@ -2576,6 +2576,7 @@ def register_routes(app):
             return redirect(url_for('dashboard'))
 
     @app.route('/estoque/novo', methods=['GET', 'POST'])
+    @app.route('/stock/new', methods=['GET', 'POST'])  # Rota alternativa
     @login_required
     @admin_or_manager_required
     def new_stock_item():

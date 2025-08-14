@@ -36,8 +36,8 @@ app.config["SESSION_COOKIE_SECURE"] = True
 app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 
-# Configure CSRF protection (temporariamente desabilitado para resolver problemas)
-app.config["WTF_CSRF_ENABLED"] = False 
+# Configure CSRF protection (reativado após implementação dos tokens)
+app.config["WTF_CSRF_ENABLED"] = True 
 app.config["WTF_CSRF_TIME_LIMIT"] = 3600  # 1 hour
 app.config["WTF_CSRF_SSL_STRICT"] = False  # Para ambiente de desenvolvimento
 
