@@ -494,10 +494,11 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <form action="{{ url_for('delete_stock_item', id=item.id) }}" method="POST">
-                    {{ csrf_token() }}
-                    <button type="submit" class="btn btn-danger">Confirmar Exclusão</button>
-                </form>
+                <button type="button" class="btn btn-danger delete-confirm-btn" 
+                        data-item-id="{{ item.id }}" 
+                        data-item-name="{{ item.name }}">
+                    Confirmar Exclusão
+                </button>
             </div>
         </div>
     </div>
@@ -585,5 +586,135 @@
             }
         });
     });
+
+// Função para exclusão de item de estoque otimizada para mobile
+function deleteStockItemMobile(itemId, itemName) {
+    const btn = document.querySelector('.delete-confirm-btn');
+    const modal = document.getElementById('deleteModal');
+    
+    // Estado de carregamento para mobile
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Excluindo...';
+    btn.disabled = true;
+    
+    // CSRF token
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    
+    fetch(`/stock/ajax_delete/${itemId}`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify({
+            'csrf_token': csrfToken
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Fechar modal
+            const modalInstance = bootstrap.Modal.getInstance(modal);
+            modalInstance.hide();
+            
+            // Mostrar mensagem de sucesso
+            showAlert('Item excluído com sucesso!', 'success');
+            
+            // Redirecionar após pequeno delay
+            setTimeout(() => {
+                window.location.href = '/stock';
+            }, 1500);
+        } else {
+            throw new Error(data.error || 'Erro ao excluir item');
+        }
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+        showAlert('Erro ao excluir item: ' + error.message, 'danger');
+        
+        // Restaurar botão
+        btn.innerHTML = 'Confirmar Exclusão';
+        btn.disabled = false;
+    });
+}
+
+// Event listeners otimizados para mobile - DELETE
+document.addEventListener('DOMContentLoaded', function() {
+    const deleteBtn = document.querySelector('.delete-confirm-btn');
+    
+    if (deleteBtn) {
+        // Touch events para mobile
+        deleteBtn.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            this.style.transform = 'scale(0.95)';
+        });
+        
+        deleteBtn.addEventListener('touchend', function(e) {
+            e.preventDefault();
+            this.style.transform = 'scale(1)';
+            
+            const itemId = this.getAttribute('data-item-id');
+            const itemName = this.getAttribute('data-item-name');
+            deleteStockItemMobile(itemId, itemName);
+        });
+        
+        // Click events para desktop
+        deleteBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const itemId = this.getAttribute('data-item-id');
+            const itemName = this.getAttribute('data-item-name');
+            deleteStockItemMobile(itemId, itemName);
+        });
+    }
+});
+
+// Função para mostrar alertas
+function showAlert(message, type) {
+    const alertContainer = document.createElement('div');
+    alertContainer.innerHTML = `
+        <div class="alert alert-${type} alert-dismissible fade show" role="alert" style="position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    `;
+    document.body.appendChild(alertContainer);
+    
+    // Auto-remover após 3 segundos
+    setTimeout(() => {
+        const alert = alertContainer.querySelector('.alert');
+        if (alert) {
+            alert.remove();
+        }
+    }, 3000);
+}
+</script>
+
+<style>
+/* Estilos otimizados para mobile */
+@media (max-width: 768px) {
+    .btn-danger {
+        min-height: 44px;
+        font-size: 16px;
+        padding: 12px 20px;
+    }
+    
+    .modal-footer .btn {
+        margin: 5px;
+        width: 100%;
+    }
+    
+    .btn-danger:active,
+    .btn-danger:focus {
+        transform: scale(0.95);
+        transition: transform 0.1s ease;
+    }
+}
+
+/* Feedback visual para touch */
+.btn-danger:hover {
+    background-color: #c82333;
+    border-color: #bd2130;
+}
+</style>
 </script>
 {% endblock %}

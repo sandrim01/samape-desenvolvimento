@@ -2,6 +2,58 @@
 
 {% block title %}Estoque de EPIs e Ferramentas{% endblock %}
 
+{% block head %}
+<style>
+/* Melhorias para dispositivos móveis - botões de exclusão */
+@media (max-width: 768px) {
+    .delete-confirm-btn {
+        min-height: 44px; /* Tamanho mínimo recomendado para touch */
+        padding: 12px 20px;
+        font-size: 16px; /* Evitar zoom em iOS */
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+    
+    .delete-confirm-btn:active,
+    .delete-confirm-btn.mobile-touch {
+        transform: scale(0.98);
+        background-color: #c82333 !important;
+    }
+    
+    .delete-confirm-btn:disabled {
+        opacity: 0.7;
+        pointer-events: none;
+    }
+    
+    /* Melhorar visual do modal em mobile */
+    .modal-dialog {
+        margin: 10px;
+        max-width: calc(100% - 20px);
+    }
+    
+    .modal-footer {
+        flex-direction: column-reverse;
+        gap: 10px;
+    }
+    
+    .modal-footer .btn {
+        width: 100%;
+        margin: 0;
+    }
+}
+
+/* Loading spinner animation */
+.fas.fa-spinner.fa-spin {
+    animation: fa-spin 1s infinite linear;
+}
+
+@keyframes fa-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -139,7 +191,9 @@
                                 </div>
                                 <div class="modal-footer">
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                                    <button type="button" class="btn btn-danger" onclick="deleteStockItem({{ item.id }}, '{{ item.name }}')">
+                                    <button type="button" class="btn btn-danger delete-confirm-btn" 
+                                            data-item-id="{{ item.id }}" 
+                                            data-item-name="{{ item.name }}">
                                         Confirmar Exclusão
                                     </button>
                                 </div>
@@ -227,7 +281,9 @@
                                                 </div>
                                                 <div class="modal-footer">
                                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                                                    <button type="button" class="btn btn-danger" onclick="deleteStockItem({{ item.id }}, '{{ item.name }}')">
+                                                    <button type="button" class="btn btn-danger delete-confirm-btn" 
+                                                            data-item-id="{{ item.id }}" 
+                                                            data-item-name="{{ item.name }}">
                                                         Confirmar Exclusão
                                                     </button>
                                                 </div>
@@ -657,6 +713,101 @@ document.addEventListener('DOMContentLoaded', function() {
             // Restaurar aria-hidden quando modal fecha
             this.setAttribute('aria-hidden', 'true');
         });
+    });
+    
+    // Adicionar event listeners para botões de exclusão mobile-friendly
+    const deleteButtons = document.querySelectorAll('.delete-confirm-btn');
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const itemId = this.getAttribute('data-item-id');
+            const itemName = this.getAttribute('data-item-name');
+            
+            // Adicionar indicador visual de loading
+            const originalText = this.innerHTML;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Excluindo...';
+            this.disabled = true;
+            
+            deleteStockItemMobile(itemId, itemName, this, originalText);
+        });
+        
+        // Adicionar suporte para touch events em mobile
+        button.addEventListener('touchstart', function(e) {
+            // Prevenir problema de double tap em mobile
+            this.classList.add('mobile-touch');
+        }, { passive: true });
+    });
+});
+
+// Função específica para exclusão em mobile - mais robusta
+function deleteStockItemMobile(itemId, itemName, buttonElement, originalText) {
+    // Obter token CSRF
+    const csrfToken = document.querySelector('meta[name=csrf-token]')?.getAttribute('content') || 
+                     document.querySelector('input[name=csrf_token]')?.value;
+    
+    // Encontrar o modal que está sendo usado
+    const modalElement = document.getElementById(`deleteModal${itemId}`) || 
+                        document.getElementById(`deleteModalDesktop${itemId}`);
+    
+    // Criar form data com CSRF token
+    const formData = new FormData();
+    if (csrfToken) {
+        formData.append('csrf_token', csrfToken);
+    }
+    
+    // Fazer requisição AJAX com timeout maior para mobile
+    fetch(`/stock/item/${itemId}/delete`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        // Restaurar botão antes de processar resultado
+        if (buttonElement) {
+            buttonElement.innerHTML = originalText;
+            buttonElement.disabled = false;
+        }
+        
+        if (data.success) {
+            // Fechar modal
+            if (modalElement) {
+                const modal = bootstrap.Modal.getInstance(modalElement);
+                if (modal) {
+                    modal.hide();
+                }
+            }
+            
+            // Mostrar mensagem de sucesso
+            showFlashMessage('success', `Item "${itemName}" excluído com sucesso!`);
+            
+            // Recarregar a página após delay maior para mobile
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
+        } else {
+            showFlashMessage('danger', data.message || 'Erro ao excluir item');
+        }
+    })
+    .catch(error => {
+        console.error('Erro na exclusão mobile:', error);
+        
+        // Restaurar botão em caso de erro
+        if (buttonElement) {
+            buttonElement.innerHTML = originalText;
+            buttonElement.disabled = false;
+        }
+        
+        showFlashMessage('danger', 'Erro ao processar exclusão. Verifique sua conexão e tente novamente.');
     });
 });
 </script>
