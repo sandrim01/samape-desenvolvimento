@@ -2582,20 +2582,35 @@ def register_routes(app):
         """Criar novo item de estoque"""
         form = StockItemForm()
         
+        # Configurar choices dos selects
+        form.type.choices = [(t.name, t.value) for t in StockItemType]
+        form.status.choices = [(s.name, s.value) for s in StockItemStatus]
+        
         if form.validate_on_submit():
             try:
+                # Converter data de validade se fornecida
+                expiry_date = None
+                if form.expiry_date.data:
+                    try:
+                        expiry_date = datetime.strptime(form.expiry_date.data, '%Y-%m-%d').date()
+                    except ValueError:
+                        flash('Formato de data inválido. Use YYYY-MM-DD', 'error')
+                        return render_template('stock/create.html', form=form)
+                
+                # Criar item de estoque
                 stock_item = StockItem(
                     name=form.name.data,
                     description=form.description.data,
-                    type=form.type.data,
-                    quantity=form.quantity.data,
-                    unit=form.unit.data,
+                    type=StockItemType[form.type.data] if form.type.data else StockItemType.ferramenta,
+                    quantity=form.quantity.data or 0,
+                    unit=form.unit.data or 'UN',
                     price=form.unit_cost.data,
-                    supplier_id=form.supplier_id.data,
-                    min_quantity=form.minimum_quantity.data,
-                    expiration_date=form.expiry_date.data,
+                    supplier_id=form.supplier_id.data if form.supplier_id.data != 0 else None,
+                    min_quantity=form.minimum_quantity.data or 5,
+                    expiration_date=expiry_date,
                     location=form.location.data,
-                    status=form.status.data,
+                    status=StockItemStatus[form.status.data] if form.status.data else StockItemStatus.disponivel,
+                    ca_number=form.ca_number.data,
                     created_by=current_user.id
                 )
                 
@@ -2615,6 +2630,7 @@ def register_routes(app):
                 
             except Exception as e:
                 db.session.rollback()
+                app.logger.error(f"Erro ao criar item de estoque: {str(e)}")
                 flash(f'Erro ao criar item de estoque: {str(e)}', 'error')
         
         return render_template('stock/create.html', form=form)
