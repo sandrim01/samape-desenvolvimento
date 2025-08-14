@@ -175,11 +175,13 @@
 // Máscara de moeda para custo unitário
 document.getElementById('unit_cost').addEventListener('input', function(e) {
     let value = e.target.value.replace(/\D/g, '');
-    value = (value / 100).toLocaleString('pt-BR', {
-        style: 'currency',
-        currency: 'BRL'
-    }).replace('R$ ', '');
-    e.target.value = value;
+    if (value) {
+        value = (value / 100).toLocaleString('pt-BR', {
+            style: 'currency',
+            currency: 'BRL'
+        }).replace('R$', '').trim();
+        e.target.value = value;
+    }
 });
 
 // Máscara de data para data de vencimento
@@ -188,6 +190,18 @@ document.getElementById('expiry_date').addEventListener('input', function(e) {
     value = value.replace(/(\d{2})(\d)/, '$1/$2');
     value = value.replace(/(\d{2})\/(\d{2})(\d)/, '$1/$2/$3');
     e.target.value = value;
+});
+
+// Converter valores para formato correto antes do envio
+document.querySelector('form').addEventListener('submit', function(e) {
+    const unitCostField = document.getElementById('unit_cost');
+    if (unitCostField.value) {
+        // Converter de formato brasileiro (1.234,56) para formato inglês (1234.56)
+        let value = unitCostField.value;
+        value = value.replace(/\./g, ''); // Remove separadores de milhares
+        value = value.replace(',', '.'); // Troca vírgula por ponto
+        unitCostField.value = value;
+    }
 });
 </script>
 {% endblock %}
