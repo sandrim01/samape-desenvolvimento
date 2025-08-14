@@ -26,10 +26,10 @@
     <link href="{{ url_for('static', filename='css/mobile-enhanced.css') }}" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/dashboard-metrics.css') }}" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/contrast-fixes.css') }}" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/dark-forms.css') }}?v={{ now }}" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/mobile.css') }}?v={{ now }}" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/dropdown-fix.css') }}?v={{ now }}" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/sidebar-profile-enhanced.css') }}?v={{ now }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/dark-forms.css') }}?v={{ cache_buster }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/mobile.css') }}?v={{ cache_buster }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/dropdown-fix.css') }}?v={{ cache_buster }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/sidebar-profile-enhanced.css') }}?v={{ cache_buster }}" rel="stylesheet">
     
     {% block extra_css %}{% endblock %}
 </head>
@@ -226,8 +226,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <!-- Custom JavaScript -->
-    <script src="{{ url_for('static', filename='js/main.js') }}?v={{ now }}"></script>
-    <script src="{{ url_for('static', filename='js/charts.js') }}?v={{ now }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}?v={{ cache_buster }}"></script>
+    <script src="{{ url_for('static', filename='js/charts.js') }}?v={{ cache_buster }}"></script>
     
     <!-- Script block for child templates -->
     {% block scripts %}{% endblock %}
@@ -439,7 +439,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js"></script>
     
     <!-- Dropdown Fix específico -->
-    <script src="{{ url_for('static', filename='js/dropdown-fix.js') }}?v={{ now }}"></script>
+    <script src="{{ url_for('static', filename='js/dropdown-fix.js') }}?v={{ cache_buster }}"></script>
     
     <!-- Inicializar componentes do Bootstrap -->
     <script>
