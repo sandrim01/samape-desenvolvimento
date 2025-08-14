@@ -2775,6 +2775,46 @@ def register_routes(app):
             flash(f'Erro ao carregar item de estoque: {str(e)}', 'error')
             return redirect(url_for('stock_items'))
     
+    @app.route('/estoque/<int:id>/excluir', methods=['POST'])
+    @login_required
+    @admin_or_manager_required
+    def delete_stock_item(id):
+        """Excluir um item de estoque"""
+        try:
+            stock_item = StockItem.query.get_or_404(id)
+            
+            # Verificar se há movimentações associadas
+            movements_count = StockMovement.query.filter_by(stock_item_id=id).count()
+            
+            if movements_count > 0:
+                flash(f'Não é possível excluir o item "{stock_item.name}" pois possui {movements_count} movimentação(ões) registrada(s).', 'error')
+                return redirect(url_for('view_stock_item', id=id))
+            
+            # Salvar nome para o log antes de excluir
+            item_name = stock_item.name
+            item_type = stock_item.type.name if stock_item.type else "N/A"
+            
+            # Excluir o item
+            db.session.delete(stock_item)
+            db.session.commit()
+            
+            # Registrar log
+            log_action(
+                'Item de Estoque Excluído',
+                'stock_item',
+                id,
+                f'Item {item_name} (Tipo: {item_type}) excluído permanentemente'
+            )
+            
+            flash(f'Item de estoque "{item_name}" excluído com sucesso!', 'success')
+            return redirect(url_for('stock_items'))
+            
+        except Exception as e:
+            db.session.rollback()
+            app.logger.error(f"Erro ao excluir item de estoque {id}: {str(e)}")
+            flash(f'Erro ao excluir item de estoque: {str(e)}', 'error')
+            return redirect(url_for('stock_items'))
+    
     @app.route('/frota')
     @login_required
     def fleet():
