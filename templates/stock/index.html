@@ -715,99 +715,204 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Adicionar event listeners para botões de exclusão mobile-friendly
+    // Adicionar event listeners para botões de exclusão mobile-friendly - versão com debug
+    console.log('🔍 Procurando botões de exclusão...');
     const deleteButtons = document.querySelectorAll('.delete-confirm-btn');
-    deleteButtons.forEach(button => {
+    console.log(`📱 Encontrados ${deleteButtons.length} botões de exclusão`);
+    
+    deleteButtons.forEach((button, index) => {
+        console.log(`🔘 Configurando botão ${index + 1}:`, button);
+        
+        // Event listener principal - funciona tanto para touch quanto click
         button.addEventListener('click', function(e) {
+            console.log(`👆 Click/Touch detectado no botão ${index + 1}`);
             e.preventDefault();
             e.stopPropagation();
             
             const itemId = this.getAttribute('data-item-id');
             const itemName = this.getAttribute('data-item-name');
             
+            console.log(`📋 Dados do item - ID: ${itemId}, Nome: ${itemName}`);
+            
+            if (!itemId || !itemName) {
+                console.error('❌ Dados do item incompletos');
+                alert('ERRO: Dados do item não encontrados');
+                return;
+            }
+            
             // Adicionar indicador visual de loading
             const originalText = this.innerHTML;
-            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Excluindo...';
+            this.innerHTML = '🗑️ <i class="fas fa-spinner fa-spin"></i> Preparando...';
             this.disabled = true;
             
-            deleteStockItemMobile(itemId, itemName, this, originalText);
+            console.log('⏳ Iniciando processo de exclusão...');
+            
+            // Pequeno delay para garantir que o loading seja visível
+            setTimeout(() => {
+                deleteStockItemMobile(itemId, itemName, this, originalText);
+            }, 100);
         });
         
-        // Adicionar suporte para touch events em mobile
+        // Touch feedback visual para mobile
         button.addEventListener('touchstart', function(e) {
-            // Prevenir problema de double tap em mobile
-            this.classList.add('mobile-touch');
+            console.log(`👆 Touch start no botão ${index + 1}`);
+            this.style.transform = 'scale(0.95)';
+            this.classList.add('mobile-touching');
+        }, { passive: true });
+        
+        button.addEventListener('touchend', function(e) {
+            console.log(`👆 Touch end no botão ${index + 1}`);
+            setTimeout(() => {
+                this.style.transform = 'scale(1)';
+                this.classList.remove('mobile-touching');
+            }, 100);
         }, { passive: true });
     });
 });
 
-// Função específica para exclusão em mobile - mais robusta
+// Função específica para exclusão em mobile - versão com debug detalhado
 function deleteStockItemMobile(itemId, itemName, buttonElement, originalText) {
-    // Obter token CSRF
-    const csrfToken = document.querySelector('meta[name=csrf-token]')?.getAttribute('content') || 
-                     document.querySelector('input[name=csrf_token]')?.value;
+    console.log(`🚀 deleteStockItemMobile iniciada - ID: ${itemId}, Nome: ${itemName}`);
+    console.log('🔘 Botão:', buttonElement);
+    
+    if (!itemId || !buttonElement) {
+        console.error('❌ Parâmetros inválidos:', { itemId, buttonElement });
+        alert('ERRO: Dados do item não encontrados. Tente novamente.');
+        return;
+    }
+    
+    // Obter token CSRF com múltiplas tentativas
+    let csrfToken = document.querySelector('meta[name=csrf-token]')?.getAttribute('content') || 
+                   document.querySelector('input[name=csrf_token]')?.value;
+    
+    // Tentar outras formas se não encontrou
+    if (!csrfToken) {
+        const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+        if (csrfMeta) {
+            csrfToken = csrfMeta.content || csrfMeta.getAttribute('content');
+        }
+    }
+    
+    console.log('🔒 CSRF Token:', csrfToken ? '✅ Encontrado' : '❌ NÃO encontrado');
+    
+    if (!csrfToken) {
+        console.error('❌ CSRF token não encontrado em nenhuma forma');
+        alert('ERRO: Token de segurança não encontrado. Recarregue a página.');
+        return;
+    }
     
     // Encontrar o modal que está sendo usado
     const modalElement = document.getElementById(`deleteModal${itemId}`) || 
                         document.getElementById(`deleteModalDesktop${itemId}`);
     
+    console.log('📱 Modal encontrado:', modalElement ? '✅ Sim' : '❌ Não');
+    
+    // Estado de carregamento mais visual
+    buttonElement.innerHTML = '🗑️ <i class="fas fa-spinner fa-spin"></i> Excluindo...';
+    buttonElement.disabled = true;
+    buttonElement.style.opacity = '0.7';
+    
+    console.log('⏳ Estado de loading ativado');
+    
+    // Alert temporário para debug - será removido após teste
+    alert(`🧪 DEBUG: Tentando excluir item "${itemName}" (ID: ${itemId})`);
+    
     // Criar form data com CSRF token
     const formData = new FormData();
-    if (csrfToken) {
-        formData.append('csrf_token', csrfToken);
-    }
+    formData.append('csrf_token', csrfToken);
     
-    // Fazer requisição AJAX com timeout maior para mobile
+    console.log('🌐 Iniciando requisição AJAX...');
+    console.log('📡 URL:', `/stock/item/${itemId}/delete`);
+    
+    // Requisição com timeout maior para mobile (20 segundos)
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => {
+        controller.abort();
+        console.log('⏰ Timeout da requisição após 20 segundos');
+    }, 20000);
+    
     fetch(`/stock/item/${itemId}/delete`, {
         method: 'POST',
         body: formData,
         headers: {
             'X-Requested-With': 'XMLHttpRequest',
-        }
+        },
+        signal: controller.signal
     })
     .then(response => {
+        clearTimeout(timeoutId);
+        console.log(`📡 Resposta recebida - Status: ${response.status}`);
+        
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
         return response.json();
     })
     .then(data => {
+        console.log('✅ Dados da resposta:', data);
+        
         // Restaurar botão antes de processar resultado
         if (buttonElement) {
             buttonElement.innerHTML = originalText;
             buttonElement.disabled = false;
+            buttonElement.style.opacity = '1';
         }
         
         if (data.success) {
+            console.log('✅ Exclusão bem-sucedida');
+            
             // Fechar modal
             if (modalElement) {
                 const modal = bootstrap.Modal.getInstance(modalElement);
                 if (modal) {
                     modal.hide();
+                    console.log('✅ Modal fechado');
                 }
             }
             
-            // Mostrar mensagem de sucesso
+            // Mensagem de sucesso - temporariamente com alert para debug
+            const successMessage = `✅ Item "${itemName}" excluído com sucesso!`;
+            console.log(successMessage);
+            alert(successMessage); // Debug temporário
+            
             showFlashMessage('success', `Item "${itemName}" excluído com sucesso!`);
             
             // Recarregar a página após delay maior para mobile
             setTimeout(() => {
+                console.log('🔄 Recarregando página...');
                 window.location.reload();
             }, 2000);
+            
         } else {
-            showFlashMessage('danger', data.message || 'Erro ao excluir item');
+            const errorMessage = data.message || 'Erro desconhecido ao excluir item';
+            console.error('❌ Erro retornado pelo servidor:', errorMessage);
+            alert(`❌ ERRO: ${errorMessage}`); // Debug temporário
+            showFlashMessage('danger', errorMessage);
         }
     })
     .catch(error => {
-        console.error('Erro na exclusão mobile:', error);
+        clearTimeout(timeoutId);
+        console.error('❌ Erro na requisição:', error);
         
         // Restaurar botão em caso de erro
         if (buttonElement) {
             buttonElement.innerHTML = originalText;
             buttonElement.disabled = false;
+            buttonElement.style.opacity = '1';
         }
         
-        showFlashMessage('danger', 'Erro ao processar exclusão. Verifique sua conexão e tente novamente.');
+        let errorMessage = 'Erro ao processar exclusão';
+        if (error.name === 'AbortError') {
+            errorMessage = 'Timeout: Conexão muito lenta. Tente novamente.';
+        } else if (error.message.includes('HTTP')) {
+            errorMessage = `Erro do servidor: ${error.message}`;
+        } else {
+            errorMessage = `Erro de rede: ${error.message}`;
+        }
+        
+        console.error('❌ Mensagem de erro final:', errorMessage);
+        alert(`❌ ERRO: ${errorMessage}`); // Debug temporário
+        showFlashMessage('danger', errorMessage);
     });
 });
 </script>
