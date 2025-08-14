@@ -126,7 +126,7 @@
                     </div>
                     
                     <!-- Modal de Confirmação de Exclusão -->
-                    <div class="modal fade" id="deleteModal{{ item.id }}" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel{{ item.id }}" aria-hidden="true">
+                    <div class="modal fade" id="deleteModal{{ item.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ item.id }}">
                         <div class="modal-dialog" role="document">
                             <div class="modal-content">
                                 <div class="modal-header">
@@ -214,7 +214,7 @@
                                     </div>
                                     
                                     <!-- Modal de Confirmação de Exclusão Desktop -->
-                                    <div class="modal fade" id="deleteModalDesktop{{ item.id }}" tabindex="-1" role="dialog" aria-labelledby="deleteModalDesktopLabel{{ item.id }}" aria-hidden="true">
+                                    <div class="modal fade" id="deleteModalDesktop{{ item.id }}" tabindex="-1" aria-labelledby="deleteModalDesktopLabel{{ item.id }}">
                                         <div class="modal-dialog" role="document">
                                             <div class="modal-content">
                                                 <div class="modal-header">
@@ -558,6 +558,15 @@ function deleteStockItem(itemId, itemName) {
     const csrfToken = document.querySelector('meta[name=csrf-token]')?.getAttribute('content') || 
                      document.querySelector('input[name=csrf_token]')?.value;
     
+    // Encontrar o modal que está sendo usado
+    const modalElement = document.getElementById(`deleteModal${itemId}`) || 
+                        document.getElementById(`deleteModalDesktop${itemId}`);
+    
+    if (modalElement) {
+        // Melhorar acessibilidade: garantir que aria-hidden seja removido quando modal estiver ativo
+        modalElement.setAttribute('aria-hidden', 'false');
+    }
+    
     // Criar form data com CSRF token
     const formData = new FormData();
     if (csrfToken) {
@@ -581,10 +590,13 @@ function deleteStockItem(itemId, itemName) {
     .then(data => {
         if (data.success) {
             // Fechar modal
-            const modal = bootstrap.Modal.getInstance(document.getElementById(`deleteModal${itemId}`)) ||
-                         bootstrap.Modal.getInstance(document.getElementById(`deleteModalDesktop${itemId}`));
+            const modal = bootstrap.Modal.getInstance(modalElement);
             if (modal) {
                 modal.hide();
+                // Restaurar aria-hidden após fechamento
+                modalElement.addEventListener('hidden.bs.modal', function() {
+                    modalElement.setAttribute('aria-hidden', 'true');
+                }, { once: true });
             }
             
             // Mostrar mensagem de sucesso
@@ -595,11 +607,19 @@ function deleteStockItem(itemId, itemName) {
                 window.location.reload();
             }, 1500);
         } else {
+            // Restaurar aria-hidden em caso de erro
+            if (modalElement) {
+                modalElement.setAttribute('aria-hidden', 'true');
+            }
             showFlashMessage('danger', data.message || 'Erro ao excluir item');
         }
     })
     .catch(error => {
         console.error('Erro:', error);
+        // Restaurar aria-hidden em caso de erro
+        if (modalElement) {
+            modalElement.setAttribute('aria-hidden', 'true');
+        }
         showFlashMessage('danger', 'Erro ao processar exclusão. Tente novamente.');
     });
 }
@@ -622,5 +642,22 @@ function showFlashMessage(type, message) {
         }
     }, 5000);
 }
+
+// Gerenciar acessibilidade dos modais Bootstrap
+document.addEventListener('DOMContentLoaded', function() {
+    // Ouvir eventos de abertura de modais
+    const modals = document.querySelectorAll('.modal');
+    modals.forEach(modal => {
+        modal.addEventListener('show.bs.modal', function() {
+            // Remover aria-hidden quando modal abre
+            this.removeAttribute('aria-hidden');
+        });
+        
+        modal.addEventListener('hidden.bs.modal', function() {
+            // Restaurar aria-hidden quando modal fecha
+            this.setAttribute('aria-hidden', 'true');
+        });
+    });
+});
 </script>
 {% endblock %}
