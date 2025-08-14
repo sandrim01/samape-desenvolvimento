@@ -417,7 +417,7 @@ class StockItemForm(FlaskForm):
     minimum_quantity = IntegerField('Quantidade Mínima', validators=[DataRequired(), NumberRange(min=0)], default=5)
     location = StringField('Localização no Depósito', validators=[Optional(), Length(max=100)])
     price = DecimalField('Preço Unitário (R$)', validators=[Optional()], places=2)
-    supplier_id = SelectField('Fornecedor', validators=[Optional()], coerce=lambda x: int(x) if x else None)
+    supplier_id = SelectField('Fornecedor', validators=[Optional()], coerce=int)
     expiry_date = StringField('Data de Validade', validators=[Optional()])
     ca_number = StringField('Número do CA (para EPIs)', validators=[Optional(), Length(max=50)])
     status = SelectField('Status', choices=[(s.name, s.value) for s in StockItemStatus], validators=[DataRequired()], default='disponivel')

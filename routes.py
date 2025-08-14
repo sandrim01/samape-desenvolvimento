@@ -2585,6 +2585,10 @@ def register_routes(app):
         # Configurar choices dos selects
         form.type.choices = [(t.name, t.value) for t in StockItemType]
         form.status.choices = [(s.name, s.value) for s in StockItemStatus]
+        # Configurar choices do supplier_id no formulário
+        form.supplier_id.choices = [(0, 'Selecione um fornecedor (opcional)')] + [
+            (s.id, s.name) for s in Supplier.query.order_by(Supplier.name).all()
+        ]
         
         if form.validate_on_submit():
             try:
