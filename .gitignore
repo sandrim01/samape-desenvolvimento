@@ -48,6 +48,41 @@ coverage.xml
 *.cover
 *.py,cover
 .hypothesis/
+
+# Arquivos de teste e debug (devem ser removidos após uso)
+test_*.py
+*test*.py
+debug_*.py
+*debug*.py
+check_*.py
+*check*.py
+verify_*.py
+*verify*.py
+diagnos*.py
+*diagnos*.py
+
+# Arquivos temporários e de correção
+fix_*.py
+*fix*.py
+temp_*.py
+*temp*.py
+tmp_*.py
+*tmp*.py
+
+# Scripts de migração pontuais (remover após execução)
+migrate_*.py
+migra*.py
+*migration*.py
+
+# Arquivos de backup
+*.bak
+*backup*
+*.old
+
+# Scripts de setup temporários
+setup_*.py
+start_*.py
+clean_*.py
 .pytest_cache/
 
 # Translations
