@@ -3084,26 +3084,62 @@ def register_routes(app):
             
             if form.validate_on_submit():
                 try:
-                    form.populate_obj(vehicle)
+                    # Não usar populate_obj diretamente para evitar problemas com enums
+                    # Atualizar campos manualmente
+                    vehicle.plate = form.plate.data
+                    vehicle.brand = form.brand.data
+                    vehicle.model = form.model.data
+                    vehicle.year = form.year.data
+                    vehicle.color = form.color.data
+                    vehicle.chassis = form.chassis.data
+                    vehicle.renavam = form.renavam.data
                     
-                    # Processar datas
+                    # Tratar enum FuelType corretamente
+                    if form.fuel_type.data:
+                        vehicle.fuel_type = FuelType[form.fuel_type.data]
+                    
+                    vehicle.current_km = form.current_km.data
+                    vehicle.insurance_policy = form.insurance_policy.data
+                    vehicle.next_maintenance_km = form.next_maintenance_km.data
+                    vehicle.notes = form.notes.data
+                    
+                    # Tratar enum VehicleStatus corretamente
+                    if form.status.data:
+                        if isinstance(form.status.data, str):
+                            vehicle.status = VehicleStatus[form.status.data]
+                        else:
+                            vehicle.status = form.status.data
+                    
+                    # Processar datas (verificar se é string ou objeto date)
                     if form.acquisition_date.data:
-                        try:
-                            vehicle.acquisition_date = datetime.strptime(form.acquisition_date.data, '%Y-%m-%d').date()
-                        except ValueError:
-                            vehicle.acquisition_date = None
+                        if isinstance(form.acquisition_date.data, str):
+                            try:
+                                vehicle.acquisition_date = datetime.strptime(form.acquisition_date.data, '%Y-%m-%d').date()
+                            except ValueError:
+                                vehicle.acquisition_date = None
+                        else:
+                            # Já é um objeto date
+                            vehicle.acquisition_date = form.acquisition_date.data
                             
                     if form.insurance_expiry.data:
-                        try:
-                            vehicle.insurance_expiry = datetime.strptime(form.insurance_expiry.data, '%Y-%m-%d').date()
-                        except ValueError:
-                            vehicle.insurance_expiry = None
+                        if isinstance(form.insurance_expiry.data, str):
+                            try:
+                                vehicle.insurance_expiry = datetime.strptime(form.insurance_expiry.data, '%Y-%m-%d').date()
+                            except ValueError:
+                                vehicle.insurance_expiry = None
+                        else:
+                            # Já é um objeto date
+                            vehicle.insurance_expiry = form.insurance_expiry.data
                             
                     if form.next_maintenance_date.data:
-                        try:
-                            vehicle.next_maintenance_date = datetime.strptime(form.next_maintenance_date.data, '%Y-%m-%d').date()
-                        except ValueError:
-                            vehicle.next_maintenance_date = None
+                        if isinstance(form.next_maintenance_date.data, str):
+                            try:
+                                vehicle.next_maintenance_date = datetime.strptime(form.next_maintenance_date.data, '%Y-%m-%d').date()
+                            except ValueError:
+                                vehicle.next_maintenance_date = None
+                        else:
+                            # Já é um objeto date
+                            vehicle.next_maintenance_date = form.next_maintenance_date.data
                     
                     vehicle.updated_at = datetime.utcnow()
                     db.session.commit()
