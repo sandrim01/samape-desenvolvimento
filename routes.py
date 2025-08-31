@@ -2595,22 +2595,22 @@ def register_routes(app):
             try:
                 # Converter data de validade se fornecida
                 expiry_date = None
-                if form.expiry_date.data:
+                if form.expiration_date.data:
                     try:
-                        expiry_date = datetime.strptime(form.expiry_date.data, '%Y-%m-%d').date()
+                        expiry_date = datetime.strptime(form.expiration_date.data, '%Y-%m-%d').date()
                     except ValueError:
                         flash('Formato de data inválido. Use YYYY-MM-DD', 'error')
                         return render_template('stock/create.html', form=form)
                 
                 # Processar valor unitário (converter formato brasileiro se necessário)
-                unit_cost = form.unit_cost.data
-                if isinstance(unit_cost, str):
+                price = form.price.data
+                if isinstance(price, str):
                     # Converter formato brasileiro (1.234,56) para formato inglês (1234.56)
-                    unit_cost = unit_cost.replace('.', '').replace(',', '.')
+                    price = price.replace('.', '').replace(',', '.')
                     try:
-                        unit_cost = float(unit_cost) if unit_cost else None
+                        price = float(price) if price else None
                     except ValueError:
-                        unit_cost = None
+                        price = None
                 
                 # Criar item de estoque
                 stock_item = StockItem(
@@ -2619,9 +2619,9 @@ def register_routes(app):
                     type=StockItemType[form.type.data] if form.type.data else StockItemType.ferramenta,
                     quantity=form.quantity.data or 0,
                     unit=form.unit.data or 'UN',
-                    price=unit_cost,
+                    price=price,
                     supplier_id=form.supplier_id.data if form.supplier_id.data != 0 else None,
-                    min_quantity=form.minimum_quantity.data or 5,
+                    min_quantity=form.min_quantity.data or 5,
                     expiration_date=expiry_date,
                     location=form.location.data,
                     status=StockItemStatus[form.status.data] if form.status.data else StockItemStatus.disponivel,
@@ -2764,7 +2764,7 @@ def register_routes(app):
             form = StockItemForm(obj=stock_item)
             
             # Configurar choices dos selects
-            form.type_id.choices = [(t.name, t.value) for t in StockItemType]
+            form.type.choices = [(t.name, t.value) for t in StockItemType]
             form.status.choices = [(s.name, s.value) for s in StockItemStatus]
             
             if form.validate_on_submit():
@@ -2774,15 +2774,13 @@ def register_routes(app):
                         'name': stock_item.name,
                         'quantity': stock_item.quantity,
                         'unit': stock_item.unit,
-                        'unit_cost': stock_item.unit_cost,
-                        'minimum_quantity': stock_item.minimum_quantity,
-                        'type_id': stock_item.type_id,
+                        'min_quantity': stock_item.min_quantity,
+                        'type': stock_item.type.name if stock_item.type else None,
                         'status': stock_item.status.name if stock_item.status else None
                     }
                     
                     # Atualizar dados
                     form.populate_obj(stock_item)
-                    stock_item.updated_by = current_user.id
                     stock_item.updated_at = datetime.utcnow()
                     
                     db.session.commit()
@@ -2793,9 +2791,8 @@ def register_routes(app):
                         'name': stock_item.name,
                         'quantity': stock_item.quantity,
                         'unit': stock_item.unit,
-                        'unit_cost': stock_item.unit_cost,
-                        'minimum_quantity': stock_item.minimum_quantity,
-                        'type_id': stock_item.type_id,
+                        'min_quantity': stock_item.min_quantity,
+                        'type': stock_item.type.name if stock_item.type else None,
                         'status': stock_item.status.name if stock_item.status else None
                     }
                     
