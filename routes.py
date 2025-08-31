@@ -21,7 +21,7 @@ from forms import (
     LoginForm, UserForm, ClientForm, EquipmentForm, ServiceOrderForm,
     CloseServiceOrderForm, FinancialEntryForm, ProfileForm, SystemSettingsForm,
     SupplierForm, PartForm, PartSaleForm, SupplierOrderForm, OrderItemForm,
-    StockItemForm, StockMovementForm
+    StockItemForm, StockMovementForm, VehicleForm
 )
 from utils import (
     role_required, admin_required, manager_required, log_action,
@@ -3004,6 +3004,137 @@ def register_routes(app):
             app.logger.error(f'Erro ao listar frota: {str(e)}')
             flash(f'Erro ao listar frota: {str(e)}', 'danger')
             return redirect(url_for('dashboard'))
+
+    # === ROTAS DE VEÍCULOS ===
+    
+    @app.route('/frota/novo', methods=['GET', 'POST'])
+    @login_required
+    @admin_or_manager_required
+    def new_vehicle():
+        """Criar novo veículo"""
+        form = VehicleForm()
+        
+        if form.validate_on_submit():
+            try:
+                vehicle = Vehicle(
+                    plate=form.plate.data,
+                    brand=form.brand.data,
+                    model=form.model.data,
+                    year=form.year.data,
+                    color=form.color.data,
+                    chassis=form.chassis.data,
+                    renavam=form.renavam.data,
+                    fuel_type=FuelType[form.fuel_type.data] if form.fuel_type.data else FuelType.flex,
+                    current_km=form.current_km.data or 0,
+                    responsible_id=form.responsible_id.data if form.responsible_id.data != 0 else None,
+                    status=VehicleStatus[form.status.data] if form.status.data else VehicleStatus.ativo,
+                    notes=form.notes.data
+                )
+                
+                # Processar datas
+                if form.acquisition_date.data:
+                    try:
+                        vehicle.acquisition_date = datetime.strptime(form.acquisition_date.data, '%Y-%m-%d').date()
+                    except ValueError:
+                        pass
+                        
+                if form.insurance_expiry.data:
+                    try:
+                        vehicle.insurance_expiry = datetime.strptime(form.insurance_expiry.data, '%Y-%m-%d').date()
+                    except ValueError:
+                        pass
+                        
+                if form.next_maintenance_date.data:
+                    try:
+                        vehicle.next_maintenance_date = datetime.strptime(form.next_maintenance_date.data, '%Y-%m-%d').date()
+                    except ValueError:
+                        pass
+                
+                db.session.add(vehicle)
+                db.session.commit()
+                
+                flash(f'Veículo {vehicle.plate} cadastrado com sucesso!', 'success')
+                return redirect(url_for('fleet'))
+                
+            except Exception as e:
+                db.session.rollback()
+                flash(f'Erro ao cadastrar veículo: {str(e)}', 'error')
+        
+        return render_template('fleet/new.html', form=form)
+    
+    @app.route('/frota/<int:id>')
+    @login_required
+    def view_vehicle(id):
+        """Visualizar detalhes de um veículo"""
+        try:
+            vehicle = Vehicle.query.get_or_404(id)
+            return render_template('fleet/view.html', vehicle=vehicle)
+        except Exception as e:
+            flash(f'Erro ao carregar veículo: {str(e)}', 'error')
+            return redirect(url_for('fleet'))
+    
+    @app.route('/frota/<int:id>/editar', methods=['GET', 'POST'])
+    @login_required
+    @admin_or_manager_required
+    def edit_vehicle(id):
+        """Editar um veículo"""
+        try:
+            vehicle = Vehicle.query.get_or_404(id)
+            form = VehicleForm(obj=vehicle)
+            
+            if form.validate_on_submit():
+                try:
+                    form.populate_obj(vehicle)
+                    
+                    # Processar datas
+                    if form.acquisition_date.data:
+                        try:
+                            vehicle.acquisition_date = datetime.strptime(form.acquisition_date.data, '%Y-%m-%d').date()
+                        except ValueError:
+                            vehicle.acquisition_date = None
+                            
+                    if form.insurance_expiry.data:
+                        try:
+                            vehicle.insurance_expiry = datetime.strptime(form.insurance_expiry.data, '%Y-%m-%d').date()
+                        except ValueError:
+                            vehicle.insurance_expiry = None
+                            
+                    if form.next_maintenance_date.data:
+                        try:
+                            vehicle.next_maintenance_date = datetime.strptime(form.next_maintenance_date.data, '%Y-%m-%d').date()
+                        except ValueError:
+                            vehicle.next_maintenance_date = None
+                    
+                    vehicle.updated_at = datetime.utcnow()
+                    db.session.commit()
+                    
+                    flash(f'Veículo {vehicle.plate} atualizado com sucesso!', 'success')
+                    return redirect(url_for('view_vehicle', id=vehicle.id))
+                    
+                except Exception as e:
+                    db.session.rollback()
+                    flash(f'Erro ao atualizar veículo: {str(e)}', 'error')
+            
+            return render_template('fleet/edit.html', form=form, vehicle=vehicle)
+            
+        except Exception as e:
+            flash(f'Erro ao carregar veículo: {str(e)}', 'error')
+            return redirect(url_for('fleet'))
+    
+    @app.route('/frota/<int:id>/manutencao/nova')
+    @login_required
+    @admin_or_manager_required
+    def new_vehicle_maintenance(id):
+        """Nova manutenção para veículo"""
+        try:
+            vehicle = Vehicle.query.get_or_404(id)
+            # Por enquanto, redirecionar de volta para o veículo
+            # TODO: Implementar formulário de manutenção
+            flash('Funcionalidade de manutenção em desenvolvimento', 'info')
+            return redirect(url_for('view_vehicle', id=id))
+        except Exception as e:
+            flash(f'Erro ao carregar veículo: {str(e)}', 'error')
+            return redirect(url_for('fleet'))
 
     # Register function to be called with app context in app.py
     app.create_initial_admin = create_initial_admin
