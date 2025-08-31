@@ -21,7 +21,7 @@ from forms import (
     LoginForm, UserForm, ClientForm, EquipmentForm, ServiceOrderForm,
     CloseServiceOrderForm, FinancialEntryForm, ProfileForm, SystemSettingsForm,
     SupplierForm, PartForm, PartSaleForm, SupplierOrderForm, OrderItemForm,
-    StockItemForm
+    StockItemForm, StockMovementForm
 )
 from utils import (
     role_required, admin_required, manager_required, log_action,
@@ -2739,9 +2739,15 @@ def register_routes(app):
                 .limit(50)\
                 .all()
             
+            # Criar formulário de movimento para o item específico
+            movement_form = StockMovementForm()
+            # Pré-selecionar o item atual
+            movement_form.stock_item_id.data = stock_item.id
+            
             return render_template('stock/view.html', 
                                  item=stock_item,
-                                 movements=movements)
+                                 movements=movements,
+                                 movement_form=movement_form)
                                  
         except Exception as e:
             app.logger.error(f"Erro ao visualizar item de estoque {id}: {str(e)}")
