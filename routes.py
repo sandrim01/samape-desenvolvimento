@@ -3136,6 +3136,30 @@ def register_routes(app):
             flash(f'Erro ao carregar veículo: {str(e)}', 'error')
             return redirect(url_for('fleet'))
 
+    # === ROTAS FALTANTES PARA TEMPLATE DE FROTA ===
+    
+    @app.route('/frota/veiculo/<int:id>/abastecimento')
+    @login_required
+    def register_refueling(id):
+        """Registrar abastecimento de veículo"""
+        flash('Funcionalidade de abastecimento em desenvolvimento', 'info')
+        return redirect(url_for('fleet'))
+    
+    @app.route('/frota/veiculo/<int:vehicle_id>/historico-manutencao')
+    @login_required
+    def vehicle_maintenance_history(vehicle_id):
+        """Histórico de manutenção do veículo"""
+        flash('Funcionalidade de histórico de manutenção em desenvolvimento', 'info')
+        return redirect(url_for('fleet'))
+    
+    @app.route('/frota/veiculo/<int:id>/excluir', methods=['POST'])
+    @login_required
+    @admin_or_manager_required
+    def excluir_veiculo_direct(id):
+        """Excluir veículo"""
+        flash('Funcionalidade de exclusão em desenvolvimento', 'info')
+        return redirect(url_for('fleet'))
+
     # Register function to be called with app context in app.py
     app.create_initial_admin = create_initial_admin
 

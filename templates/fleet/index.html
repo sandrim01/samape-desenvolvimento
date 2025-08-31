@@ -455,7 +455,7 @@
             </div>
             
             <div class="card-body p-0">
-                {% if vehicles and vehicles.items|length > 0 %}
+                {% if vehicles and vehicles|length > 0 %}
                 <div class="table-responsive vehicle-table">
                     <table class="table table-hover">
                         <thead>
@@ -469,7 +469,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for vehicle in vehicles.items %}
+                            {% for vehicle in vehicles %}
                             <tr class="vehicle-row">
                                 <td style="min-width: 180px">
                                     <div class="d-flex align-items-center">
