@@ -2965,13 +2965,12 @@ def register_routes(app):
             
             search = request.args.get('search', '')
             status_filter = request.args.get('status', '')
-            vehicle_type = request.args.get('type', '')
             
             query = Vehicle.query
             
             if search:
                 query = query.filter(
-                    Vehicle.license_plate.ilike(f'%{search}%') |
+                    Vehicle.plate.ilike(f'%{search}%') |
                     Vehicle.model.ilike(f'%{search}%') |
                     Vehicle.brand.ilike(f'%{search}%')
                 )
@@ -2979,10 +2978,7 @@ def register_routes(app):
             if status_filter:
                 query = query.filter(Vehicle.status == status_filter)
             
-            if vehicle_type:
-                query = query.filter(Vehicle.vehicle_type == vehicle_type)
-            
-            query = query.order_by(Vehicle.license_plate)
+            query = query.order_by(Vehicle.plate)
             
             pagination = query.paginate(
                 page=page,
@@ -2997,12 +2993,10 @@ def register_routes(app):
                 vehicles=vehicles,
                 pagination=pagination,
                 stats=stats,
-                vehicle_types=VehicleType,
                 vehicle_statuses=VehicleStatus,
                 active_filters={
                     'search': search,
-                    'status': status_filter,
-                    'type': vehicle_type
+                    'status': status_filter
                 }
             )
             
