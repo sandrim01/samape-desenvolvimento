@@ -77,16 +77,17 @@ app.jinja_env.filters['status_color'] = status_color
 app.jinja_env.filters['abs'] = absolute_value
 app.jinja_env.globals['hasattr'] = hasattr
 
-# Import and register routes
-from routes import register_routes
-register_routes(app)
-
-# Importa e registra o blueprint do controle de ponto
-from ponto import bp_ponto
-app.register_blueprint(bp_ponto)
-
-# Create initial admin user if needed
+# Create application context first
 with app.app_context():
+    # Import and register routes after app context is available
+    from routes import register_routes
+    register_routes(app)
+    
+    # Importa e registra o blueprint do controle de ponto
+    from ponto import bp_ponto
+    app.register_blueprint(bp_ponto)
+    
+    # Create initial admin user if needed
     if hasattr(app, 'create_initial_admin'):
         app.create_initial_admin()
 
