@@ -24,30 +24,45 @@
             <table class="table table-striped table-hover">
                 <thead>
                     <tr>
+                        <th width="70" class="text-center">Foto</th>
                         <th>Nome</th>
-                        <th>Email</th>
+                        <th class="d-none d-md-table-cell">Email</th>
                         <th>Cargo</th>
-                        <th>Status</th>
-                        <th>Data de Cadastro</th>
+                        <th class="d-none d-lg-table-cell">Status</th>
+                        <th class="d-none d-lg-table-cell">Data de Cadastro</th>
                         <th>Ações</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for employee in employees %}
                     <tr>
-                        <td>{{ employee.name }}</td>
-                        <td>{{ employee.email }}</td>
+                        <td>
+                            <div class="d-flex justify-content-center">
+                                <img src="data:image/svg+xml;base64,{{ employee.get_profile_image() }}" 
+                                     alt="Foto de {{ employee.name }}" 
+                                     class="rounded-circle border border-2 border-light shadow-sm" 
+                                     width="45" 
+                                     height="45"
+                                     style="object-fit: cover;">
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <strong>{{ employee.name }}</strong>
+                            </div>
+                        </td>
+                        <td class="d-none d-md-table-cell">{{ employee.email }}</td>
                         <td>
                             <span class="badge {% if employee.role.name == 'admin' %}bg-danger{% elif employee.role.name == 'gerente' %}bg-primary{% else %}bg-secondary{% endif %}">
                                 {{ employee.role.value }}
                             </span>
                         </td>
-                        <td>
+                        <td class="d-none d-lg-table-cell">
                             <span class="badge {% if employee.active %}bg-success{% else %}bg-danger{% endif %}">
                                 {{ 'Ativo' if employee.active else 'Inativo' }}
                             </span>
                         </td>
-                        <td>{{ employee.created_at.strftime('%d/%m/%Y') }}</td>
+                        <td class="d-none d-lg-table-cell">{{ employee.created_at.strftime('%d/%m/%Y') }}</td>
                         <td class="table-actions">
                             {% if current_user.is_admin() %}
                             <a href="{{ url_for('edit_employee', id=employee.id) }}" class="btn btn-sm btn-outline-secondary" data-bs-toggle="tooltip" data-bs-placement="top" title="Editar">
