@@ -3068,7 +3068,23 @@ def register_routes(app):
         """Visualizar detalhes de um veículo"""
         try:
             vehicle = Vehicle.query.get_or_404(id)
-            return render_template('fleet/view.html', vehicle=vehicle)
+            
+            # Buscar histórico de manutenção
+            maintenance_history = VehicleMaintenance.query.filter_by(vehicle_id=id).order_by(VehicleMaintenance.date.desc()).all()
+            
+            # Buscar histórico de abastecimento
+            refueling_history = Refueling.query.filter_by(vehicle_id=id).order_by(Refueling.date.desc()).all()
+            
+            # Data atual para o modal
+            now_date = datetime.now().strftime('%Y-%m-%d')
+            
+            return render_template(
+                'fleet/view.html', 
+                vehicle=vehicle,
+                maintenance_history=maintenance_history,
+                refueling_history=refueling_history,
+                now_date=now_date
+            )
         except Exception as e:
             flash(f'Erro ao carregar veículo: {str(e)}', 'error')
             return redirect(url_for('fleet'))

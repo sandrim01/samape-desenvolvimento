@@ -19,7 +19,7 @@
                         <i class="fas fa-edit mr-1"></i> Editar
                     </a>
                     {% if current_user.role == 'admin' %}
-                    <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#deleteVehicleModal">
+                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteVehicleModal">
                         <i class="fas fa-trash mr-1"></i> Excluir Veículo
                     </button>
                     {% endif %}
@@ -250,7 +250,7 @@
                             <a href="{{ url_for('new_vehicle_maintenance', id=vehicle.id) }}" class="btn btn-primary mr-2">
                                 <i class="fas fa-tools mr-1"></i> Nova Manutenção
                             </a>
-                            <button type="button" class="btn btn-success" data-toggle="modal" data-target="#refuelingModal">
+                            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#refuelingModal">
                                 <i class="fas fa-gas-pump mr-1"></i> Novo Abastecimento
                             </button>
                         </div>
@@ -267,9 +267,7 @@
         <div class="modal-content">
             <div class="modal-header bg-success text-white">
                 <h5 class="modal-title" id="refuelingModalLabel">Registrar Abastecimento</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form action="{{ url_for('register_refueling', id=vehicle.id) }}" method="post" enctype="multipart/form-data">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
@@ -336,7 +334,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                     <button type="submit" class="btn btn-success">Registrar Abastecimento</button>
                 </div>
             </form>
@@ -350,16 +348,14 @@
         <div class="modal-content">
             <div class="modal-header bg-danger text-white">
                 <h5 class="modal-title" id="deleteVehicleModalLabel">Confirmar Exclusão</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <p>Tem certeza que deseja excluir o veículo <strong>{{ vehicle.plate }}</strong>?</p>
                 <p class="text-danger"><i class="fas fa-exclamation-triangle"></i> Esta ação é irreversível. Todos os dados relacionados a este veículo, incluindo histórico de manutenções e abastecimentos, serão removidos.</p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                 <form action="{{ url_for('excluir_veiculo_direct', id=vehicle.id) }}" method="post" class="d-inline">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" class="btn btn-danger">Confirmar Exclusão</button>
@@ -389,14 +385,23 @@ document.addEventListener('DOMContentLoaded', function() {
 
 {% block scripts %}
 <script>
-    $(document).ready(function() {
+    document.addEventListener('DOMContentLoaded', function() {
         // Calcular valor total automaticamente
-        $('#liters, #pricePerLiter').on('input', function() {
-            const liters = parseFloat($('#liters').val()) || 0;
-            const pricePerLiter = parseFloat($('#pricePerLiter').val()) || 0;
+        const litersField = document.getElementById('liters');
+        const pricePerLiterField = document.getElementById('pricePerLiter');
+        const totalCostField = document.getElementById('totalCost');
+        
+        function calculateTotal() {
+            const liters = parseFloat(litersField.value) || 0;
+            const pricePerLiter = parseFloat(pricePerLiterField.value) || 0;
             const total = liters * pricePerLiter;
-            $('#totalCost').val(total.toFixed(2));
-        });
+            totalCostField.value = total.toFixed(2);
+        }
+        
+        if (litersField && pricePerLiterField && totalCostField) {
+            litersField.addEventListener('input', calculateTotal);
+            pricePerLiterField.addEventListener('input', calculateTotal);
+        }
     });
 </script>
 {% endblock %}
