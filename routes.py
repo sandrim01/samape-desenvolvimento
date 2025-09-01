@@ -21,7 +21,7 @@ from forms import (
     LoginForm, UserForm, ClientForm, EquipmentForm, ServiceOrderForm,
     CloseServiceOrderForm, FinancialEntryForm, ProfileForm, SystemSettingsForm,
     SupplierForm, PartForm, PartSaleForm, SupplierOrderForm, OrderItemForm,
-    StockItemForm, StockMovementForm, VehicleForm
+    StockItemForm, StockMovementForm, VehicleForm, VehicleMaintenanceForm, RefuelingForm
 )
 from utils import (
     role_required, admin_required, manager_required, log_action,
@@ -3179,29 +3179,112 @@ def register_routes(app):
             flash(f'Erro ao carregar veículo: {str(e)}', 'error')
             return redirect(url_for('fleet'))
     
-    @app.route('/frota/<int:id>/manutencao/nova')
+    @app.route('/frota/<int:id>/manutencao/nova', methods=['GET', 'POST'])
     @login_required
     @admin_or_manager_required
     def new_vehicle_maintenance(id):
         """Nova manutenção para veículo"""
         try:
             vehicle = Vehicle.query.get_or_404(id)
-            # Por enquanto, redirecionar de volta para o veículo
-            # TODO: Implementar formulário de manutenção
-            flash('Funcionalidade de manutenção em desenvolvimento', 'info')
-            return redirect(url_for('view_vehicle', id=id))
+            form = VehicleMaintenanceForm()
+            
+            # Pre-selecionar o veículo no formulário
+            form.vehicle_id.data = vehicle.id
+            
+            if form.validate_on_submit():
+                try:
+                    # Criar novo registro de manutenção
+                    maintenance = VehicleMaintenance(
+                        vehicle_id=vehicle.id,
+                        date=datetime.strptime(form.date.data, '%Y-%m-%d'),
+                        odometer=form.mileage.data,
+                        description=form.description.data,
+                        maintenance_type=MaintenanceType.revisao,  # Padrão
+                        cost=float(form.cost.data) if form.cost.data else None,
+                        workshop=form.service_provider.data,
+                        invoice_number=form.invoice_number.data,
+                        created_by=current_user.id,
+                        completed=True
+                    )
+                    
+                    if form.performed_by_id.data and form.performed_by_id.data > 0:
+                        maintenance.created_by = form.performed_by_id.data
+                    
+                    db.session.add(maintenance)
+                    
+                    # Atualizar hodômetro do veículo se for maior que o atual
+                    if form.mileage.data and (not vehicle.current_km or form.mileage.data > vehicle.current_km):
+                        vehicle.current_km = form.mileage.data
+                    
+                    db.session.commit()
+                    
+                    flash(f'Manutenção registrada com sucesso para {vehicle.plate}!', 'success')
+                    return redirect(url_for('view_vehicle', id=vehicle.id))
+                    
+                except Exception as e:
+                    db.session.rollback()
+                    flash(f'Erro ao registrar manutenção: {str(e)}', 'error')
+                    
+            return render_template('fleet/new_maintenance.html', form=form, vehicle=vehicle, today=datetime.now().strftime('%Y-%m-%d'))
+            
         except Exception as e:
             flash(f'Erro ao carregar veículo: {str(e)}', 'error')
             return redirect(url_for('fleet'))
 
     # === ROTAS FALTANTES PARA TEMPLATE DE FROTA ===
     
-    @app.route('/frota/veiculo/<int:id>/abastecimento')
+    @app.route('/frota/veiculo/<int:id>/abastecimento', methods=['GET', 'POST'])
     @login_required
     def register_refueling(id):
         """Registrar abastecimento de veículo"""
-        flash('Funcionalidade de abastecimento em desenvolvimento', 'info')
-        return redirect(url_for('fleet'))
+        try:
+            vehicle = Vehicle.query.get_or_404(id)
+            form = RefuelingForm()
+            
+            if form.validate_on_submit():
+                try:
+                    # Criar novo registro de abastecimento
+                    refueling = Refueling(
+                        vehicle_id=vehicle.id,
+                        date=datetime.strptime(form.date.data, '%Y-%m-%d'),
+                        odometer=form.odometer.data,
+                        fuel_type=FuelType[form.fuel_type.data],
+                        liters=form.liters.data,
+                        price_per_liter=form.price_per_liter.data,
+                        total_cost=form.total_cost.data,
+                        gas_station=form.gas_station.data,
+                        full_tank=form.full_tank.data,
+                        notes=form.notes.data,
+                        driver_id=current_user.id,
+                        created_by=current_user.id
+                    )
+                    
+                    # TODO: Implementar upload de imagem do comprovante
+                    # if form.receipt_image.data:
+                    #     filename = save_image(form.receipt_image.data, 'receipts')
+                    #     if filename:
+                    #         refueling.receipt_image = filename
+                    
+                    db.session.add(refueling)
+                    
+                    # Atualizar hodômetro do veículo se for maior que o atual
+                    if form.odometer.data and (not vehicle.current_km or form.odometer.data > vehicle.current_km):
+                        vehicle.current_km = form.odometer.data
+                    
+                    db.session.commit()
+                    
+                    flash(f'Abastecimento registrado com sucesso para {vehicle.plate}!', 'success')
+                    return redirect(url_for('view_vehicle', id=vehicle.id))
+                    
+                except Exception as e:
+                    db.session.rollback()
+                    flash(f'Erro ao registrar abastecimento: {str(e)}', 'error')
+                    
+            return render_template('fleet/refueling_new.html', form=form, vehicle=vehicle, today=datetime.now().strftime('%Y-%m-%d'))
+            
+        except Exception as e:
+            flash(f'Erro ao carregar veículo: {str(e)}', 'error')
+            return redirect(url_for('fleet'))
     
     @app.route('/frota/veiculo/<int:vehicle_id>/historico-manutencao')
     @login_required
