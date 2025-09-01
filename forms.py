@@ -386,14 +386,16 @@ class VehicleMaintenanceForm(FlaskForm):
         
 class RefuelingForm(FlaskForm):
     """Formulário para registro de abastecimentos de veículos"""
-    date = StringField('Data *', validators=[DataRequired()])
+    date = StringField('Data *', validators=[DataRequired()], render_kw={"type": "date"})
     odometer = IntegerField('Hodômetro (Km) *', validators=[DataRequired(), NumberRange(min=0)])
     fuel_type = SelectField('Tipo de Combustível *', choices=[
         ('gasolina', 'Gasolina'),
         ('diesel', 'Diesel'),
         ('etanol', 'Etanol'),
-        ('flex', 'Flex (Misto)'),
-        ('gnv', 'GNV')
+        ('flex', 'Flex (Gasolina/Etanol)'),
+        ('hibrido', 'Híbrido'),
+        ('eletrico', 'Elétrico'),
+        ('outro', 'Outro')
     ], validators=[DataRequired()])
     liters = DecimalField('Quantidade (Litros) *', validators=[DataRequired(), NumberRange(min=0.01)], places=2)
     price_per_liter = DecimalField('Preço por Litro (R$) *', validators=[DataRequired(), NumberRange(min=0.01)], places=2)

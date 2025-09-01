@@ -275,6 +275,7 @@
                 </button>
             </div>
             <form action="{{ url_for('register_refueling', id=vehicle.id) }}" method="post" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <div class="modal-body">
                     <div class="row">
                         <div class="col-md-6">
@@ -292,8 +293,10 @@
                                     <option value="gasolina">Gasolina</option>
                                     <option value="diesel">Diesel</option>
                                     <option value="etanol">Etanol</option>
-                                    <option value="flex">Flex (Misto)</option>
-                                    <option value="gnv">GNV</option>
+                                    <option value="flex">Flex (Gasolina/Etanol)</option>
+                                    <option value="hibrido">Híbrido</option>
+                                    <option value="eletrico">Elétrico</option>
+                                    <option value="outro">Outro</option>
                                 </select>
                             </div>
                         </div>

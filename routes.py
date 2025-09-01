@@ -3243,6 +3243,9 @@ def register_routes(app):
             
             if form.validate_on_submit():
                 try:
+                    # Debug: imprimir dados do formulário
+                    print(f"Dados do formulário: {form.data}")
+                    
                     # Criar novo registro de abastecimento
                     refueling = Refueling(
                         vehicle_id=vehicle.id,
@@ -3278,7 +3281,15 @@ def register_routes(app):
                     
                 except Exception as e:
                     db.session.rollback()
+                    print(f"Erro na criação do abastecimento: {str(e)}")
                     flash(f'Erro ao registrar abastecimento: {str(e)}', 'error')
+            else:
+                # Debug: imprimir erros de validação
+                if form.errors:
+                    print(f"Erros de validação: {form.errors}")
+                    for field, errors in form.errors.items():
+                        for error in errors:
+                            flash(f'Erro no campo {field}: {error}', 'error')
                     
             return render_template('fleet/refueling_new.html', form=form, vehicle=vehicle, today=datetime.now().strftime('%Y-%m-%d'))
             
