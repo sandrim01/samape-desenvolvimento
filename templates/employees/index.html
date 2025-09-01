@@ -69,7 +69,7 @@
                                 <i class="fas fa-edit"></i>
                             </a>
                             {% if employee.id != current_user.id %}
-                            <button type="button" class="btn btn-sm {% if employee.active %}btn-outline-danger{% else %}btn-outline-success{% endif %}" data-bs-toggle="modal" data-bs-target="#toggleStatusModal{{ employee.id }}" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ 'Desativar' if employee.active else 'Ativar' }}">
+                            <button type="button" class="btn btn-sm {% if employee.active %}btn-outline-danger{% else %}btn-outline-success{% endif %}" data-bs-toggle="modal" data-bs-target="#toggleStatusModal{{ employee.id }}" title="{{ 'Desativar' if employee.active else 'Ativar' }}">
                                 <i class="fas {% if employee.active %}fa-user-slash{% else %}fa-user-check{% endif %}"></i>
                             </button>
                             
@@ -91,7 +91,8 @@
                                         </div>
                                         <div class="modal-footer">
                                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                                            <form method="post" action="{{ url_for('toggle_employee_status', id=employee.id) }}">
+                                            <form method="post" action="{{ url_for('toggle_employee_status', id=employee.id) }}" style="display: inline;">
+                                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                                                 <button type="submit" class="btn {% if employee.active %}btn-danger{% else %}btn-success{% endif %}">
                                                     {{ 'Desativar' if employee.active else 'Ativar' }}
                                                 </button>
