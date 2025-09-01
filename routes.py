@@ -3096,7 +3096,29 @@ def register_routes(app):
                     
                     # Tratar enum FuelType corretamente
                     if form.fuel_type.data:
-                        vehicle.fuel_type = FuelType[form.fuel_type.data]
+                        try:
+                            # Tentar encontrar o enum pelo nome
+                            fuel_value = form.fuel_type.data
+                            
+                            # Remover prefixo 'FuelType.' se presente
+                            if fuel_value.startswith('FuelType.'):
+                                fuel_value = fuel_value.replace('FuelType.', '')
+                            
+                            if hasattr(FuelType, fuel_value):
+                                vehicle.fuel_type = getattr(FuelType, fuel_value)
+                            else:
+                                # Se não encontrar pelo nome, procurar pelo valor
+                                for fuel_enum in FuelType:
+                                    if fuel_enum.value == fuel_value or fuel_enum.name == fuel_value:
+                                        vehicle.fuel_type = fuel_enum
+                                        break
+                                else:
+                                    # Se ainda não encontrar, usar None ou valor padrão
+                                    print(f"Aviso: Valor de combustível não reconhecido: {fuel_value}")
+                                    vehicle.fuel_type = None
+                        except Exception as e:
+                            print(f"Erro ao processar FuelType: {e}")
+                            vehicle.fuel_type = None
                     
                     vehicle.current_km = form.current_km.data
                     vehicle.insurance_policy = form.insurance_policy.data
