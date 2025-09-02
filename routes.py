@@ -1628,13 +1628,13 @@ def register_routes(app):
         import os
         from decimal import Decimal
         
-        # Tentar importar weasyprint, usar fallback se não funcionar
+        # Tentar importar weasyprint
         try:
-            from weasyprint import HTML
-            use_pdf = True
-        except Exception as e:
-            print(f"WeasyPrint não disponível: {e}")
-            use_pdf = False
+            from weasyprint import HTML, CSS
+            from weasyprint.text.fonts import FontConfiguration
+        except ImportError as e:
+            flash('WeasyPrint não está instalado. Execute: pip install weasyprint', 'danger')
+            return redirect(url_for('view_invoice', id=id))
         
         service_order = ServiceOrder.query.get_or_404(id)
         
@@ -1647,68 +1647,39 @@ def register_routes(app):
             flash('Esta OS ainda nÃ£o foi fechada.', 'warning')
             return redirect(url_for('view_service_order', id=id))
         
-        # Render the invoice template to HTML
-        html_content = render_template('invoices/view.html', 
-                                       service_order=service_order, 
-                                       export_mode=True,
-                                       Decimal=Decimal)  # Passando o tipo Decimal para o template
-        
         try:
-            if use_pdf:
-                # Tentar gerar PDF
-                try:
-                    # Create a temporary file
-                    with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as temp:
-                        # Configurar tamanho A4 e outras opÃ§Ãµes para impressÃ£o
-                        pdf_options = {
-                            'page-size': 'A4',
-                            'margin-top': '0.5cm',
-                            'margin-right': '0.5cm',
-                            'margin-bottom': '0.5cm',
-                            'margin-left': '0.5cm',
-                            'encoding': 'UTF-8',
-                            'print-media-type': '',
-                            'no-outline': None
-                        }
-                        
-                        # Generate PDF from HTML content with A4 size
-                        HTML(string=html_content).write_pdf(temp.name, presentational_hints=True, stylesheets=[], **pdf_options)
-                    
-                    # Create a response with the PDF file
-                    with open(temp.name, 'rb') as pdf_file:
-                        response = make_response(pdf_file.read())
-                        response.headers['Content-Type'] = 'application/pdf'
-                        response.headers['Content-Disposition'] = f'attachment; filename=nota_fiscal_{service_order.invoice_number}.pdf'
-                    
-                    # Clean up temporary file
-                    os.unlink(temp.name)
-                    
-                    # Log the successful export
-                    log_action(
-                        'ExportaÃ§Ã£o de Nota Fiscal',
-                        'service_order',
-                        service_order.id,
-                        f'Nota fiscal {service_order.invoice_number} exportada em PDF'
-                    )
-                    
-                    return response
-                    
-                except Exception as pdf_error:
-                    print(f"Erro ao gerar PDF: {pdf_error}")
-                    # Fallback para HTML
-                    pass
+            # Render the invoice template to HTML (template específico para PDF)
+            html_content = render_template('invoices/export_pdf.html', 
+                                           service_order=service_order, 
+                                           Decimal=Decimal)
             
-            # Fallback: retornar HTML se PDF não estiver disponível ou falhar
-            response = make_response(html_content)
-            response.headers['Content-Type'] = 'text/html; charset=utf-8'
-            response.headers['Content-Disposition'] = f'attachment; filename=nota_fiscal_{service_order.invoice_number}.html'
+            # Create a temporary file
+            with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as temp:
+                # Configurar fonte
+                font_config = FontConfiguration()
+                
+                # Gerar PDF
+                HTML(string=html_content, base_url=request.base_url).write_pdf(
+                    temp.name,
+                    font_config=font_config,
+                    presentational_hints=True
+                )
+            
+            # Create a response with the PDF file
+            with open(temp.name, 'rb') as pdf_file:
+                response = make_response(pdf_file.read())
+                response.headers['Content-Type'] = 'application/pdf'
+                response.headers['Content-Disposition'] = f'attachment; filename=nota_fiscal_{service_order.invoice_number}.pdf'
+            
+            # Clean up temporary file
+            os.unlink(temp.name)
             
             # Log the successful export
             log_action(
                 'ExportaÃ§Ã£o de Nota Fiscal',
                 'service_order',
                 service_order.id,
-                f'Nota fiscal {service_order.invoice_number} exportada em HTML (fallback)'
+                f'Nota fiscal {service_order.invoice_number} exportada em PDF'
             )
             
             return response
