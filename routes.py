@@ -1472,13 +1472,20 @@ def register_routes(app):
     def export_invoices():
         import zipfile
         import io
-        from weasyprint import HTML
         from flask import make_response
         import tempfile
         import os
         from decimal import Decimal
         
         try:
+            # Tentar importar weasyprint, usar fallback se não funcionar
+            try:
+                from weasyprint import HTML
+                use_pdf = True
+            except Exception as e:
+                print(f"WeasyPrint não disponível: {e}")
+                use_pdf = False
+            
             # ObtÃ©m os mesmos filtros da listagem
             cliente = request.args.get('cliente')
             numero_nf = request.args.get('numero_nf')
@@ -1532,31 +1539,40 @@ def register_routes(app):
                                                   export_mode=True,
                                                   Decimal=Decimal)  # Passando o tipo Decimal para o template
                     
-                    # Cria arquivo PDF temporÃ¡rio
-                    with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as temp:
-                        # Configurar tamanho A4 e outras opÃ§Ãµes para impressÃ£o
-                        pdf_options = {
-                            'page-size': 'A4',
-                            'margin-top': '0.5cm',
-                            'margin-right': '0.5cm',
-                            'margin-bottom': '0.5cm',
-                            'margin-left': '0.5cm',
-                            'encoding': 'UTF-8',
-                            'print-media-type': '',
-                            'no-outline': None
-                        }
-                        
-                        # Gera PDF do HTML com tamanho A4
-                        HTML(string=html_content).write_pdf(temp.name, presentational_hints=True, stylesheets=[], **pdf_options)
-                    
-                    # LÃª o arquivo PDF e adiciona ao ZIP
-                    with open(temp.name, 'rb') as pdf_file:
-                        pdf_data = pdf_file.read()
-                        # Adiciona ao ZIP com um nome adequado
-                        zf.writestr(f'NF_{so.invoice_number}.pdf', pdf_data)
-                    
-                    # Remove o arquivo temporÃ¡rio
-                    os.unlink(temp.name)
+                    if use_pdf:
+                        try:
+                            # Cria arquivo PDF temporÃ¡rio
+                            with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as temp:
+                                # Configurar tamanho A4 e outras opÃ§Ãµes para impressÃ£o
+                                pdf_options = {
+                                    'page-size': 'A4',
+                                    'margin-top': '0.5cm',
+                                    'margin-right': '0.5cm',
+                                    'margin-bottom': '0.5cm',
+                                    'margin-left': '0.5cm',
+                                    'encoding': 'UTF-8',
+                                    'print-media-type': '',
+                                    'no-outline': None
+                                }
+                                
+                                # Gera PDF do HTML com tamanho A4
+                                HTML(string=html_content).write_pdf(temp.name, presentational_hints=True, stylesheets=[], **pdf_options)
+                            
+                            # LÃª o arquivo PDF e adiciona ao ZIP
+                            with open(temp.name, 'rb') as pdf_file:
+                                pdf_data = pdf_file.read()
+                                # Adiciona ao ZIP com um nome adequado
+                                zf.writestr(f'NF_{so.invoice_number}.pdf', pdf_data)
+                            
+                            # Remove o arquivo temporÃ¡rio
+                            os.unlink(temp.name)
+                        except Exception as pdf_error:
+                            print(f"Erro ao gerar PDF para {so.invoice_number}: {pdf_error}")
+                            # Fallback para HTML se PDF falhar
+                            zf.writestr(f'NF_{so.invoice_number}.html', html_content.encode('utf-8'))
+                    else:
+                        # Usar HTML como alternativa
+                        zf.writestr(f'NF_{so.invoice_number}.html', html_content.encode('utf-8'))
             
             # Prepara o arquivo ZIP para download
             memory_file.seek(0)
@@ -1567,11 +1583,12 @@ def register_routes(app):
             response.headers['Content-Disposition'] = f'attachment; filename=notas_fiscais_{data_str}.zip'
             
             # Registra a aÃ§Ã£o
+            file_type = "PDF" if use_pdf else "HTML"
             log_action(
                 'ExportaÃ§Ã£o de Notas Fiscais',
                 None,
                 None,
-                f'ExportaÃ§Ã£o de {len(invoices)} notas fiscais em PDF'
+                f'ExportaÃ§Ã£o de {len(invoices)} notas fiscais em {file_type}'
             )
             
             return response
@@ -1602,11 +1619,18 @@ def register_routes(app):
     @app.route('/os/<int:id>/nfe/exportar')
     @login_required
     def export_invoice(id):
-        from weasyprint import HTML
         from flask import make_response
         import tempfile
         import os
         from decimal import Decimal
+        
+        # Tentar importar weasyprint, usar fallback se não funcionar
+        try:
+            from weasyprint import HTML
+            use_pdf = True
+        except Exception as e:
+            print(f"WeasyPrint não disponível: {e}")
+            use_pdf = False
         
         service_order = ServiceOrder.query.get_or_404(id)
         
@@ -1622,38 +1646,61 @@ def register_routes(app):
                                        Decimal=Decimal)  # Passando o tipo Decimal para o template
         
         try:
-            # Create a temporary file
-            with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as temp:
-                # Configurar tamanho A4 e outras opÃ§Ãµes para impressÃ£o
-                pdf_options = {
-                    'page-size': 'A4',
-                    'margin-top': '0.5cm',
-                    'margin-right': '0.5cm',
-                    'margin-bottom': '0.5cm',
-                    'margin-left': '0.5cm',
-                    'encoding': 'UTF-8',
-                    'print-media-type': '',
-                    'no-outline': None
-                }
-                
-                # Generate PDF from HTML content with A4 size
-                HTML(string=html_content).write_pdf(temp.name, presentational_hints=True, stylesheets=[], **pdf_options)
+            if use_pdf:
+                # Tentar gerar PDF
+                try:
+                    # Create a temporary file
+                    with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as temp:
+                        # Configurar tamanho A4 e outras opÃ§Ãµes para impressÃ£o
+                        pdf_options = {
+                            'page-size': 'A4',
+                            'margin-top': '0.5cm',
+                            'margin-right': '0.5cm',
+                            'margin-bottom': '0.5cm',
+                            'margin-left': '0.5cm',
+                            'encoding': 'UTF-8',
+                            'print-media-type': '',
+                            'no-outline': None
+                        }
+                        
+                        # Generate PDF from HTML content with A4 size
+                        HTML(string=html_content).write_pdf(temp.name, presentational_hints=True, stylesheets=[], **pdf_options)
+                    
+                    # Create a response with the PDF file
+                    with open(temp.name, 'rb') as pdf_file:
+                        response = make_response(pdf_file.read())
+                        response.headers['Content-Type'] = 'application/pdf'
+                        response.headers['Content-Disposition'] = f'attachment; filename=nota_fiscal_{service_order.invoice_number}.pdf'
+                    
+                    # Clean up temporary file
+                    os.unlink(temp.name)
+                    
+                    # Log the successful export
+                    log_action(
+                        'ExportaÃ§Ã£o de Nota Fiscal',
+                        'service_order',
+                        service_order.id,
+                        f'Nota fiscal {service_order.invoice_number} exportada em PDF'
+                    )
+                    
+                    return response
+                    
+                except Exception as pdf_error:
+                    print(f"Erro ao gerar PDF: {pdf_error}")
+                    # Fallback para HTML
+                    pass
             
-            # Create a response with the PDF file
-            with open(temp.name, 'rb') as pdf_file:
-                response = make_response(pdf_file.read())
-                response.headers['Content-Type'] = 'application/pdf'
-                response.headers['Content-Disposition'] = f'attachment; filename=nota_fiscal_{service_order.invoice_number}.pdf'
-            
-            # Clean up temporary file
-            os.unlink(temp.name)
+            # Fallback: retornar HTML se PDF não estiver disponível ou falhar
+            response = make_response(html_content)
+            response.headers['Content-Type'] = 'text/html; charset=utf-8'
+            response.headers['Content-Disposition'] = f'attachment; filename=nota_fiscal_{service_order.invoice_number}.html'
             
             # Log the successful export
             log_action(
                 'ExportaÃ§Ã£o de Nota Fiscal',
                 'service_order',
                 service_order.id,
-                f'Nota fiscal {service_order.invoice_number} exportada com sucesso'
+                f'Nota fiscal {service_order.invoice_number} exportada em HTML (fallback)'
             )
             
             return response
@@ -2507,9 +2554,9 @@ def register_routes(app):
             # Criar entrada financeira (despesa)
             financial_entry = FinancialEntry(
                 description=f"Pagamento do pedido #{order.order_number} - {order.supplier.name}",
-                value=order.total_value,
-                entry_type=FinancialEntryType.saida,
-                category='Compras',
+                amount=order.total_value,
+                type=FinancialEntryType.saida,
+                category=FinancialCategory.pecas,
                 date=datetime.now(),
                 created_by=current_user.id
             )
@@ -3410,6 +3457,19 @@ def register_routes(app):
                     
                     db.session.add(maintenance)
                     
+                    # Criar entrada financeira para a manutenção (despesa) se houver custo
+                    if maintenance.cost and maintenance.cost > 0:
+                        financial_entry = FinancialEntry(
+                            description=f"Manutenção {vehicle.plate} - {maintenance.description}",
+                            amount=maintenance.cost,
+                            type=FinancialEntryType.saida,
+                            category=FinancialCategory.manutencao,
+                            date=datetime.strptime(form.date.data, '%Y-%m-%d'),
+                            notes=f"Oficina: {maintenance.workshop}" if maintenance.workshop else None,
+                            created_by=current_user.id
+                        )
+                        db.session.add(financial_entry)
+                    
                     # Atualizar hodômetro do veículo se for maior que o atual
                     if form.mileage.data and (not vehicle.current_km or form.mileage.data > vehicle.current_km):
                         vehicle.current_km = form.mileage.data
@@ -3467,6 +3527,18 @@ def register_routes(app):
                     #         refueling.receipt_image = filename
                     
                     db.session.add(refueling)
+                    
+                    # Criar entrada financeira para o abastecimento (despesa)
+                    financial_entry = FinancialEntry(
+                        description=f"Abastecimento {vehicle.plate} - {form.liters.data}L {form.fuel_type.data}",
+                        amount=form.total_cost.data,
+                        type=FinancialEntryType.saida,
+                        category=FinancialCategory.combustivel,
+                        date=datetime.strptime(form.date.data, '%Y-%m-%d'),
+                        notes=f"Posto: {form.gas_station.data}",
+                        created_by=current_user.id
+                    )
+                    db.session.add(financial_entry)
                     
                     # Atualizar hodômetro do veículo se for maior que o atual
                     if form.odometer.data and (not vehicle.current_km or form.odometer.data > vehicle.current_km):
