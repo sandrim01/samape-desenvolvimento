@@ -993,72 +993,93 @@ def register_routes(app):
     @app.route('/financeiro')
     @manager_required
     def financial():
-        month = request.args.get('month', datetime.utcnow().month, type=int)
-        year = request.args.get('year', datetime.utcnow().year, type=int)
-        category_filter = request.args.get('category', None)
-        status_filter = request.args.get('status', None)
-        
-        # Base query for the selected month
-        query = FinancialEntry.query.filter(
-            func.extract('month', FinancialEntry.date) == month,
-            func.extract('year', FinancialEntry.date) == year
-        )
-        
-        # Apply filters
-        if category_filter:
-            query = query.filter(FinancialEntry.category == FinancialCategory[category_filter])
-        if status_filter:
-            query = query.filter(FinancialEntry.status == FinancialStatus[status_filter])
+        try:
+            month = request.args.get('month', datetime.utcnow().month, type=int)
+            year = request.args.get('year', datetime.utcnow().year, type=int)
+            category_filter = request.args.get('category', None)
+            status_filter = request.args.get('status', None)
             
-        entries = query.order_by(FinancialEntry.date.desc()).all()
-        
-        # Calculate summary
-        income = sum(e.amount for e in entries if e.type == FinancialEntryType.entrada)
-        expenses = sum(e.amount for e in entries if e.type == FinancialEntryType.saida)
-        balance = income - expenses
-        
-        # Calculate statistics by category
-        category_stats = {}
-        for category in FinancialCategory:
-            cat_entries = [e for e in entries if e.category == category]
-            if cat_entries:
-                cat_income = sum(e.amount for e in cat_entries if e.type == FinancialEntryType.entrada)
-                cat_expenses = sum(e.amount for e in cat_entries if e.type == FinancialEntryType.saida)
-                category_stats[category.name] = {
-                    'label': category.value,
-                    'income': cat_income,
-                    'expenses': cat_expenses,
-                    'total': cat_income - cat_expenses
-                }
-        
-        # Calculate statistics by status
-        status_stats = {}
-        for status in FinancialStatus:
-            status_entries = [e for e in entries if e.status == status]
-            if status_entries:
-                status_amount = sum(e.amount for e in status_entries)
-                status_stats[status.name] = {
-                    'label': status.value,
-                    'amount': status_amount,
-                    'count': len(status_entries)
-                }
-        
-        return render_template(
-            'financial/index.html',
-            entries=entries,
-            month=month,
-            year=year,
-            income=income,
-            expenses=expenses,
-            balance=balance,
-            category_stats=category_stats,
-            status_stats=status_stats,
-            categories=FinancialCategory,
-            statuses=FinancialStatus,
-            category_filter=category_filter,
-            status_filter=status_filter,
-            now=datetime.utcnow()
-        )
+            # Base query for the selected month
+            query = FinancialEntry.query.filter(
+                func.extract('month', FinancialEntry.date) == month,
+                func.extract('year', FinancialEntry.date) == year
+            )
+            
+            # Apply filters
+            if category_filter and category_filter in [c.name for c in FinancialCategory]:
+                query = query.filter(FinancialEntry.category == FinancialCategory[category_filter])
+            if status_filter and status_filter in [s.name for s in FinancialStatus]:
+                query = query.filter(FinancialEntry.status == FinancialStatus[status_filter])
+                
+            entries = query.order_by(FinancialEntry.date.desc()).all()
+            
+            # Calculate summary
+            income = sum(e.amount for e in entries if e.type == FinancialEntryType.entrada)
+            expenses = sum(e.amount for e in entries if e.type == FinancialEntryType.saida)
+            balance = income - expenses
+            
+            # Calculate statistics by category (only if there are entries)
+            category_stats = {}
+            if entries:
+                for category in FinancialCategory:
+                    cat_entries = [e for e in entries if e.category and e.category == category]
+                    if cat_entries:
+                        cat_income = sum(e.amount for e in cat_entries if e.type == FinancialEntryType.entrada)
+                        cat_expenses = sum(e.amount for e in cat_entries if e.type == FinancialEntryType.saida)
+                        category_stats[category.name] = {
+                            'label': category.value,
+                            'income': cat_income,
+                            'expenses': cat_expenses,
+                            'total': cat_income - cat_expenses
+                        }
+            
+            # Calculate statistics by status (only if there are entries)
+            status_stats = {}
+            if entries:
+                for status in FinancialStatus:
+                    status_entries = [e for e in entries if e.status and e.status == status]
+                    if status_entries:
+                        status_amount = sum(e.amount for e in status_entries)
+                        status_stats[status.name] = {
+                            'label': status.value,
+                            'amount': status_amount,
+                            'count': len(status_entries)
+                        }
+            
+            return render_template(
+                'financial/index.html',
+                entries=entries,
+                month=month,
+                year=year,
+                income=income,
+                expenses=expenses,
+                balance=balance,
+                category_stats=category_stats,
+                status_stats=status_stats,
+                categories=FinancialCategory,
+                statuses=FinancialStatus,
+                category_filter=category_filter,
+                status_filter=status_filter,
+                now=datetime.utcnow()
+            )
+        except Exception as e:
+            flash(f'Erro ao carregar dados financeiros: {str(e)}', 'error')
+            return render_template(
+                'financial/index.html',
+                entries=[],
+                month=datetime.utcnow().month,
+                year=datetime.utcnow().year,
+                income=0,
+                expenses=0,
+                balance=0,
+                category_stats={},
+                status_stats={},
+                categories=FinancialCategory,
+                statuses=FinancialStatus,
+                category_filter=None,
+                status_filter=None,
+                now=datetime.utcnow()
+            )
 
     @app.route('/financeiro/novo', methods=['GET', 'POST'])
     @manager_required
