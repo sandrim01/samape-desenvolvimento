@@ -1014,7 +1014,8 @@ def register_routes(app):
             year=year,
             income=income,
             expenses=expenses,
-            balance=balance
+            balance=balance,
+            now=datetime.utcnow()
         )
 
     @app.route('/financeiro/novo', methods=['GET', 'POST'])
@@ -1109,6 +1110,47 @@ def register_routes(app):
             'Content-Type': 'text/csv; charset=utf-8',
             'Content-Disposition': f'attachment; filename="{filename}"'
         }
+
+    @app.route('/financeiro/acerto', methods=['POST'])
+    @manager_required
+    def add_financial_adjustment():
+        """Add manual financial adjustment"""
+        try:
+            entry_type = request.form.get('type')
+            amount = float(request.form.get('amount'))
+            description = request.form.get('description', 'Acerto manual')
+            date_str = request.form.get('date')
+            
+            # Parse date
+            from datetime import datetime
+            entry_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+            
+            # Create financial entry
+            entry = FinancialEntry(
+                type=FinancialEntryType.entrada if entry_type == 'entrada' else FinancialEntryType.saida,
+                amount=amount,
+                description=description,
+                date=entry_date,
+                service_order_id=None
+            )
+            
+            db.session.add(entry)
+            db.session.commit()
+            
+            log_action(
+                'Acerto Financeiro',
+                'financial',
+                entry.id,
+                f"Acerto manual de {format_currency(amount)} ({entry_type})"
+            )
+            
+            flash(f'Acerto financeiro de {format_currency(amount)} registrado com sucesso!', 'success')
+            
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Erro ao registrar acerto: {str(e)}', 'error')
+        
+        return redirect(url_for('financial'))
 
     # Log routes
     @app.route('/logs')
