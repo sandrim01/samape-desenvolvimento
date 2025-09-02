@@ -1606,6 +1606,10 @@ def register_routes(app):
         
         service_order = ServiceOrder.query.get_or_404(id)
         
+        # Garantir que invoice_amount tenha um valor padrão se for None
+        if service_order.invoice_amount is None:
+            service_order.invoice_amount = service_order.total_price or 0
+        
         # Check if order is closed
         if service_order.status != ServiceOrderStatus.fechada:
             flash('Esta OS ainda nÃ£o foi fechada.', 'warning')
@@ -1633,6 +1637,10 @@ def register_routes(app):
             use_pdf = False
         
         service_order = ServiceOrder.query.get_or_404(id)
+        
+        # Garantir que invoice_amount tenha um valor padrão se for None
+        if service_order.invoice_amount is None:
+            service_order.invoice_amount = service_order.total_price or 0
         
         # Check if order is closed
         if service_order.status != ServiceOrderStatus.fechada:

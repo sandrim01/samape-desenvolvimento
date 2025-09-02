@@ -15,6 +15,20 @@ def absolute_value(value):
     except (ValueError, TypeError):
         return 0
 
+def safe_float(value, default=0.0):
+    """Safely convert value to float, handling None and invalid values"""
+    if value is None:
+        return default
+    try:
+        return float(value)
+    except (ValueError, TypeError):
+        return default
+
+def safe_money(value, default=0.0):
+    """Safely format money value, handling None"""
+    safe_value = safe_float(value, default)
+    return f"{safe_value:.2f}"
+
 def format_document(value):
     """Format CPF/CNPJ documents"""
     if not value:

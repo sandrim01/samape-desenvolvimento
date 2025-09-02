@@ -96,7 +96,7 @@
                                     <strong>Data de Emissão:</strong> {{ service_order.invoice_date.strftime('%d/%m/%Y') if service_order.invoice_date else 'Data não definida' }}
                                 </div>
                                 <div class="col-md-3 mb-3">
-                                    <strong>Valor Total:</strong> R$ {{ "%.2f"|format(service_order.invoice_amount) }}
+                                    <strong>Valor Total:</strong> R$ {{ service_order.invoice_amount | safe_money }}
                                 </div>
                             </div>
                             
@@ -145,7 +145,7 @@
                                                     </ul>
                                                 </div>
                                             </td>
-                                            <td class="text-end">{{ "%.2f"|format(service_order.invoice_amount) }}</td>
+                                            <td class="text-end">{{ service_order.invoice_amount | safe_money }}</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -212,7 +212,7 @@
                                     <strong>Valor dos Serviços:</strong>
                                 </div>
                                 <div class="col-4 text-end">
-                                    R$ {{ "%.2f"|format(service_order.invoice_amount) }}
+                                    R$ {{ service_order.invoice_amount | safe_money }}
                                 </div>
                             </div>
                             <div class="row mb-2">
@@ -220,7 +220,7 @@
                                     <strong>Valor do ISS:</strong>
                                 </div>
                                 <div class="col-4 text-end">
-                                    R$ {{ "%.2f"|format(service_order.invoice_amount / 20) }}
+                                    R$ {{ (service_order.invoice_amount | safe_float / 20) | safe_money }}
                                 </div>
                             </div>
                             <div class="row font-weight-bold nfe-total">
@@ -228,7 +228,7 @@
                                     <strong>VALOR TOTAL DA NOTA:</strong>
                                 </div>
                                 <div class="col-4 text-end">
-                                    <strong>R$ {{ "%.2f"|format(service_order.invoice_amount) }}</strong>
+                                    <strong>R$ {{ service_order.invoice_amount | safe_money }}</strong>
                                 </div>
                             </div>
                         </div>
@@ -255,7 +255,7 @@
         <div class="nfe-header">
             <div class="header-left">
                 <div class="recibo-box">
-                    <div class="recibo-text">RECEBEMOS OS PRODUTOS E/OU SERVIÇOS CONSTANTES DA NOTA FISCAL ELETRÔNICA INDICADA AO LADO. EMISSÃO: {{ service_order.invoice_date.strftime('%d/%m/%Y') if service_order.invoice_date else 'Data não definida' }} VALOR TOTAL: R$ {{ "%.2f"|format(service_order.invoice_amount) }} DESTINATÁRIO: {{ service_order.client.name }}</div>
+                    <div class="recibo-text">RECEBEMOS OS PRODUTOS E/OU SERVIÇOS CONSTANTES DA NOTA FISCAL ELETRÔNICA INDICADA AO LADO. EMISSÃO: {{ service_order.invoice_date.strftime('%d/%m/%Y') if service_order.invoice_date else 'Data não definida' }} VALOR TOTAL: R$ {{ service_order.invoice_amount | safe_money }} DESTINATÁRIO: {{ service_order.client.name }}</div>
                     <div class="recibo-signature">
                         <div>DATA DE RECEBIMENTO</div>
                         <div>IDENTIFICAÇÃO E ASSINATURA DO RECEBEDOR</div>
@@ -357,9 +357,9 @@
             <div class="block-header">FATURA / DUPLICATAS</div>
             <div class="fatura-grid">
                 <div class="fatura-numero">NÚMERO: {{ service_order.invoice_number }}</div>
-                <div class="fatura-valor">VALOR ORIGINAL: R$ {{ "%.2f"|format(service_order.invoice_amount) }}</div>
+                <div class="fatura-valor">VALOR ORIGINAL: R$ {{ service_order.invoice_amount | safe_money }}</div>
                 <div class="fatura-desconto">DESCONTO: R$ 0,00</div>
-                <div class="fatura-valor-liquido">VALOR LÍQUIDO: R$ {{ "%.2f"|format(service_order.invoice_amount) }}</div>
+                <div class="fatura-valor-liquido">VALOR LÍQUIDO: R$ {{ service_order.invoice_amount | safe_money }}</div>
             </div>
         </div>
         
@@ -387,7 +387,7 @@
                 <div class="imposto-label">OUTRAS DESPESAS</div>
                 <div class="imposto-value">0,00</div>
                 <div class="imposto-label">VALOR TOTAL DA NOTA</div>
-                <div class="imposto-value">{{ "%.2f"|format(service_order.invoice_amount) }}</div>
+                <div class="imposto-value">{{ service_order.invoice_amount | safe_money }}</div>
             </div>
         </div>
         
@@ -458,8 +458,8 @@
                     <div class="prod-cfop">-</div>
                     <div class="prod-un">SERV</div>
                     <div class="prod-qtde">1</div>
-                    <div class="prod-valor-un">{{ "%.2f"|format(service_order.invoice_amount) }}</div>
-                    <div class="prod-valor-total">{{ "%.2f"|format(service_order.invoice_amount) }}</div>
+                    <div class="prod-valor-un">{{ service_order.invoice_amount | safe_money }}</div>
+                    <div class="prod-valor-total">{{ service_order.invoice_amount | safe_money }}</div>
                     <div class="prod-bc-icms">0,00</div>
                     <div class="prod-valor-icms">0,00</div>
                     <div class="prod-aliq-icms">0,00</div>

@@ -8,7 +8,7 @@ from flask_wtf.csrf import CSRFProtect
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 from database import db
-from jinja_filters import nl2br, format_document, format_currency, status_color, absolute_value
+from jinja_filters import nl2br, format_document, format_currency, status_color, absolute_value, safe_float, safe_money
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -75,6 +75,8 @@ app.jinja_env.filters['format_document'] = format_document
 app.jinja_env.filters['format_currency'] = format_currency
 app.jinja_env.filters['status_color'] = status_color
 app.jinja_env.filters['abs'] = absolute_value
+app.jinja_env.filters['safe_float'] = safe_float
+app.jinja_env.filters['safe_money'] = safe_money
 app.jinja_env.globals['hasattr'] = hasattr
 
 # Create application context first
