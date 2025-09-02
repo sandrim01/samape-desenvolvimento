@@ -1620,75 +1620,77 @@ def register_routes(app):
                               service_order=service_order,
                               Decimal=Decimal)
     
-    @app.route('/os/<int:id>/nfe/exportar')
-    @login_required
-    def export_invoice(id):
-        from flask import make_response
-        import tempfile
-        import os
-        from decimal import Decimal
+    # Rota de exportação PDF desabilitada temporariamente
+    # @app.route('/os/<int:id>/nfe/exportar')
+    # @login_required
+    # def export_invoice(id):
+    #     from flask import make_response
+    #     import tempfile
+    #     import os
+    #     from decimal import Decimal
+    #     
+    #     # Tentar importar weasyprint
+    #     try:
+    #         from weasyprint import HTML, CSS
+    #         from weasyprint.text.fonts import FontConfiguration
+    #     except ImportError as e:
+    #         flash('WeasyPrint não está instalado. Execute: pip install weasyprint', 'danger')
+    #         return redirect(url_for('view_invoice', id=id))
+    #     
+    #     service_order = ServiceOrder.query.get_or_404(id)
+    #     
+    #     # Garantir que invoice_amount tenha um valor padrão se for None
+    #     if service_order.invoice_amount is None:
+    #         service_order.invoice_amount = service_order.total_price or 0
+    #     
+    #     # Check if order is closed
+    #     if service_order.status != ServiceOrderStatus.fechada:
+    #         flash('Esta OS ainda nÃ£o foi fechada.', 'warning')
+    #         return redirect(url_for('view_service_order', id=id))
+    #     
+    #     try:
+    #         # Render the invoice template to HTML (template específico para PDF)
+    #         html_content = render_template('invoices/export_pdf.html', 
+    #                                        service_order=service_order, 
+    #                                        Decimal=Decimal)
+    #         
+    #         # Create a temporary file
+    #         with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as temp:
+    #             # Configurar fonte
+    #             font_config = FontConfiguration()
+    #             
+    #             # Gerar PDF
+    #             HTML(string=html_content, base_url=request.base_url).write_pdf(
+    #                 temp.name,
+    #                 font_config=font_config,
+    #                 presentational_hints=True
+    #             )
+    #         
+    #         # Create a response with the PDF file
+    #         with open(temp.name, 'rb') as pdf_file:
+    #             response = make_response(pdf_file.read())
+    #             response.headers['Content-Type'] = 'application/pdf'
+    #             response.headers['Content-Disposition'] = f'attachment; filename=nota_fiscal_{service_order.invoice_number}.pdf'
+    #         
+    #         # Clean up temporary file
+    #         os.unlink(temp.name)
+    #         
+    #         # Log the successful export
+    #         log_action(
+    #             'ExportaÃ§Ã£o de Nota Fiscal',
+    #             'service_order',
+    #             service_order.id,
+    #             f'Nota fiscal {service_order.invoice_number} exportada em PDF'
+    #         )
+    #         
+    #         return response
+    #         
+    #     except Exception as e:
+    #         # Log the error
+    #         app.logger.error(f"Erro ao exportar nota fiscal: {str(e)}")
+    #         flash(f'Erro ao exportar a nota fiscal: {str(e)}', 'danger')
+    #         return redirect(url_for('view_invoice', id=id))
         
-        # Tentar importar weasyprint
-        try:
-            from weasyprint import HTML, CSS
-            from weasyprint.text.fonts import FontConfiguration
-        except ImportError as e:
-            flash('WeasyPrint não está instalado. Execute: pip install weasyprint', 'danger')
-            return redirect(url_for('view_invoice', id=id))
-        
-        service_order = ServiceOrder.query.get_or_404(id)
-        
-        # Garantir que invoice_amount tenha um valor padrão se for None
-        if service_order.invoice_amount is None:
-            service_order.invoice_amount = service_order.total_price or 0
-        
-        # Check if order is closed
-        if service_order.status != ServiceOrderStatus.fechada:
-            flash('Esta OS ainda nÃ£o foi fechada.', 'warning')
-            return redirect(url_for('view_service_order', id=id))
-        
-        try:
-            # Render the invoice template to HTML (template específico para PDF)
-            html_content = render_template('invoices/export_pdf.html', 
-                                           service_order=service_order, 
-                                           Decimal=Decimal)
-            
-            # Create a temporary file
-            with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as temp:
-                # Configurar fonte
-                font_config = FontConfiguration()
-                
-                # Gerar PDF
-                HTML(string=html_content, base_url=request.base_url).write_pdf(
-                    temp.name,
-                    font_config=font_config,
-                    presentational_hints=True
-                )
-            
-            # Create a response with the PDF file
-            with open(temp.name, 'rb') as pdf_file:
-                response = make_response(pdf_file.read())
-                response.headers['Content-Type'] = 'application/pdf'
-                response.headers['Content-Disposition'] = f'attachment; filename=nota_fiscal_{service_order.invoice_number}.pdf'
-            
-            # Clean up temporary file
-            os.unlink(temp.name)
-            
-            # Log the successful export
-            log_action(
-                'ExportaÃ§Ã£o de Nota Fiscal',
-                'service_order',
-                service_order.id,
-                f'Nota fiscal {service_order.invoice_number} exportada em PDF'
-            )
-            
-            return response
-            
-        except Exception as e:
-            # Log the error
-            app.logger.error(f"Erro ao exportar nota fiscal: {str(e)}")
-            flash(f'Erro ao exportar a nota fiscal: {str(e)}', 'danger')
-            return redirect(url_for('view_invoice', id=id))
         
     # =====================================================================
     # Rotas para Fornecedores
