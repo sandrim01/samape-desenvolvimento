@@ -1467,137 +1467,139 @@ def register_routes(app):
         
         return render_template('invoices/index.html', invoices=invoices)
     
-    @app.route('/notas-fiscais/exportar')
-    @login_required
-    def export_invoices():
-        import zipfile
-        import io
-        from flask import make_response
-        import tempfile
-        import os
-        from decimal import Decimal
+    # Rota de exportação de notas fiscais desabilitada temporariamente
+    # @app.route('/notas-fiscais/exportar')
+    # @login_required
+    # def export_invoices():
+    #     import zipfile
+    #     import io
+    #     from flask import make_response
+    #     import tempfile
+    #     import os
+    #     from decimal import Decimal
+    #     
+    #     try:
+    #         # Tentar importar weasyprint, usar fallback se não funcionar
+    #         try:
+    #             from weasyprint import HTML
+    #             use_pdf = True
+    #         except Exception as e:
+    #             print(f"WeasyPrint não disponível: {e}")
+    #             use_pdf = False
+    #         
+    #         # ObtÃ©m os mesmos filtros da listagem
+    #         cliente = request.args.get('cliente')
+    #         numero_nf = request.args.get('numero_nf')
+    #         data_inicio = request.args.get('data_inicio')
+    #         data_fim = request.args.get('data_fim')
+    #         
+    #         # ConstrÃ³i a query com os mesmos filtros da pÃ¡gina de listagem
+    #         query = ServiceOrder.query.filter(
+    #             ServiceOrder.status == ServiceOrderStatus.fechada,
+    #             ServiceOrder.invoice_number.isnot(None)
+    #         ).order_by(ServiceOrder.invoice_date.desc())
+    #         
+    #         if cliente:
+    #             query = query.join(Client).filter(Client.name.ilike(f'%{cliente}%'))
+    #         
+    #         if numero_nf:
+    #             query = query.filter(ServiceOrder.invoice_number.ilike(f'%{numero_nf}%'))
+    #         
+    #         if data_inicio:
+    #             try:
+    #                 data_inicio = datetime.strptime(data_inicio, '%Y-%m-%d')
+    #                 query = query.filter(ServiceOrder.invoice_date >= data_inicio)
+    #             except ValueError:
+    #                 flash('Data inicial invÃ¡lida.', 'warning')
+    #                 return redirect(url_for('invoices'))
+    #         
+    #         if data_fim:
+    #             try:
+    #                 data_fim = datetime.strptime(data_fim, '%Y-%m-%d')
+    #                 data_fim = datetime.combine(data_fim, datetime.max.time())
+    #                 query = query.filter(ServiceOrder.invoice_date <= data_fim)
+    #             except ValueError:
+    #                 flash('Data final invÃ¡lida.', 'warning')
+    #                 return redirect(url_for('invoices'))
+    #         
+    #         # Limita a quantidade para evitar arquivos muito grandes
+    #         invoices = query.limit(50).all()
+    #         
+    #         if not invoices:
+    #             flash('Nenhuma nota fiscal encontrada para exportaÃ§Ã£o.', 'warning')
+    #             return redirect(url_for('invoices'))
+    #         
+    #         # Cria um arquivo ZIP em memÃ³ria
+    #         memory_file = io.BytesIO()
+    #         with zipfile.ZipFile(memory_file, 'w') as zf:
+    #             # Adiciona cada nota fiscal ao ZIP
+    #             for so in invoices:
+    #                 # Gera HTML da nota fiscal
+    #                 html_content = render_template('invoices/view.html', 
+    #                                               service_order=so, 
+    #                                               export_mode=True,
+    #                                               Decimal=Decimal)  # Passando o tipo Decimal para o template
+    #                 
+    #                 if use_pdf:
+    #                     try:
+    #                         # Cria arquivo PDF temporÃ¡rio
+    #                         with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as temp:
+    #                             # Configurar tamanho A4 e outras opÃ§Ãµes para impressÃ£o
+    #                             pdf_options = {
+    #                                 'page-size': 'A4',
+    #                                 'margin-top': '0.5cm',
+    #                                 'margin-right': '0.5cm',
+    #                                 'margin-bottom': '0.5cm',
+    #                                 'margin-left': '0.5cm',
+    #                                 'encoding': 'UTF-8',
+    #                                 'print-media-type': '',
+    #                                 'no-outline': None
+    #                             }
+    #                             
+    #                             # Gera PDF do HTML com tamanho A4
+    #                             HTML(string=html_content).write_pdf(temp.name, presentational_hints=True, stylesheets=[], **pdf_options)
+    #                         
+    #                         # LÃª o arquivo PDF e adiciona ao ZIP
+    #                         with open(temp.name, 'rb') as pdf_file:
+    #                             pdf_data = pdf_file.read()
+    #                             # Adiciona ao ZIP com um nome adequado
+    #                             zf.writestr(f'NF_{so.invoice_number}.pdf', pdf_data)
+    #                         
+    #                         # Remove o arquivo temporÃ¡rio
+    #                         os.unlink(temp.name)
+    #                     except Exception as pdf_error:
+    #                         print(f"Erro ao gerar PDF para {so.invoice_number}: {pdf_error}")
+    #                         # Fallback para HTML se PDF falhar
+    #                         zf.writestr(f'NF_{so.invoice_number}.html', html_content.encode('utf-8'))
+    #                 else:
+    #                     # Usar HTML como alternativa
+    #                     zf.writestr(f'NF_{so.invoice_number}.html', html_content.encode('utf-8'))
+    #         
+    #         # Prepara o arquivo ZIP para download
+    #         memory_file.seek(0)
+    #         
+    #         data_str = datetime.now().strftime('%Y%m%d')
+    #         response = make_response(memory_file.getvalue())
+    #         response.headers['Content-Type'] = 'application/zip'
+    #         response.headers['Content-Disposition'] = f'attachment; filename=notas_fiscais_{data_str}.zip'
+    #         
+    #         # Registra a aÃ§Ã£o
+    #         file_type = "PDF" if use_pdf else "HTML"
+    #         log_action(
+    #             'ExportaÃ§Ã£o de Notas Fiscais',
+    #             None,
+    #             None,
+    #             f'ExportaÃ§Ã£o de {len(invoices)} notas fiscais em {file_type}'
+    #         )
+    #         
+    #         return response
+    #     
+    #     except Exception as e:
+    #         # Log do erro
+    #         app.logger.error(f"Erro ao exportar notas fiscais em massa: {str(e)}")
+    #         flash(f'Erro ao exportar as notas fiscais: {str(e)}', 'danger')
+    #         return redirect(url_for('invoices'))
         
-        try:
-            # Tentar importar weasyprint, usar fallback se não funcionar
-            try:
-                from weasyprint import HTML
-                use_pdf = True
-            except Exception as e:
-                print(f"WeasyPrint não disponível: {e}")
-                use_pdf = False
-            
-            # ObtÃ©m os mesmos filtros da listagem
-            cliente = request.args.get('cliente')
-            numero_nf = request.args.get('numero_nf')
-            data_inicio = request.args.get('data_inicio')
-            data_fim = request.args.get('data_fim')
-            
-            # ConstrÃ³i a query com os mesmos filtros da pÃ¡gina de listagem
-            query = ServiceOrder.query.filter(
-                ServiceOrder.status == ServiceOrderStatus.fechada,
-                ServiceOrder.invoice_number.isnot(None)
-            ).order_by(ServiceOrder.invoice_date.desc())
-            
-            if cliente:
-                query = query.join(Client).filter(Client.name.ilike(f'%{cliente}%'))
-            
-            if numero_nf:
-                query = query.filter(ServiceOrder.invoice_number.ilike(f'%{numero_nf}%'))
-            
-            if data_inicio:
-                try:
-                    data_inicio = datetime.strptime(data_inicio, '%Y-%m-%d')
-                    query = query.filter(ServiceOrder.invoice_date >= data_inicio)
-                except ValueError:
-                    flash('Data inicial invÃ¡lida.', 'warning')
-                    return redirect(url_for('invoices'))
-            
-            if data_fim:
-                try:
-                    data_fim = datetime.strptime(data_fim, '%Y-%m-%d')
-                    data_fim = datetime.combine(data_fim, datetime.max.time())
-                    query = query.filter(ServiceOrder.invoice_date <= data_fim)
-                except ValueError:
-                    flash('Data final invÃ¡lida.', 'warning')
-                    return redirect(url_for('invoices'))
-            
-            # Limita a quantidade para evitar arquivos muito grandes
-            invoices = query.limit(50).all()
-            
-            if not invoices:
-                flash('Nenhuma nota fiscal encontrada para exportaÃ§Ã£o.', 'warning')
-                return redirect(url_for('invoices'))
-            
-            # Cria um arquivo ZIP em memÃ³ria
-            memory_file = io.BytesIO()
-            with zipfile.ZipFile(memory_file, 'w') as zf:
-                # Adiciona cada nota fiscal ao ZIP
-                for so in invoices:
-                    # Gera HTML da nota fiscal
-                    html_content = render_template('invoices/view.html', 
-                                                  service_order=so, 
-                                                  export_mode=True,
-                                                  Decimal=Decimal)  # Passando o tipo Decimal para o template
-                    
-                    if use_pdf:
-                        try:
-                            # Cria arquivo PDF temporÃ¡rio
-                            with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as temp:
-                                # Configurar tamanho A4 e outras opÃ§Ãµes para impressÃ£o
-                                pdf_options = {
-                                    'page-size': 'A4',
-                                    'margin-top': '0.5cm',
-                                    'margin-right': '0.5cm',
-                                    'margin-bottom': '0.5cm',
-                                    'margin-left': '0.5cm',
-                                    'encoding': 'UTF-8',
-                                    'print-media-type': '',
-                                    'no-outline': None
-                                }
-                                
-                                # Gera PDF do HTML com tamanho A4
-                                HTML(string=html_content).write_pdf(temp.name, presentational_hints=True, stylesheets=[], **pdf_options)
-                            
-                            # LÃª o arquivo PDF e adiciona ao ZIP
-                            with open(temp.name, 'rb') as pdf_file:
-                                pdf_data = pdf_file.read()
-                                # Adiciona ao ZIP com um nome adequado
-                                zf.writestr(f'NF_{so.invoice_number}.pdf', pdf_data)
-                            
-                            # Remove o arquivo temporÃ¡rio
-                            os.unlink(temp.name)
-                        except Exception as pdf_error:
-                            print(f"Erro ao gerar PDF para {so.invoice_number}: {pdf_error}")
-                            # Fallback para HTML se PDF falhar
-                            zf.writestr(f'NF_{so.invoice_number}.html', html_content.encode('utf-8'))
-                    else:
-                        # Usar HTML como alternativa
-                        zf.writestr(f'NF_{so.invoice_number}.html', html_content.encode('utf-8'))
-            
-            # Prepara o arquivo ZIP para download
-            memory_file.seek(0)
-            
-            data_str = datetime.now().strftime('%Y%m%d')
-            response = make_response(memory_file.getvalue())
-            response.headers['Content-Type'] = 'application/zip'
-            response.headers['Content-Disposition'] = f'attachment; filename=notas_fiscais_{data_str}.zip'
-            
-            # Registra a aÃ§Ã£o
-            file_type = "PDF" if use_pdf else "HTML"
-            log_action(
-                'ExportaÃ§Ã£o de Notas Fiscais',
-                None,
-                None,
-                f'ExportaÃ§Ã£o de {len(invoices)} notas fiscais em {file_type}'
-            )
-            
-            return response
-        
-        except Exception as e:
-            # Log do erro
-            app.logger.error(f"Erro ao exportar notas fiscais em massa: {str(e)}")
-            flash(f'Erro ao exportar as notas fiscais: {str(e)}', 'danger')
-            return redirect(url_for('invoices'))
     
     @app.route('/os/<int:id>/nfe')
     @login_required
