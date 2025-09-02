@@ -47,7 +47,7 @@
                 <div class="col-md-6">
                     <label for="year" class="form-label">Ano</label>
                     <select class="form-select" id="year" name="year">
-                        {% for y in range(now().year - 2, now().year + 1) %}
+                        {% for y in range(now.year - 2, now.year + 1) %}
                         <option value="{{ y }}" {% if year == y %}selected{% endif %}>{{ y }}</option>
                         {% endfor %}
                     </select>
@@ -229,7 +229,7 @@
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label for="adjustment-date" class="form-label">Data</label>
-                            <input type="date" class="form-control" id="adjustment-date" name="date" value="{{ now().strftime('%Y-%m-%d') }}" required>
+                            <input type="date" class="form-control" id="adjustment-date" name="date" value="{{ now.strftime('%Y-%m-%d') }}" required>
                         </div>
                         <div class="col-md-6">
                             <label for="adjustment-category" class="form-label">Categoria</label>
