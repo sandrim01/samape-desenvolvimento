@@ -175,10 +175,23 @@
                                 <i class="fas fa-clock"></i> Controle de Ponto
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link {% if '/financeiro' in request.path %}active{% endif %}" href="{{ url_for('financial') }}">
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle {% if '/financeiro' in request.path %}active{% endif %}" 
+                               href="#" id="financialDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="fas fa-dollar-sign"></i> Financeiro
                             </a>
+                            <ul class="dropdown-menu" aria-labelledby="financialDropdown">
+                                <li><a class="dropdown-item" href="{{ url_for('financial') }}">
+                                    <i class="fas fa-chart-line me-2"></i> Movimentações
+                                </a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('accounts_payable_receivable') }}">
+                                    <i class="fas fa-calendar-check me-2"></i> Contas a Pagar/Receber
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{{ url_for('new_financial_entry') }}">
+                                    <i class="fas fa-plus me-2"></i> Novo Registro
+                                </a></li>
+                            </ul>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {% if '/notas-fiscais' in request.path %}active{% endif %}" href="{{ url_for('invoices') }}">

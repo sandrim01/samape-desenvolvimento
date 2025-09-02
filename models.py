@@ -19,6 +19,25 @@ class ServiceOrderStatus(enum.Enum):
 class FinancialEntryType(enum.Enum):
     entrada = "entrada"
     saida = "saida"
+
+class FinancialCategory(enum.Enum):
+    servicos = "Serviços"
+    pecas = "Peças"
+    combustivel = "Combustível"
+    salarios = "Salários"
+    aluguel = "Aluguel"
+    utilidades = "Utilidades"
+    equipamentos = "Equipamentos"
+    manutencao = "Manutenção"
+    marketing = "Marketing"
+    impostos = "Impostos"
+    outros = "Outros"
+
+class FinancialStatus(enum.Enum):
+    pago = "Pago"
+    pendente = "Pendente"
+    vencido = "Vencido"
+    cancelado = "Cancelado"
     
 class VehicleStatus(enum.Enum):
     ativo = "Ativo"
@@ -154,12 +173,17 @@ class FinancialEntry(db.Model):
     description = db.Column(db.String(200), nullable=False)
     amount = db.Column(db.Numeric(10, 2), nullable=False)
     type = db.Column(Enum(FinancialEntryType), nullable=False)
+    category = db.Column(Enum(FinancialCategory), default=FinancialCategory.outros)
+    status = db.Column(Enum(FinancialStatus), default=FinancialStatus.pago)
     date = db.Column(db.DateTime, default=datetime.utcnow)
+    due_date = db.Column(db.DateTime)  # Data de vencimento para contas a pagar/receber
+    payment_date = db.Column(db.DateTime)  # Data do pagamento efetivo
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     created_by = db.Column(db.Integer, db.ForeignKey('user.id'))
     # Campos para relacionar com outros tipos de entidades (pedidos a fornecedores, etc.)
     entry_type = db.Column(db.String(50))  # 'service_order', 'pedido_fornecedor', etc.
     reference_id = db.Column(db.Integer)   # ID da entidade referenciada
+    notes = db.Column(db.Text)  # Observações adicionais
 
 class ActionLog(db.Model):
     id = db.Column(db.Integer, primary_key=True)

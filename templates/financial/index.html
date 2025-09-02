@@ -9,6 +9,9 @@
         <a href="{{ url_for('new_financial_entry') }}" class="btn btn-primary me-2">
             <i class="fas fa-plus me-1"></i> Novo Registro
         </a>
+        <a href="{{ url_for('accounts_payable_receivable') }}" class="btn btn-warning me-2">
+            <i class="fas fa-calendar-check me-1"></i> Contas a Pagar/Receber
+        </a>
         <button type="button" class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#financialAdjustmentModal">
             <i class="fas fa-balance-scale me-1"></i> Acerto Manual
         </button>
@@ -18,15 +21,15 @@
     </div>
 </div>
 
-<!-- Month Selector -->
+<!-- Month Selector and Filters -->
 <div class="card mb-4">
     <div class="card-header">
-        <i class="fas fa-calendar-alt me-1"></i> Selecionar Período
+        <i class="fas fa-filter me-1"></i> Filtros e Período
     </div>
     <div class="card-body">
         <form method="get" action="{{ url_for('financial') }}">
             <div class="row g-3">
-                <div class="col-md-6">
+                <div class="col-md-3">
                     <label for="month" class="form-label">Mês</label>
                     <select class="form-select" id="month" name="month">
                         <option value="1" {% if month == 1 %}selected{% endif %}>Janeiro</option>
@@ -44,7 +47,7 @@
                     </select>
                 </div>
                 
-                <div class="col-md-6">
+                <div class="col-md-3">
                     <label for="year" class="form-label">Ano</label>
                     <select class="form-select" id="year" name="year">
                         {% for y in range(now.year - 2, now.year + 1) %}
@@ -53,8 +56,37 @@
                     </select>
                 </div>
                 
+                <div class="col-md-3">
+                    <label for="category" class="form-label">Categoria</label>
+                    <select class="form-select" id="category" name="category">
+                        <option value="">Todas as categorias</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat.name }}" {% if category_filter == cat.name %}selected{% endif %}>
+                            {{ cat.value }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="col-md-3">
+                    <label for="status" class="form-label">Status</label>
+                    <select class="form-select" id="status" name="status">
+                        <option value="">Todos os status</option>
+                        {% for stat in statuses %}
+                        <option value="{{ stat.name }}" {% if status_filter == stat.name %}selected{% endif %}>
+                            {{ stat.value }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
                 <div class="col-12">
-                    <button type="submit" class="btn btn-primary">Filtrar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search me-1"></i> Filtrar
+                    </button>
+                    <a href="{{ url_for('financial') }}" class="btn btn-outline-secondary ms-2">
+                        <i class="fas fa-times me-1"></i> Limpar Filtros
+                    </a>
                 </div>
             </div>
         </form>
@@ -132,6 +164,48 @@
     </div>
 </div>
 
+<!-- Statistics by Category -->
+{% if category_stats %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-chart-bar me-1"></i> Estatísticas por Categoria
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for cat_key, cat_data in category_stats.items() %}
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <div class="card h-100 border-start border-primary border-3">
+                            <div class="card-body">
+                                <h6 class="card-title">{{ cat_data.label }}</h6>
+                                <div class="small text-muted mb-2">
+                                    <div class="d-flex justify-content-between">
+                                        <span>Receitas:</span>
+                                        <span class="text-success">{{ format_currency(cat_data.income) }}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <span>Despesas:</span>
+                                        <span class="text-danger">{{ format_currency(cat_data.expenses) }}</span>
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <strong>Total:</strong>
+                                    <strong class="{{ 'text-success' if cat_data.total >= 0 else 'text-danger' }}">
+                                        {{ format_currency(cat_data.total) }}
+                                    </strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 <!-- Financial Entries -->
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
@@ -150,23 +224,62 @@
                     <tr>
                         <th>Data</th>
                         <th>Descrição</th>
+                        <th>Categoria</th>
                         <th>Tipo</th>
+                        <th>Status</th>
                         <th>Valor</th>
-                        <th>OS Relacionada</th>
+                        <th>Vencimento</th>
+                        <th>OS</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for entry in entries %}
                     <tr>
                         <td>{{ entry.date.strftime('%d/%m/%Y') if entry.date else 'Data não definida' }}</td>
-                        <td>{{ entry.description }}</td>
+                        <td>
+                            {{ entry.description }}
+                            {% if entry.notes %}
+                            <small class="text-muted d-block">{{ entry.notes }}</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary">
+                                {{ entry.category.value if entry.category else 'Outros' }}
+                            </span>
+                        </td>
                         <td>
                             <span class="badge {% if entry.type.name == 'entrada' %}bg-success{% else %}bg-danger{% endif %}">
                                 {{ entry.type.value }}
                             </span>
                         </td>
+                        <td>
+                            {% set status_colors = {
+                                'pago': 'success',
+                                'pendente': 'warning',
+                                'vencido': 'danger',
+                                'cancelado': 'secondary'
+                            } %}
+                            <span class="badge bg-{{ status_colors.get(entry.status.name, 'secondary') }}">
+                                {{ entry.status.value if entry.status else 'Pago' }}
+                            </span>
+                        </td>
                         <td class="{% if entry.type.name == 'entrada' %}text-success{% else %}text-danger{% endif %}">
                             {{ format_currency(entry.amount) }}
+                        </td>
+                        <td>
+                            {% if entry.due_date %}
+                                {% set days_diff = (entry.due_date.date() - now.date()).days %}
+                                <span class="{% if days_diff < 0 %}text-danger{% elif days_diff <= 3 %}text-warning{% endif %}">
+                                    {{ entry.due_date.strftime('%d/%m/%Y') }}
+                                    {% if days_diff < 0 %}
+                                        <small class="d-block">({{ -days_diff }} dias vencido)</small>
+                                    {% elif days_diff <= 3 %}
+                                        <small class="d-block">(vence em {{ days_diff }} dias)</small>
+                                    {% endif %}
+                                </span>
+                            {% else %}
+                                -
+                            {% endif %}
                         </td>
                         <td>
                             {% if entry.service_order_id %}

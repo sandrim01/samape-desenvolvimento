@@ -12,7 +12,7 @@ from wtforms.validators import Optional
 from database import db
 from models import (
     User, Client, Equipment, ServiceOrder, FinancialEntry, ActionLog,
-    UserRole, ServiceOrderStatus, FinancialEntryType, Supplier, Part, PartSale,
+    UserRole, ServiceOrderStatus, FinancialEntryType, FinancialCategory, FinancialStatus, Supplier, Part, PartSale,
     SupplierOrder, OrderItem, OrderStatus, ServiceOrderImage, equipment_service_orders,
     StockItem, StockMovement, StockItemType, StockItemStatus, VehicleType, VehicleStatus,
     Vehicle, VehicleMaintenance, Refueling, VehicleTravelLog, MaintenanceType, FuelType
@@ -995,17 +995,53 @@ def register_routes(app):
     def financial():
         month = request.args.get('month', datetime.utcnow().month, type=int)
         year = request.args.get('year', datetime.utcnow().year, type=int)
+        category_filter = request.args.get('category', None)
+        status_filter = request.args.get('status', None)
         
-        # Get entries for the selected month
-        entries = FinancialEntry.query.filter(
+        # Base query for the selected month
+        query = FinancialEntry.query.filter(
             func.extract('month', FinancialEntry.date) == month,
             func.extract('year', FinancialEntry.date) == year
-        ).order_by(FinancialEntry.date.desc()).all()
+        )
+        
+        # Apply filters
+        if category_filter:
+            query = query.filter(FinancialEntry.category == FinancialCategory[category_filter])
+        if status_filter:
+            query = query.filter(FinancialEntry.status == FinancialStatus[status_filter])
+            
+        entries = query.order_by(FinancialEntry.date.desc()).all()
         
         # Calculate summary
         income = sum(e.amount for e in entries if e.type == FinancialEntryType.entrada)
         expenses = sum(e.amount for e in entries if e.type == FinancialEntryType.saida)
         balance = income - expenses
+        
+        # Calculate statistics by category
+        category_stats = {}
+        for category in FinancialCategory:
+            cat_entries = [e for e in entries if e.category == category]
+            if cat_entries:
+                cat_income = sum(e.amount for e in cat_entries if e.type == FinancialEntryType.entrada)
+                cat_expenses = sum(e.amount for e in cat_entries if e.type == FinancialEntryType.saida)
+                category_stats[category.name] = {
+                    'label': category.value,
+                    'income': cat_income,
+                    'expenses': cat_expenses,
+                    'total': cat_income - cat_expenses
+                }
+        
+        # Calculate statistics by status
+        status_stats = {}
+        for status in FinancialStatus:
+            status_entries = [e for e in entries if e.status == status]
+            if status_entries:
+                status_amount = sum(e.amount for e in status_entries)
+                status_stats[status.name] = {
+                    'label': status.value,
+                    'amount': status_amount,
+                    'count': len(status_entries)
+                }
         
         return render_template(
             'financial/index.html',
@@ -1015,6 +1051,12 @@ def register_routes(app):
             income=income,
             expenses=expenses,
             balance=balance,
+            category_stats=category_stats,
+            status_stats=status_stats,
+            categories=FinancialCategory,
+            statuses=FinancialStatus,
+            category_filter=category_filter,
+            status_filter=status_filter,
             now=datetime.utcnow()
         )
 
@@ -1030,12 +1072,27 @@ def register_routes(app):
         ]
         
         if form.validate_on_submit():
+            # Parse dates
+            entry_date = datetime.strptime(form.date.data, '%Y-%m-%d')
+            due_date = None
+            payment_date = None
+            
+            if form.due_date.data:
+                due_date = datetime.strptime(form.due_date.data, '%Y-%m-%d')
+            if form.payment_date.data:
+                payment_date = datetime.strptime(form.payment_date.data, '%Y-%m-%d')
+            
             entry = FinancialEntry(
                 service_order_id=form.service_order_id.data if form.service_order_id.data != 0 else None,
                 description=form.description.data,
                 amount=form.amount.data,
                 type=FinancialEntryType[form.type.data],
-                date=datetime.strptime(form.date.data, '%Y-%m-%d'),
+                category=FinancialCategory[form.category.data],
+                status=FinancialStatus[form.status.data],
+                date=entry_date,
+                due_date=due_date,
+                payment_date=payment_date,
+                notes=form.notes.data,
                 created_by=current_user.id
             )
             
@@ -1151,6 +1208,68 @@ def register_routes(app):
             flash(f'Erro ao registrar acerto: {str(e)}', 'error')
         
         return redirect(url_for('financial'))
+
+    @app.route('/financeiro/contas-pagar-receber')
+    @manager_required
+    def accounts_payable_receivable():
+        """Página dedicada para contas a pagar e receber"""
+        today = datetime.utcnow().date()
+        
+        # Contas pendentes
+        pending_entries = FinancialEntry.query.filter(
+            FinancialEntry.status == FinancialStatus.pendente
+        ).order_by(FinancialEntry.due_date.asc()).all()
+        
+        # Contas vencidas
+        overdue_entries = FinancialEntry.query.filter(
+            FinancialEntry.status == FinancialStatus.vencido
+        ).order_by(FinancialEntry.due_date.asc()).all()
+        
+        # Contas que vencem nos próximos 7 dias
+        from datetime import timedelta
+        next_week = today + timedelta(days=7)
+        
+        upcoming_entries = FinancialEntry.query.filter(
+            FinancialEntry.status == FinancialStatus.pendente,
+            FinancialEntry.due_date.between(today, next_week)
+        ).order_by(FinancialEntry.due_date.asc()).all()
+        
+        # Estatísticas
+        total_pending = sum(e.amount for e in pending_entries)
+        total_overdue = sum(e.amount for e in overdue_entries)
+        total_upcoming = sum(e.amount for e in upcoming_entries)
+        
+        return render_template(
+            'financial/accounts.html',
+            pending_entries=pending_entries,
+            overdue_entries=overdue_entries,
+            upcoming_entries=upcoming_entries,
+            total_pending=total_pending,
+            total_overdue=total_overdue,
+            total_upcoming=total_upcoming,
+            today=today
+        )
+
+    @app.route('/financeiro/marcar-pago/<int:entry_id>', methods=['POST'])
+    @manager_required
+    def mark_as_paid(entry_id):
+        """Marca uma entrada financeira como paga"""
+        entry = FinancialEntry.query.get_or_404(entry_id)
+        
+        entry.status = FinancialStatus.pago
+        entry.payment_date = datetime.utcnow()
+        
+        db.session.commit()
+        
+        log_action(
+            'Pagamento Registrado',
+            'financial',
+            entry.id,
+            f"Marcado como pago: {entry.description} - {format_currency(entry.amount)}"
+        )
+        
+        flash(f'Pagamento de {format_currency(entry.amount)} registrado com sucesso!', 'success')
+        return redirect(request.referrer or url_for('accounts_payable_receivable'))
 
     # Log routes
     @app.route('/logs')

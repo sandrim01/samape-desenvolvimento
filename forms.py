@@ -33,7 +33,7 @@ class FileSizeLimit(object):
             field.data.seek(0)  # Resetar posição do arquivo após leitura
             if file_size_kb > self.max_size_kb:
                 raise ValidationError(f'O arquivo tem {int(file_size_kb)}KB, excedendo o limite de {self.max_size_kb}KB.')
-from models import User, Client, ServiceOrderStatus, UserRole, FinancialEntryType, Supplier, Part, OrderStatus, StockItemType, StockItemStatus, StockItem, ServiceOrder, VehicleType, VehicleStatus, Vehicle, FuelType, MaintenanceType
+from models import User, Client, ServiceOrderStatus, UserRole, FinancialEntryType, FinancialCategory, FinancialStatus, Supplier, Part, OrderStatus, StockItemType, StockItemStatus, StockItem, ServiceOrder, VehicleType, VehicleStatus, Vehicle, FuelType, MaintenanceType
 
 class DeleteImageForm(FlaskForm):
     """Formulário simples para exclusão de imagens"""
@@ -159,7 +159,12 @@ class FinancialEntryForm(FlaskForm):
     description = StringField('Descrição', validators=[DataRequired(), Length(max=200)])
     amount = DecimalField('Valor (R$)', validators=[DataRequired()], places=2)
     type = SelectField('Tipo', choices=[(t.name, t.value) for t in FinancialEntryType], validators=[DataRequired()])
+    category = SelectField('Categoria', choices=[(c.name, c.value) for c in FinancialCategory], validators=[DataRequired()])
+    status = SelectField('Status', choices=[(s.name, s.value) for s in FinancialStatus], validators=[DataRequired()])
     date = StringField('Data', validators=[DataRequired()])
+    due_date = StringField('Data de Vencimento', validators=[Optional()])
+    payment_date = StringField('Data de Pagamento', validators=[Optional()])
+    notes = TextAreaField('Observações', validators=[Optional()])
 
 class SupplierForm(FlaskForm):
     name = StringField('Nome/Razão Social', validators=[DataRequired(), Length(min=3, max=100)])
