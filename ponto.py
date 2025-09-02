@@ -1,8 +1,8 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user
-from datetime import datetime, date, time
+from datetime import datetime, date, time, timedelta
 from sqlalchemy import func, and_, or_
-from models import db, Ponto, User
+from models import db, Ponto, User, UserRole
 from utils import admin_required, manager_required
 
 bp_ponto = Blueprint('ponto', __name__, url_prefix='/ponto')
@@ -88,15 +88,55 @@ def bater_ponto():
 @admin_required
 def admin_view():
     """Visão administrativa do controle de ponto"""
-    # Buscar todos os registros do mês atual
-    hoje = date.today()
-    inicio_mes = hoje.replace(day=1)
+    # Parâmetros de filtro
+    mes_param = request.args.get('mes')
+    ano_param = request.args.get('ano', type=int)
     
+    # Data atual como padrão
+    hoje = date.today()
+    
+    if mes_param and ano_param:
+        try:
+            mes_filtro = int(mes_param)
+            ano_filtro = ano_param
+            inicio_mes = date(ano_filtro, mes_filtro, 1)
+        except (ValueError, TypeError):
+            inicio_mes = hoje.replace(day=1)
+    else:
+        inicio_mes = hoje.replace(day=1)
+    
+    # Calcular o fim do mês
+    if inicio_mes.month == 12:
+        fim_mes = inicio_mes.replace(year=inicio_mes.year + 1, month=1, day=1)
+    else:
+        fim_mes = inicio_mes.replace(month=inicio_mes.month + 1, day=1)
+    
+    # Último dia do mês para exibição
+    ultimo_dia_mes = (fim_mes - timedelta(days=1)).date()
+    
+    # Buscar todos os registros do período filtrado de todos os funcionários ativos
     registros = db.session.query(Ponto, User).join(User).filter(
-        Ponto.data >= inicio_mes
+        Ponto.data >= inicio_mes,
+        Ponto.data < fim_mes,
+        User.active == True
     ).order_by(Ponto.data.desc(), User.name).all()
     
-    return render_template('ponto/admin.html', registros=registros, mes_atual=hoje)
+    # Estatísticas do período
+    total_registros = len(registros)
+    funcionarios_com_ponto = len(set([user.id for ponto, user in registros]))
+    funcionarios_ativos = User.query.filter_by(active=True, role=UserRole.funcionario).count()
+    
+    stats = {
+        'total_registros': total_registros,
+        'funcionarios_com_ponto': funcionarios_com_ponto,
+        'funcionarios_ativos': funcionarios_ativos,
+        'inicio_mes': inicio_mes,
+        'fim_mes': fim_mes,
+        'ultimo_dia_mes': ultimo_dia_mes,
+        'mes_atual': inicio_mes
+    }
+    
+    return render_template('ponto/admin.html', registros=registros, stats=stats)
 
 @bp_ponto.route('/relatorio')
 @manager_required  
