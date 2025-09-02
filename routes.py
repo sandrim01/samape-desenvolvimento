@@ -991,7 +991,7 @@ def register_routes(app):
 
     # Financial routes
     @app.route('/financeiro')
-    @manager_required
+    @login_required
     def financial():
         try:
             month = request.args.get('month', datetime.utcnow().month, type=int)
