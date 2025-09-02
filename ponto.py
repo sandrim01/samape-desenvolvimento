@@ -154,3 +154,152 @@ def api_status():
         status['hora_saida'] = ponto.hora_saida.strftime('%H:%M') if ponto.hora_saida else None
     
     return jsonify(status)
+
+@bp_ponto.route('/editar/<int:ponto_id>', methods=['GET', 'POST'])
+@admin_required
+def editar_ponto(ponto_id):
+    """Editar registro de ponto (apenas administradores)"""
+    ponto = Ponto.query.get_or_404(ponto_id)
+    usuario = User.query.get(ponto.user_id)
+    
+    if request.method == 'POST':
+        # Verificar senha do administrador
+        senha_admin = request.form.get('senha_admin')
+        if not senha_admin or not current_user.check_password(senha_admin):
+            flash('Senha de administrador incorreta!', 'error')
+            return render_template('ponto/editar.html', ponto=ponto, usuario=usuario)
+        
+        try:
+            # Atualizar dados do ponto
+            data_str = request.form.get('data')
+            hora_entrada_str = request.form.get('hora_entrada')
+            hora_saida_str = request.form.get('hora_saida')
+            observacao = request.form.get('observacao', '').strip()
+            
+            # Converter data
+            if data_str:
+                ponto.data = datetime.strptime(data_str, '%Y-%m-%d').date()
+            
+            # Converter hora de entrada
+            if hora_entrada_str:
+                hora_entrada = datetime.strptime(hora_entrada_str, '%H:%M').time()
+                ponto.hora_entrada = datetime.combine(ponto.data, hora_entrada)
+            
+            # Converter hora de saída
+            if hora_saida_str:
+                hora_saida = datetime.strptime(hora_saida_str, '%H:%M').time()
+                ponto.hora_saida = datetime.combine(ponto.data, hora_saida)
+            elif request.form.get('limpar_saida'):
+                ponto.hora_saida = None
+            
+            # Atualizar observação
+            ponto.observacao = observacao if observacao else None
+            ponto.updated_at = datetime.now()
+            
+            # Adicionar log da alteração
+            log_msg = f"Ponto editado pelo admin {current_user.name}"
+            if ponto.observacao:
+                ponto.observacao = f"{ponto.observacao}\n[ADMIN] {log_msg}"
+            else:
+                ponto.observacao = f"[ADMIN] {log_msg}"
+            
+            db.session.commit()
+            flash(f'Ponto de {usuario.name} editado com sucesso!', 'success')
+            return redirect(url_for('ponto.admin_view'))
+            
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Erro ao editar ponto: {str(e)}', 'error')
+    
+    return render_template('ponto/editar.html', ponto=ponto, usuario=usuario)
+
+@bp_ponto.route('/excluir/<int:ponto_id>', methods=['POST'])
+@admin_required
+def excluir_ponto(ponto_id):
+    """Excluir registro de ponto (apenas administradores)"""
+    ponto = Ponto.query.get_or_404(ponto_id)
+    usuario = User.query.get(ponto.user_id)
+    
+    # Verificar senha do administrador
+    senha_admin = request.form.get('senha_admin')
+    if not senha_admin or not current_user.check_password(senha_admin):
+        flash('Senha de administrador incorreta!', 'error')
+        return redirect(url_for('ponto.admin_view'))
+    
+    try:
+        db.session.delete(ponto)
+        db.session.commit()
+        flash(f'Ponto de {usuario.name} excluído com sucesso!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Erro ao excluir ponto: {str(e)}', 'error')
+    
+    return redirect(url_for('ponto.admin_view'))
+
+@bp_ponto.route('/criar', methods=['GET', 'POST'])
+@admin_required
+def criar_ponto():
+    """Criar novo registro de ponto para funcionário (apenas administradores)"""
+    usuarios = User.query.filter_by(active=True).order_by(User.name).all()
+    
+    if request.method == 'POST':
+        # Verificar senha do administrador
+        senha_admin = request.form.get('senha_admin')
+        if not senha_admin or not current_user.check_password(senha_admin):
+            flash('Senha de administrador incorreta!', 'error')
+            return render_template('ponto/criar.html', usuarios=usuarios)
+        
+        try:
+            user_id = request.form.get('user_id', type=int)
+            data_str = request.form.get('data')
+            hora_entrada_str = request.form.get('hora_entrada')
+            hora_saida_str = request.form.get('hora_saida')
+            observacao = request.form.get('observacao', '').strip()
+            
+            if not user_id or not data_str or not hora_entrada_str:
+                flash('Usuário, data e hora de entrada são obrigatórios!', 'error')
+                return render_template('ponto/criar.html', usuarios=usuarios)
+            
+            # Verificar se já existe ponto para este usuário nesta data
+            data_ponto = datetime.strptime(data_str, '%Y-%m-%d').date()
+            ponto_existente = Ponto.query.filter_by(user_id=user_id, data=data_ponto).first()
+            if ponto_existente:
+                flash('Já existe um registro de ponto para este funcionário nesta data!', 'error')
+                return render_template('ponto/criar.html', usuarios=usuarios)
+            
+            # Criar novo ponto
+            hora_entrada = datetime.strptime(hora_entrada_str, '%H:%M').time()
+            hora_entrada_dt = datetime.combine(data_ponto, hora_entrada)
+            
+            hora_saida_dt = None
+            if hora_saida_str:
+                hora_saida = datetime.strptime(hora_saida_str, '%H:%M').time()
+                hora_saida_dt = datetime.combine(data_ponto, hora_saida)
+            
+            # Adicionar log da criação na observação
+            log_msg = f"Ponto criado pelo admin {current_user.name}"
+            if observacao:
+                observacao = f"{observacao}\n[ADMIN] {log_msg}"
+            else:
+                observacao = f"[ADMIN] {log_msg}"
+            
+            novo_ponto = Ponto(
+                user_id=user_id,
+                data=data_ponto,
+                hora_entrada=hora_entrada_dt,
+                hora_saida=hora_saida_dt,
+                observacao=observacao
+            )
+            
+            db.session.add(novo_ponto)
+            db.session.commit()
+            
+            usuario = User.query.get(user_id)
+            flash(f'Ponto criado com sucesso para {usuario.name}!', 'success')
+            return redirect(url_for('ponto.admin_view'))
+            
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Erro ao criar ponto: {str(e)}', 'error')
+    
+    return render_template('ponto/criar.html', usuarios=usuarios)

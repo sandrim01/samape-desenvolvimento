@@ -14,6 +14,9 @@
             </div>
             <div class="col-sm-6">
                 <div class="float-sm-right">
+                    <a href="{{ url_for('ponto.criar') }}" class="btn btn-success me-2">
+                        <i class="fas fa-plus me-1"></i> Criar Ponto
+                    </a>
                     <a href="{{ url_for('ponto.index') }}" class="btn btn-secondary me-2">
                         <i class="fas fa-arrow-left me-1"></i> Voltar
                     </a>
@@ -109,9 +112,17 @@
                                             {% endif %}
                                         </td>
                                         <td>
-                                            <button class="btn btn-sm btn-outline-info" title="Ver detalhes">
-                                                <i class="fas fa-eye"></i>
-                                            </button>
+                                            <div class="btn-group" role="group">
+                                                <a href="{{ url_for('ponto.editar_ponto', ponto_id=ponto.id) }}" 
+                                                   class="btn btn-sm btn-outline-primary" title="Editar">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <button class="btn btn-sm btn-outline-danger" 
+                                                        onclick="confirmarExclusao({{ ponto.id }}, '{{ user.name }}', '{{ ponto.data.strftime('%d/%m/%Y') }}')" 
+                                                        title="Excluir">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                     {% endfor %}
@@ -130,4 +141,86 @@
         </div>
     </div>
 </div>
+
+<!-- Modal de Confirmação de Exclusão -->
+<div class="modal fade" id="modalExcluir" tabindex="-1" aria-labelledby="modalExcluirLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="modalExcluirLabel">
+                    <i class="fas fa-exclamation-triangle"></i> Confirmar Exclusão
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Atenção!</strong> Esta ação não pode ser desfeita.
+                </div>
+                
+                <p>Você tem certeza que deseja excluir o registro de ponto de:</p>
+                <ul>
+                    <li><strong>Funcionário:</strong> <span id="nomeExcluir"></span></li>
+                    <li><strong>Data:</strong> <span id="dataExcluir"></span></li>
+                </ul>
+
+                <form id="formExcluir" method="POST">
+                    <div class="form-group mb-3">
+                        <label for="senhaAdminExcluir" class="form-label text-danger">
+                            <i class="fas fa-lock"></i> Senha de Administrador
+                        </label>
+                        <input type="password" class="form-control" id="senhaAdminExcluir" name="senha_admin" 
+                               placeholder="Digite sua senha para confirmar" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+                <button type="button" class="btn btn-danger" onclick="confirmarExclusaoFinal()">
+                    <i class="fas fa-trash"></i> Excluir Registro
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let pontoIdParaExcluir = null;
+
+function confirmarExclusao(pontoId, nomeUsuario, data) {
+    pontoIdParaExcluir = pontoId;
+    document.getElementById('nomeExcluir').textContent = nomeUsuario;
+    document.getElementById('dataExcluir').textContent = data;
+    document.getElementById('formExcluir').action = '/ponto/excluir/' + pontoId;
+    document.getElementById('senhaAdminExcluir').value = '';
+    
+    // Abrir modal
+    const modal = new bootstrap.Modal(document.getElementById('modalExcluir'));
+    modal.show();
+}
+
+function confirmarExclusaoFinal() {
+    const senha = document.getElementById('senhaAdminExcluir').value;
+    
+    if (!senha) {
+        alert('Por favor, digite sua senha de administrador.');
+        document.getElementById('senhaAdminExcluir').focus();
+        return;
+    }
+    
+    if (confirm('Tem certeza absoluta que deseja excluir este registro?')) {
+        document.getElementById('formExcluir').submit();
+    }
+}
+
+// Submeter formulário quando pressionar Enter no campo de senha
+document.getElementById('senhaAdminExcluir').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        confirmarExclusaoFinal();
+    }
+});
+</script>
 {% endblock %}
