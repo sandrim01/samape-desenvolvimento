@@ -2,7 +2,7 @@
 import json
 from datetime import datetime
 from functools import wraps
-from flask import render_template, redirect, url_for, flash, request, jsonify, session, abort, Response
+from flask import render_template, redirect, url_for, flash, request, jsonify, session, abort, Response, make_response
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash
 from sqlalchemy import func, desc, or_
@@ -480,6 +480,128 @@ def register_routes(app):
             service_order=service_order,
             close_form=form
         )
+
+    @app.route('/os/<int:id>/pdf')
+    @login_required
+    def export_service_order_pdf(id):
+        """Gera e retorna o PDF da ordem de serviço"""
+        service_order = ServiceOrder.query.get_or_404(id)
+        
+        try:
+            from datetime import datetime
+            # Render the template to HTML
+            html_content = render_template('service_orders/export_pdf.html', 
+                                         service_order=service_order,
+                                         datetime=datetime)
+            
+            # Try WeasyPrint first (more reliable)
+            try:
+                from weasyprint import HTML
+                import tempfile
+                import os
+                
+                # Create a temporary file
+                with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as temp:
+                    # Generate PDF from HTML
+                    HTML(string=html_content).write_pdf(temp.name)
+                    
+                    # Read the PDF content
+                    with open(temp.name, 'rb') as pdf_file:
+                        pdf_data = pdf_file.read()
+                    
+                    # Clean up temporary file
+                    os.unlink(temp.name)
+                    
+                    # Return PDF as response
+                    response = make_response(pdf_data)
+                    response.headers['Content-Type'] = 'application/pdf'
+                    response.headers['Content-Disposition'] = f'attachment; filename="OS_{service_order.id}_{service_order.client.name}.pdf"'
+                    
+                    # Log the action
+                    log_action(
+                        'Exportação PDF de OS',
+                        'service_order',
+                        service_order.id,
+                        f"PDF da OS #{id} gerado"
+                    )
+                    
+                    return response
+                    
+            except Exception as weasy_error:
+                # Fallback to pdfkit if WeasyPrint fails
+                try:
+                    import pdfkit
+                    
+                    # Configure pdfkit options
+                    options = {
+                        'page-size': 'A4',
+                        'margin-top': '1cm',
+                        'margin-right': '1cm',
+                        'margin-bottom': '1cm',
+                        'margin-left': '1cm',
+                        'encoding': "UTF-8",
+                        'no-outline': None
+                    }
+                    
+                    # Generate PDF
+                    pdf_data = pdfkit.from_string(html_content, False, options=options)
+                    
+                    # Return PDF as response
+                    response = make_response(pdf_data)
+                    response.headers['Content-Type'] = 'application/pdf'
+                    response.headers['Content-Disposition'] = f'attachment; filename="OS_{service_order.id}_{service_order.client.name}.pdf"'
+                    
+                    # Log the action
+                    log_action(
+                        'Exportação PDF de OS',
+                        'service_order',
+                        service_order.id,
+                        f"PDF da OS #{id} gerado com pdfkit"
+                    )
+                    
+                    return response
+                    
+                except Exception as pdf_error:
+                    # Ultimate fallback: return HTML for print
+                    flash('Bibliotecas PDF não disponíveis. Use Ctrl+P para imprimir a página.', 'warning')
+                    
+                    # Log the fallback
+                    log_action(
+                        'Visualização HTML de OS',
+                        'service_order',
+                        service_order.id,
+                        f"HTML da OS #{id} gerado (fallback)"
+                    )
+                    
+                    # Return HTML page optimized for printing
+                    return render_template('service_orders/print.html', 
+                                         service_order=service_order,
+                                         datetime=datetime)
+                    
+        except Exception as e:
+            flash(f'Erro ao gerar PDF da ordem de serviço: {str(e)}', 'danger')
+            return redirect(url_for('view_service_order', id=id))
+
+    @app.route('/os/<int:id>/imprimir')
+    @login_required
+    def print_service_order(id):
+        """Retorna a página HTML otimizada para impressão"""
+        service_order = ServiceOrder.query.get_or_404(id)
+        
+        from datetime import datetime
+        
+        # Log the action
+        log_action(
+            'Impressão de OS',
+            'service_order',
+            service_order.id,
+            f"Página de impressão da OS #{id} acessada"
+        )
+        
+        # Return HTML page optimized for printing
+        return render_template('service_orders/print.html', 
+                             service_order=service_order,
+                             datetime=datetime)
 
     @app.route('/api/cliente/<int:client_id>/equipamentos')
     @login_required

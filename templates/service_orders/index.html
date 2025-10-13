@@ -205,6 +205,9 @@
                     <a href="{{ url_for('edit_service_order', id=order.id) }}" class="btn btn-sm btn-secondary">
                         <i class="fas fa-edit me-1"></i> Editar
                     </a>
+                    <a href="{{ url_for('export_service_order_pdf', id=order.id) }}" class="btn btn-sm btn-success" target="_blank">
+                        <i class="fas fa-file-pdf me-1"></i> PDF
+                    </a>
                     {% if order.status.name == 'fechada' %}
                     <a href="{{ url_for('view_invoice', id=order.id) }}" class="btn btn-sm btn-info">
                         <i class="fas fa-file-invoice me-1"></i> NF-e
@@ -253,6 +256,12 @@
                             </a>
                             <a href="{{ url_for('edit_service_order', id=order.id) }}" class="btn btn-sm btn-outline-secondary" data-bs-toggle="tooltip" data-bs-placement="top" title="Editar">
                                 <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{{ url_for('export_service_order_pdf', id=order.id) }}" class="btn btn-sm btn-outline-success" data-bs-toggle="tooltip" data-bs-placement="top" title="Gerar PDF" target="_blank">
+                                <i class="fas fa-file-pdf"></i>
+                            </a>
+                            <a href="{{ url_for('print_service_order', id=order.id) }}" class="btn btn-sm btn-outline-info" data-bs-toggle="tooltip" data-bs-placement="top" title="Imprimir" target="_blank">
+                                <i class="fas fa-print"></i>
                             </a>
                             {% if order.status.name != 'fechada' %}
                             <a href="#" class="btn btn-sm btn-outline-success show-close-modal" data-id="{{ order.id }}" data-bs-toggle="tooltip" data-bs-placement="top" title="Fechar OS">
