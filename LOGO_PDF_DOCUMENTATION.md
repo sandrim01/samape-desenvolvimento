@@ -26,8 +26,9 @@
 **Para PDF (`export_pdf.html`):**
 ```css
 .company-logo {
-    max-height: 60px;
-    max-width: 150px;
+    max-height: 80px;
+    max-width: 200px;
+    width: 180px;
     margin-bottom: 8px;
     display: block;
     margin-left: auto;
@@ -39,8 +40,9 @@
 **Para Impressão (`print.html`):**
 ```css
 .company-logo {
-    max-height: 50px;
-    max-width: 140px;
+    max-height: 70px;
+    max-width: 180px;
+    width: 160px;
     margin-bottom: 6px;
     display: block;
     margin-left: auto;
@@ -92,7 +94,7 @@ routes.py               # ✅ Configurado base_url
 1. Substitua o arquivo `static/images/logonova2.png`
 2. Mantenha proporções similares para melhor resultado
 3. Formatos recomendados: PNG (transparência) ou JPG
-4. Tamanho recomendado: até 200x80 pixels
+4. Tamanho recomendado: até 300x120 pixels (logo agora é maior e mais visível)
 
 ### 📋 Funcionalidades Preservadas
 
