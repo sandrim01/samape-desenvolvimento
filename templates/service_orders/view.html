@@ -85,6 +85,22 @@
                     {% endif %}
                 </div>
                 
+                <!-- Kilometragem -->
+                {% if order.km_inicial or order.km_final %}
+                <div class="mb-3">
+                    <h6 class="fw-bold">Kilometragem</h6>
+                    {% if order.km_inicial %}
+                        <p><strong>KM Inicial:</strong> {{ '%.2f'|format(order.km_inicial) }} km</p>
+                    {% endif %}
+                    {% if order.km_final %}
+                        <p><strong>KM Final:</strong> {{ '%.2f'|format(order.km_final) }} km</p>
+                    {% endif %}
+                    {% if order.km_total %}
+                        <p><strong>Total Percorrido:</strong> <span class="text-primary fw-bold">{{ '%.2f'|format(order.km_total) }} km</span></p>
+                    {% endif %}
+                </div>
+                {% endif %}
+                
                 {% if order.status and hasattr(order.status, 'name') and order.status.name == 'fechada' and order.invoice_number %}
                 <div class="mb-3">
                     <h6 class="fw-bold">Nota Fiscal</h6>

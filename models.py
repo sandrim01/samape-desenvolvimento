@@ -150,9 +150,26 @@ class ServiceOrder(db.Model):
     invoice_amount = db.Column(db.Numeric(10, 2))
     service_details = db.Column(db.Text)
     
+    # Kilometragem information
+    km_inicial = db.Column(db.Numeric(10, 2), nullable=True)  # Kilometragem inicial
+    km_final = db.Column(db.Numeric(10, 2), nullable=True)    # Kilometragem final
+    km_total = db.Column(db.Numeric(10, 2), nullable=True)    # Total percorrido (calculado)
+    
     # Relations
     financial_entries = db.relationship('FinancialEntry', backref='service_order', lazy=True)
     images = db.relationship('ServiceOrderImage', backref='service_order', lazy=True, cascade="all, delete-orphan")
+    
+    def calculate_km_total(self):
+        """Calcula o total de quilometragem percorrida"""
+        if self.km_inicial is not None and self.km_final is not None:
+            return float(self.km_final) - float(self.km_inicial)
+        return None
+    
+    def update_km_total(self):
+        """Atualiza o campo km_total com o valor calculado"""
+        calculated_total = self.calculate_km_total()
+        if calculated_total is not None:
+            self.km_total = calculated_total
 
 class ServiceOrderImage(db.Model):
     id = db.Column(db.Integer, primary_key=True)

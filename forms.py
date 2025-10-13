@@ -137,6 +137,14 @@ class ServiceOrderForm(FlaskForm):
     estimated_value = DecimalField('Valor Estimado (R$)', validators=[Optional()], places=2)
     invoice_amount = DecimalField('Valor Total da Nota (R$)', validators=[Optional()], places=2)
     status = SelectField('Status', choices=[(status.name, status.value) for status in ServiceOrderStatus], validators=[DataRequired()])
+    
+    # Campos de kilometragem
+    km_inicial = DecimalField('Kilometragem Inicial', validators=[Optional()], places=2, 
+                             render_kw={"placeholder": "Ex: 12345.50", "step": "0.01"})
+    km_final = DecimalField('Kilometragem Final', validators=[Optional()], places=2, 
+                           render_kw={"placeholder": "Ex: 12450.75", "step": "0.01"})
+    km_total = DecimalField('Total Percorrido (KM)', validators=[Optional()], places=2, 
+                           render_kw={"readonly": True, "placeholder": "Calculado automaticamente"})
     images = FileField('Imagens do Equipamento (máx. 500KB por imagem)', validators=[
         Optional(),
         FileAllowed(['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'], 'Apenas imagens são permitidas!'),

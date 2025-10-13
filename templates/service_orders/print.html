@@ -362,6 +362,41 @@
             </div>
         </div>
 
+        <!-- Kilometragem (se informada) -->
+        {% if service_order.km_inicial or service_order.km_final %}
+        <div class="info-block">
+            <div class="block-title">KILOMETRAGEM</div>
+            <div class="block-content">
+                <div class="cliente-info">
+                    {% if service_order.km_inicial %}
+                    <div class="cliente-col">
+                        <div class="info-item">
+                            <span class="info-label">KM Inicial:</span>
+                            {{ '%.2f'|format(service_order.km_inicial) }} km
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if service_order.km_final %}
+                    <div class="cliente-col">
+                        <div class="info-item">
+                            <span class="info-label">KM Final:</span>
+                            {{ '%.2f'|format(service_order.km_final) }} km
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if service_order.km_total %}
+                    <div class="cliente-col">
+                        <div class="info-item">
+                            <span class="info-label">Total Percorrido:</span>
+                            <strong>{{ '%.2f'|format(service_order.km_total) }} km</strong>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
         <!-- Detalhes do Serviço (se a OS estiver fechada) -->
         {% if service_order.status.name == 'fechada' and service_order.service_details %}
         <div class="info-block">

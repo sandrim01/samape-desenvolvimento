@@ -102,6 +102,53 @@
                 </div>
             </div>
             
+            <!-- Seção de Kilometragem -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-tachometer-alt me-1"></i> Controle de Kilometragem</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label for="km_inicial" class="form-label">Kilometragem Inicial</label>
+                            {{ form.km_inicial(class="form-control", id="km_inicial", onchange="calculateKmTotal()") }}
+                            {% if form.km_inicial.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.km_inicial.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label for="km_final" class="form-label">Kilometragem Final</label>
+                            {{ form.km_final(class="form-control", id="km_final", onchange="calculateKmTotal()") }}
+                            {% if form.km_final.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.km_final.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label for="km_total" class="form-label">Total Percorrido (KM)</label>
+                            {{ form.km_total(class="form-control bg-light", id="km_total") }}
+                            <small class="form-text text-muted">Calculado automaticamente</small>
+                            {% if form.km_total.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.km_total.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
             <div class="mb-3">
                 <label for="images" class="form-label">Imagens do Equipamento (máx. 500KB por imagem)</label>
                 {{ form.images(class="form-control", id="images", onchange="checkFileSize()") }}
@@ -197,4 +244,54 @@
         </form>
     </div>
 </div>
+
+<script>
+function calculateKmTotal() {
+    const kmInicial = document.getElementById('km_inicial').value;
+    const kmFinal = document.getElementById('km_final').value;
+    const kmTotalField = document.getElementById('km_total');
+    
+    if (kmInicial && kmFinal) {
+        const inicial = parseFloat(kmInicial);
+        const final = parseFloat(kmFinal);
+        
+        if (final > inicial) {
+            const total = (final - inicial).toFixed(2);
+            kmTotalField.value = total;
+            kmTotalField.classList.remove('is-invalid');
+            kmTotalField.classList.add('is-valid');
+        } else if (final < inicial) {
+            kmTotalField.value = '';
+            kmTotalField.classList.remove('is-valid');
+            kmTotalField.classList.add('is-invalid');
+            
+            // Mostrar mensagem de erro
+            let errorDiv = kmTotalField.parentNode.querySelector('.invalid-feedback');
+            if (!errorDiv) {
+                errorDiv = document.createElement('div');
+                errorDiv.className = 'invalid-feedback d-block';
+                kmTotalField.parentNode.appendChild(errorDiv);
+            }
+            errorDiv.textContent = 'A kilometragem final deve ser maior que a inicial.';
+        } else {
+            kmTotalField.value = '0.00';
+            kmTotalField.classList.remove('is-invalid', 'is-valid');
+        }
+    } else {
+        kmTotalField.value = '';
+        kmTotalField.classList.remove('is-invalid', 'is-valid');
+        
+        // Remover mensagem de erro se existir
+        const errorDiv = kmTotalField.parentNode.querySelector('.invalid-feedback');
+        if (errorDiv && errorDiv.textContent.includes('kilometragem final')) {
+            errorDiv.remove();
+        }
+    }
+}
+
+// Calcular km_total quando a página carrega (para edição)
+document.addEventListener('DOMContentLoaded', function() {
+    calculateKmTotal();
+});
+</script>
 {% endblock %}
