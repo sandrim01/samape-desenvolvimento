@@ -591,6 +591,7 @@ def register_routes(app):
                     # Return HTML page optimized for printing
                     return render_template('service_orders/print.html', 
                                          service_order=service_order,
+                                         company_settings=company_settings,
                                          datetime=datetime)
                     
         except Exception as e:
