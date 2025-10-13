@@ -17,8 +17,8 @@
 ### 🎨 Especificações Técnicas
 
 #### **Arquivo da Logo**
-- **Localização:** `static/images/logo.png`
-- **Tamanho:** 70,328 bytes
+- **Localização:** `static/images/logonova2.png`
+- **Tamanho:** 36,211 bytes
 - **Formato:** PNG (recomendado para transparência)
 
 #### **Estilos CSS Aplicados**
@@ -89,7 +89,7 @@ routes.py               # ✅ Configurado base_url
 
 ### 🚀 Como Substituir a Logo
 
-1. Substitua o arquivo `static/images/logo.png`
+1. Substitua o arquivo `static/images/logonova2.png`
 2. Mantenha proporções similares para melhor resultado
 3. Formatos recomendados: PNG (transparência) ou JPG
 4. Tamanho recomendado: até 200x80 pixels
