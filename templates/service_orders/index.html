@@ -214,9 +214,12 @@
                     </a>
                     {% endif %}
                     {% if current_user.role.name == 'admin' %}
-                    <a href="{{ url_for('delete_service_order', id=order.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja excluir esta ordem de serviço e todos seus registros financeiros? Esta ação não pode ser desfeita.')">
-                        <i class="fas fa-trash-alt me-1"></i> Excluir
-                    </a>
+                    <form method="POST" action="{{ url_for('delete_service_order', id=order.id) }}" style="display: inline;" onsubmit="return confirm('Tem certeza que deseja excluir esta ordem de serviço e todos seus registros financeiros? Esta ação não pode ser desfeita.')">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-sm btn-danger">
+                            <i class="fas fa-trash-alt me-1"></i> Excluir
+                        </button>
+                    </form>
                     {% endif %}
                 </div>
             </div>
@@ -274,9 +277,12 @@
                             </a>
                             {% endif %}
                             {% if current_user.role.name == 'admin' %}
-                            <a href="{{ url_for('delete_service_order', id=order.id) }}" class="btn btn-sm btn-outline-danger" data-bs-toggle="tooltip" data-bs-placement="top" title="Excluir OS" onclick="return confirm('Tem certeza que deseja excluir esta ordem de serviço e todos seus registros financeiros? Esta ação não pode ser desfeita.')">
-                                <i class="fas fa-trash-alt"></i>
-                            </a>
+                            <form method="POST" action="{{ url_for('delete_service_order', id=order.id) }}" style="display: inline;" onsubmit="return confirm('Tem certeza que deseja excluir esta ordem de serviço e todos seus registros financeiros? Esta ação não pode ser desfeita.')">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-sm btn-outline-danger" data-bs-toggle="tooltip" data-bs-placement="top" title="Excluir OS">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </form>
                             {% endif %}
                         </td>
                     </tr>
