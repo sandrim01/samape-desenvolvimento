@@ -512,8 +512,9 @@ def register_routes(app):
                 
                 # Create a temporary file
                 with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as temp:
-                    # Generate PDF from HTML
-                    HTML(string=html_content).write_pdf(temp.name)
+                    # Generate PDF from HTML with base_url for images
+                    base_url = request.url_root
+                    HTML(string=html_content, base_url=base_url).write_pdf(temp.name)
                     
                     # Read the PDF content
                     with open(temp.name, 'rb') as pdf_file:

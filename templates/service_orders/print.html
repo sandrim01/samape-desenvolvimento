@@ -76,11 +76,23 @@
             width: 100%;
         }
 
+        .company-logo {
+            max-height: 50px;
+            max-width: 140px;
+            margin-bottom: 6px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            /* Fallback se a imagem não carregar */
+            border: 1px solid transparent;
+        }
+
         .company-name {
             font-size: 16pt;
             font-weight: bold;
             margin-bottom: 5px;
             color: #2c5282;
+            display: none; /* Esconder o nome já que agora temos a logo */
         }
 
         .company-details {
@@ -282,6 +294,7 @@
         <div class="os-header">
             <div class="header-left">
                 <div class="company-info">
+                    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="SAMAPE" class="company-logo">
                     <div class="company-name">SAMAPE</div>
                     <div class="company-details">
                         Sistema de Administração de Manutenção de Máquinas e Peças<br>
