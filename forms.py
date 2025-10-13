@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
-from wtforms import StringField, PasswordField, BooleanField, TextAreaField, SelectField, DecimalField, HiddenField, IntegerField
+from wtforms import StringField, PasswordField, BooleanField, TextAreaField, SelectField, DecimalField, HiddenField, IntegerField, EmailField
 from wtforms.validators import DataRequired, Email, EqualTo, Length, Optional, ValidationError, NumberRange, Regexp
 from werkzeug.datastructures import FileStorage
 import re
@@ -345,6 +345,31 @@ class SystemSettingsForm(FlaskForm):
         (50, '50'),
         (100, '100')
     ], validators=[DataRequired()])
+
+class CompanySettingsForm(FlaskForm):
+    """Formulário para configurações da empresa"""
+    company_name = StringField('Razão Social', validators=[DataRequired(), Length(max=200)], 
+                              render_kw={'placeholder': 'Nome completo da empresa'})
+    trade_name = StringField('Nome Fantasia', validators=[Optional(), Length(max=200)], 
+                           render_kw={'placeholder': 'Nome comercial/fantasia (opcional)'})
+    document = StringField('CNPJ/CPF', validators=[Optional(), Length(max=20)], 
+                         render_kw={'placeholder': '00.000.000/0000-00'})
+    address = TextAreaField('Endereço', validators=[Optional()], 
+                          render_kw={'placeholder': 'Rua, número, complemento', 'rows': 3})
+    city = StringField('Cidade', validators=[Optional(), Length(max=100)], 
+                      render_kw={'placeholder': 'Nome da cidade'})
+    state = StringField('Estado/UF', validators=[Optional(), Length(max=2)], 
+                       render_kw={'placeholder': 'SP', 'maxlength': '2'})
+    zip_code = StringField('CEP', validators=[Optional(), Length(max=10)], 
+                         render_kw={'placeholder': '00000-000'})
+    phone = StringField('Telefone', validators=[Optional(), Length(max=20)], 
+                       render_kw={'placeholder': '(11) 0000-0000'})
+    email = EmailField('E-mail', validators=[Optional(), Email(), Length(max=100)], 
+                      render_kw={'placeholder': 'contato@empresa.com'})
+    website = StringField('Website', validators=[Optional(), Length(max=200)], 
+                        render_kw={'placeholder': 'https://www.empresa.com'})
+    description = TextAreaField('Descrição da Atividade', validators=[Optional()], 
+                              render_kw={'placeholder': 'Descrição dos serviços/produtos da empresa', 'rows': 3})
     
 class VehicleForm(FlaskForm):
     """Formulário para cadastro e edição de veículos da frota"""

@@ -15,13 +15,13 @@ from models import (
     UserRole, ServiceOrderStatus, FinancialEntryType, FinancialCategory, FinancialStatus, Supplier, Part, PartSale,
     SupplierOrder, OrderItem, OrderStatus, ServiceOrderImage, equipment_service_orders,
     StockItem, StockMovement, StockItemType, StockItemStatus, VehicleType, VehicleStatus,
-    Vehicle, VehicleMaintenance, Refueling, VehicleTravelLog, MaintenanceType, FuelType
+    Vehicle, VehicleMaintenance, Refueling, VehicleTravelLog, MaintenanceType, FuelType, CompanySettings
 )
 from forms import (
     LoginForm, UserForm, ClientForm, EquipmentForm, ServiceOrderForm,
     CloseServiceOrderForm, FinancialEntryForm, ProfileForm, SystemSettingsForm,
     SupplierForm, PartForm, PartSaleForm, SupplierOrderForm, OrderItemForm,
-    StockItemForm, StockMovementForm, VehicleForm, VehicleMaintenanceForm, RefuelingForm
+    StockItemForm, StockMovementForm, VehicleForm, VehicleMaintenanceForm, RefuelingForm, CompanySettingsForm
 )
 from utils import (
     role_required, admin_required, manager_required, log_action,
@@ -499,9 +499,13 @@ def register_routes(app):
         
         try:
             from datetime import datetime
+            # Get company settings
+            company_settings = CompanySettings.get_company_info()
+            
             # Render the template to HTML
             html_content = render_template('service_orders/export_pdf.html', 
                                          service_order=service_order,
+                                         company_settings=company_settings,
                                          datetime=datetime)
             
             # Try WeasyPrint first (more reliable)
@@ -609,9 +613,13 @@ def register_routes(app):
             f"Página de impressão da OS #{id} acessada"
         )
         
+        # Get company settings
+        company_settings = CompanySettings.get_company_info()
+        
         # Return HTML page optimized for printing
         return render_template('service_orders/print.html', 
                              service_order=service_order,
+                             company_settings=company_settings,
                              datetime=datetime)
 
     @app.route('/api/cliente/<int:client_id>/equipamentos')
@@ -2801,27 +2809,72 @@ def register_routes(app):
                 current_settings[key] = value
         
         form = SystemSettingsForm()
+        company_form = CompanySettingsForm()
         
-        # Pre-populate form with current settings
+        # Get or create company settings
+        company_settings = CompanySettings.get_company_info()
+        
+        # Pre-populate forms
         if request.method == 'GET':
+            # System settings
             form.theme.data = current_settings.get('theme', 'light')
             form.timezone.data = current_settings.get('timezone', 'America/Sao_Paulo')
             form.date_format.data = current_settings.get('date_format', 'DD/MM/YYYY')
             form.items_per_page.data = int(current_settings.get('items_per_page', '20'))
+            
+            # Company settings
+            if company_settings:
+                company_form.company_name.data = company_settings.company_name
+                company_form.trade_name.data = company_settings.trade_name
+                company_form.document.data = company_settings.document
+                company_form.address.data = company_settings.address
+                company_form.city.data = company_settings.city
+                company_form.state.data = company_settings.state
+                company_form.zip_code.data = company_settings.zip_code
+                company_form.phone.data = company_settings.phone
+                company_form.email.data = company_settings.email
+                company_form.website.data = company_settings.website
+                company_form.description.data = company_settings.description
         
-        if form.validate_on_submit():
-            # Save settings
-            set_system_setting('theme', form.theme.data, current_user.id)
-            set_system_setting('timezone', form.timezone.data, current_user.id)
-            set_system_setting('date_format', form.date_format.data, current_user.id)
-            set_system_setting('items_per_page', str(form.items_per_page.data), current_user.id)
-            
-            log_action('AtualizaÃ§Ã£o de ConfiguraÃ§Ãµes', 'system', None, 'ConfiguraÃ§Ãµes do sistema atualizadas')
-            
-            flash('ConfiguraÃ§Ãµes atualizadas com sucesso!', 'success')
+        if request.method == 'POST':
+            # Check which form was submitted based on form fields
+            if 'company_name' in request.form and company_form.validate_on_submit():
+                # Handle company settings
+                if company_settings is None:
+                    company_settings = CompanySettings()
+                    
+                company_settings.company_name = company_form.company_name.data
+                company_settings.trade_name = company_form.trade_name.data
+                company_settings.document = company_form.document.data
+                company_settings.address = company_form.address.data
+                company_settings.city = company_form.city.data
+                company_settings.state = company_form.state.data.upper() if company_form.state.data else None
+                company_settings.zip_code = company_form.zip_code.data
+                company_settings.phone = company_form.phone.data
+                company_settings.email = company_form.email.data
+                company_settings.website = company_form.website.data
+                company_settings.description = company_form.description.data
+                company_settings.updated_by = current_user.id
+                
+                db.session.add(company_settings)
+                db.session.commit()
+                
+                log_action('Atualização de Configurações', 'company', company_settings.id, 'Dados da empresa atualizados')
+                flash('Dados da empresa atualizados com sucesso!', 'success')
+                
+            elif form.validate_on_submit():
+                # Handle system settings
+                set_system_setting('theme', form.theme.data, current_user.id)
+                set_system_setting('timezone', form.timezone.data, current_user.id)
+                set_system_setting('date_format', form.date_format.data, current_user.id)
+                set_system_setting('items_per_page', str(form.items_per_page.data), current_user.id)
+                
+                log_action('Atualização de Configurações', 'system', None, 'Configurações do sistema atualizadas')
+                flash('Configurações atualizadas com sucesso!', 'success')
+                
             return redirect(url_for('system_settings'))
             
-        return render_template('settings/index.html', form=form, settings=current_settings)
+        return render_template('settings/index.html', form=form, company_form=company_form, settings=current_settings)
 
     # Initialize the first admin user if no users exist
     def create_initial_admin():

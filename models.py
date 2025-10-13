@@ -348,6 +348,38 @@ class SystemSettings(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     updated_by = db.Column(db.Integer, db.ForeignKey('user.id'))
 
+class CompanySettings(db.Model):
+    """Modelo para configurações da empresa"""
+    id = db.Column(db.Integer, primary_key=True)
+    company_name = db.Column(db.String(200), nullable=False, default='SAMAPE')
+    trade_name = db.Column(db.String(200), nullable=True)  # Nome fantasia
+    document = db.Column(db.String(20), nullable=True)  # CNPJ/CPF
+    address = db.Column(db.Text, nullable=True)
+    city = db.Column(db.String(100), nullable=True)
+    state = db.Column(db.String(2), nullable=True)
+    zip_code = db.Column(db.String(10), nullable=True)
+    phone = db.Column(db.String(20), nullable=True)
+    email = db.Column(db.String(100), nullable=True)
+    website = db.Column(db.String(200), nullable=True)
+    description = db.Column(db.Text, nullable=True)  # Descrição da atividade
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_by = db.Column(db.Integer, db.ForeignKey('user.id'))
+    
+    @staticmethod
+    def get_company_info():
+        """Retorna as informações da empresa (singleton)"""
+        company = CompanySettings.query.first()
+        if not company:
+            # Criar configuração padrão se não existir
+            company = CompanySettings(
+                company_name='SAMAPE',
+                description='Sistema de Administração de Manutenção de Máquinas e Peças'
+            )
+            db.session.add(company)
+            db.session.commit()
+        return company
+
 # Modelo para controle de sequências numéricas (NFe, OS, etc)
 class SequenceCounter(db.Model):
     id = db.Column(db.Integer, primary_key=True)

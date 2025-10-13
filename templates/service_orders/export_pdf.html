@@ -278,14 +278,17 @@
         <div class="os-header">
             <div class="header-left">
                 <div class="company-info">
-                    <img src="{{ url_for('static', filename='images/logonova2.png') }}" alt="SAMAPE" class="company-logo">
-                    <div class="company-name">SAMAPE</div>
+                    <img src="{{ url_for('static', filename='images/logonova2.png') }}" alt="{{ company_settings.trade_name or company_settings.company_name or 'SAMAPE' }}" class="company-logo">
+                    <div class="company-name">{{ company_settings.trade_name or company_settings.company_name or 'SAMAPE' }}</div>
                     <div class="company-details">
-                        Sistema de Administração de Manutenção de Máquinas e Peças<br>
-                        CNPJ: 12.345.678/0001-90<br>
-                        Rua das Máquinas, 123 - Centro<br>
-                        CEP: 12345-678 - Cidade/UF<br>
-                        Telefone: (11) 1234-5678
+                        {% if company_settings.description %}{{ company_settings.description }}<br>{% endif %}
+                        {% if company_settings.document %}{{ company_settings.document }}<br>{% endif %}
+                        {% if company_settings.address %}{{ company_settings.address }}{% endif %}
+                        {% if company_settings.city or company_settings.state or company_settings.zip_code %}<br>{% endif %}
+                        {% if company_settings.zip_code %}CEP: {{ company_settings.zip_code }}{% endif %}
+                        {% if company_settings.city %} - {{ company_settings.city }}{% endif %}
+                        {% if company_settings.state %}/{{ company_settings.state }}{% endif %}
+                        {% if company_settings.phone %}<br>Telefone: {{ company_settings.phone }}{% endif %}
                     </div>
                 </div>
             </div>
@@ -502,7 +505,7 @@ Qualquer dúvida ou alteração deve ser comunicada imediatamente à administra�
         
         <!-- Rodapé -->
         <div class="rodape">
-            Documento gerado automaticamente pelo sistema SAMAPE em {{ datetime.now().strftime('%d/%m/%Y às %H:%M') }}<br>
+            Documento gerado automaticamente pelo sistema {{ company_settings.trade_name or company_settings.company_name or 'SAMAPE' }} em {{ datetime.now().strftime('%d/%m/%Y às %H:%M') }}<br>
             Este documento é válido e possui valor legal para fins de comprovação de serviços.
         </div>
     </div>
