@@ -27,8 +27,8 @@
 ```css
 .company-logo {
     max-height: 80px;
-    max-width: 200px;
-    width: 180px;
+    max-width: 220px;
+    height: auto;
     margin-bottom: 8px;
     display: block;
     margin-left: auto;
@@ -41,8 +41,8 @@
 ```css
 .company-logo {
     max-height: 70px;
-    max-width: 180px;
-    width: 160px;
+    max-width: 200px;
+    height: auto;
     margin-bottom: 6px;
     display: block;
     margin-left: auto;
@@ -92,9 +92,10 @@ routes.py               # ✅ Configurado base_url
 ### 🚀 Como Substituir a Logo
 
 1. Substitua o arquivo `static/images/logonova2.png`
-2. Mantenha proporções similares para melhor resultado
+2. **Importante:** As proporções originais da imagem são mantidas automaticamente
 3. Formatos recomendados: PNG (transparência) ou JPG
-4. Tamanho recomendado: até 300x120 pixels (logo agora é maior e mais visível)
+4. Tamanho recomendado: até 300x120 pixels 
+5. **Nota:** A logo será redimensionada proporcionalmente usando `max-width` e `max-height` + `height: auto`
 
 ### 📋 Funcionalidades Preservadas
 
