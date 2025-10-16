@@ -2,7 +2,7 @@
 <html lang="pt-BR" data-bs-theme="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{% block title %}SAMAPE - Sistema de Gestão de Serviços{% endblock %}</title>
     
@@ -29,6 +29,7 @@
     <link href="{{ url_for('static', filename='css/contrast-fixes.css') }}" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/dark-forms.css') }}?v={{ cache_buster }}" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/mobile.css') }}?v={{ cache_buster }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/mobile-optimized.css') }}?v={{ cache_buster }}" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/dropdown-fix.css') }}?v={{ cache_buster }}" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/sidebar-profile-enhanced.css') }}?v={{ cache_buster }}" rel="stylesheet">
     
@@ -288,29 +289,51 @@
     
     {% block extra_js %}{% endblock %}
     
-    <!-- Mobile Bottom Navigation Bar -->
-    <div class="mobile-bottom-nav d-lg-none">
-        <a href="{{ url_for('dashboard') }}" class="nav-item {% if request.path == url_for('dashboard') %}active{% endif %}">
-            <i class="fas fa-home"></i>
-            <span>Início</span>
+    <!-- Mobile Bottom Navigation Bar Melhorada -->
+    {% if current_user.is_authenticated %}
+    <nav class="mobile-bottom-nav d-md-none">
+        <a href="{{ url_for('dashboard') }}" class="nav-item {% if request.path == '/dashboard' %}active{% endif %}">
+            <i class="fas fa-tachometer-alt"></i>
+            <span>Dashboard</span>
         </a>
-        <a href="{{ url_for('service_orders') }}" class="nav-item {% if '/ordens-servico' in request.path %}active{% endif %}">
+        <a href="{{ url_for('service_orders') }}" class="nav-item {% if '/os' in request.path %}active{% endif %}">
             <i class="fas fa-clipboard-list"></i>
-            <span>OS</span>
+            <span>O.S.</span>
         </a>
         <a href="{{ url_for('clients') }}" class="nav-item {% if '/clientes' in request.path %}active{% endif %}">
             <i class="fas fa-users"></i>
             <span>Clientes</span>
         </a>
-        <a href="{{ url_for('equipment') }}" class="nav-item {% if '/equipamentos' in request.path %}active{% endif %}">
+        <a href="{{ url_for('equipment') }}" class="nav-item {% if '/maquinarios' in request.path %}active{% endif %}">
             <i class="fas fa-tools"></i>
-            <span>Equip.</span>
+            <span>Máquinas</span>
         </a>
-        <a href="{{ url_for('stock_items') }}" class="nav-item {% if '/estoque' in request.path %}active{% endif %}">
-            <i class="fas fa-boxes"></i>
-            <span>Estoque</span>
-        </a>
-    </div>
+        <!-- Menu "Mais" com dropdown -->
+        <div class="nav-item dropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-ellipsis-h"></i>
+            <span>Mais</span>
+            <ul class="dropdown-menu dropdown-menu-end mobile-dropdown-menu">
+                <li><a class="dropdown-item" href="{{ url_for('suppliers') }}"><i class="fas fa-truck me-2"></i>Fornecedores</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('parts') }}"><i class="fas fa-cogs me-2"></i>Peças</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('part_sales') }}"><i class="fas fa-shopping-cart me-2"></i>Vendas</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('supplier_orders') }}"><i class="fas fa-shipping-fast me-2"></i>Pedidos</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('stock_items') }}"><i class="fas fa-hard-hat me-2"></i>EPIs</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('fleet') }}"><i class="fas fa-truck-monster me-2"></i>Frota</a></li>
+                {% if current_user.role == UserRole.admin or current_user.role == UserRole.gerente %}
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{{ url_for('employees') }}"><i class="fas fa-user-tie me-2"></i>Funcionários</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('ponto.index') }}"><i class="fas fa-clock me-2"></i>Ponto</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('financial') }}"><i class="fas fa-dollar-sign me-2"></i>Financeiro</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('invoices') }}"><i class="fas fa-file-invoice me-2"></i>N. Fiscais</a></li>
+                {% endif %}
+                {% if current_user.role == UserRole.admin %}
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{{ url_for('logs') }}"><i class="fas fa-history me-2"></i>Logs</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+    {% endif %}
     
     <!-- Snack notification para mobile -->
     <div id="snackNotification" class="snack-notification">
@@ -441,6 +464,9 @@
     
     <!-- Dropdown Fix específico -->
     <script src="{{ url_for('static', filename='js/dropdown-fix.js') }}?v={{ cache_buster }}"></script>
+    
+    <!-- Mobile Optimizations -->
+    <script src="{{ url_for('static', filename='js/mobile-optimized.js') }}?v={{ cache_buster }}"></script>
     
     <!-- Inicializar componentes do Bootstrap -->
     <script>

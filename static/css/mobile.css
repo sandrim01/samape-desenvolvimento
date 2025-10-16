@@ -1,6 +1,6 @@
-/* Estilos específicos para dispositivos móveis */
+/* Estilos específicos para dispositivos móveis - Otimizado para melhor enquadramento e usabilidade */
 
-/* Variáveis para temas e cores */
+/* Variáveis para temas e cores - Melhoradas para mobile */
 :root {
   --primary-color: #3498db;
   --primary-dark: #2980b9;
@@ -12,60 +12,128 @@
   --card-bg: #34495e;
   --text-color: #ecf0f1;
   --muted-text: #bdc3c7;
-  --border-radius: 8px;
-  --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-  --transition: all 0.3s ease;
+  --border-radius: 12px;
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  --transition: all 0.2s ease;
   
   /* Novos tons azulados/escuros para o tema */
   --blue-dark: #1a2530;
   --blue-medium: #2c3e50;
   --blue-light: #3a536b;
   --blue-accent: #00aeff;
+  
+  /* Variáveis específicas para mobile touch */
+  --touch-target-min: 44px;
+  --mobile-padding: 16px;
+  --mobile-margin: 12px;
 }
 
-/* Estilos gerais para mobile */
+/* Estilos gerais para mobile - Otimizado para enquadramento e usabilidade */
 @media (max-width: 991.98px) {
+  /* Reset e configurações base */
+  * {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+  }
+  
   body {
     background-color: var(--dark-bg);
     color: var(--text-color);
-    padding-bottom: 60px;
+    padding-bottom: 80px; /* Espaço para navegação bottom */
+    overflow-x: hidden;
+    line-height: 1.4;
+    font-size: 14px;
+    margin: 0;
   }
   
-  /* Navbar simplificada */
+  /* Configuração de viewport */
+  html {
+    touch-action: manipulation;
+    -webkit-text-size-adjust: 100%;
+  }
+  
+  /* Navbar otimizada para mobile */
   .navbar {
-    padding: 0.5rem 1rem;
+    padding: 8px var(--mobile-padding);
     background-color: var(--dark-bg) !important;
+    position: sticky;
+    top: 0;
+    z-index: 1020;
+    box-shadow: var(--shadow);
+    min-height: 56px;
   }
   
   .navbar-brand {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
+    padding: 0;
   }
   
-  /* Card design limpo e atraente */
+  .navbar-brand img {
+    max-width: 120px;
+    height: auto;
+  }
+  
+  .navbar-toggler {
+    border: none;
+    padding: 4px 8px;
+    font-size: 1.1rem;
+  }
+  
+  .navbar-toggler:focus {
+    box-shadow: none;
+  }
+  
+  /* Container principal otimizado */
+  .container-fluid {
+    padding-left: var(--mobile-padding);
+    padding-right: var(--mobile-padding);
+    max-width: 100%;
+  }
+  
+  /* Sidebar escondida em mobile - usa bottom nav */
+  .sidebar {
+    display: none !important;
+  }
+  
+  /* Main content ocupa toda a largura em mobile */
+  .col-md-9, .col-lg-10 {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+  
+  /* Card design otimizado para mobile */
   .card {
     background-color: var(--card-bg);
     border-radius: var(--border-radius);
     border: none;
     box-shadow: var(--shadow);
-    margin-bottom: 16px;
+    margin-bottom: var(--mobile-margin);
     overflow: hidden;
     transition: var(--transition);
   }
   
   .card:active {
     transform: scale(0.98);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
   }
   
   .card-header {
     background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
     color: white;
     border-bottom: none;
-    padding: 12px 16px;
+    padding: var(--mobile-margin) var(--mobile-padding);
     font-weight: 500;
+    font-size: 0.95rem;
   }
   
   .card-body {
-    padding: 16px;
+    padding: var(--mobile-padding);
+  }
+  
+  .card-footer {
+    padding: var(--mobile-margin) var(--mobile-padding);
+    background-color: rgba(255, 255, 255, 0.02);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
   }
   
   /* Ícones interativos */
@@ -107,29 +175,101 @@
     color: white;
   }
   
-  /* Listas mais limpas */
+  /* Listas otimizadas para mobile */
   .list-group {
     margin-top: 8px;
     border-radius: var(--border-radius);
     overflow: hidden;
+    box-shadow: var(--shadow);
   }
   
   .list-group-item {
     background-color: rgba(255, 255, 255, 0.05);
     border-color: rgba(255, 255, 255, 0.1);
     color: var(--text-color);
-    padding: 12px 16px;
+    padding: var(--mobile-padding);
+    min-height: var(--touch-target-min);
+    display: flex;
+    align-items: center;
+    transition: var(--transition);
   }
   
-  /* Botões estilizados */
+  .list-group-item:active {
+    background-color: rgba(255, 255, 255, 0.08);
+    transform: scale(0.98);
+  }
+  
+  .list-group-item-action:hover {
+    background-color: rgba(255, 255, 255, 0.07);
+  }
+  
+  /* Melhorias para alertas */
+  .alert {
+    border-radius: var(--border-radius);
+    border: none;
+    margin-bottom: var(--mobile-margin);
+    padding: var(--mobile-padding);
+    box-shadow: var(--shadow);
+  }
+  
+  /* Loading states */
+  .loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+  }
+  
+  .loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: var(--primary-color);
+    animation: spin 1s ease-in-out infinite;
+  }
+  
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+  
+  /* Botões otimizados para touch */
   .btn {
-    border-radius: 20px;
-    padding: 8px 16px;
+    border-radius: var(--border-radius);
+    padding: 12px 20px;
     font-weight: 500;
-    text-transform: uppercase;
-    font-size: 0.8rem;
-    letter-spacing: 0.5px;
+    font-size: 0.9rem;
+    letter-spacing: 0.3px;
     transition: var(--transition);
+    min-height: var(--touch-target-min);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .btn:active {
+    transform: scale(0.95);
+  }
+  
+  .btn-sm {
+    padding: 8px 16px;
+    font-size: 0.8rem;
+    min-height: 36px;
+  }
+  
+  .btn-lg {
+    padding: 16px 32px;
+    font-size: 1rem;
+    min-height: 52px;
   }
   
   .btn-primary {
@@ -145,6 +285,7 @@
   .btn-warning {
     background-color: var(--accent-color);
     border-color: var(--accent-color);
+    color: white;
   }
   
   .btn-danger {
@@ -152,14 +293,94 @@
     border-color: var(--danger-color);
   }
   
+  /* Botões de ação circular */
+  .btn-circle {
+    width: var(--touch-target-min);
+    height: var(--touch-target-min);
+    border-radius: 50%;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
   /* Esconde elementos não essenciais em mobile */
   .d-mobile-none {
     display: none !important;
   }
   
-  /* Tables responsive*/
+  /* Mostra apenas em mobile */
+  .d-mobile-only {
+    display: block !important;
+  }
+  
+  /* Tables responsivas melhoradas */
   .table-responsive {
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    margin-bottom: var(--mobile-margin);
+  }
+  
+  .table {
+    margin-bottom: 0;
+    font-size: 0.9rem;
+  }
+  
+  .table th {
+    border-top: none;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+    padding: 12px 8px;
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  .table td {
+    padding: 12px 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    vertical-align: middle;
+  }
+  
+  /* Tabela para cards em mobile muito pequeno */
+  @media (max-width: 576px) {
+    .table-mobile-cards {
+      display: block;
+    }
+    
+    .table-mobile-cards thead {
+      display: none;
+    }
+    
+    .table-mobile-cards tbody {
+      display: block;
+    }
+    
+    .table-mobile-cards tr {
+      display: block;
+      background-color: var(--card-bg);
+      border-radius: var(--border-radius);
+      margin-bottom: var(--mobile-margin);
+      padding: var(--mobile-padding);
+      box-shadow: var(--shadow);
+    }
+    
+    .table-mobile-cards td {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border: none;
+    }
+    
+    .table-mobile-cards td:before {
+      content: attr(data-label) ": ";
+      font-weight: 600;
+      color: var(--muted-text);
+      margin-right: 10px;
+    }
   }
   
   /* Action buttons em dropdowns para economizar espaço */
@@ -249,18 +470,22 @@
     font-size: 1.2rem;
   }
   
-  /* Bottom navigation */
+  /* Bottom navigation melhorada */
   .mobile-bottom-nav {
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
-    z-index: 1000;
+    z-index: 1030;
     background-color: var(--dark-bg);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
     display: flex;
     justify-content: space-around;
-    padding: 10px 0;
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
+    align-items: center;
+    padding: 8px 0 12px 0;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    min-height: 70px;
   }
   
   .nav-item {
@@ -268,34 +493,76 @@
     flex-direction: column;
     align-items: center;
     color: var(--muted-text);
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     text-decoration: none;
     transition: var(--transition);
+    padding: 4px 8px;
+    border-radius: 8px;
+    min-width: var(--touch-target-min);
+    min-height: var(--touch-target-min);
+    justify-content: center;
+  }
+  
+  .nav-item:active {
+    transform: scale(0.9);
+    background-color: rgba(255, 255, 255, 0.05);
   }
   
   .nav-item.active {
     color: var(--primary-color);
+    background-color: rgba(52, 152, 219, 0.1);
   }
   
   .nav-item i {
-    font-size: 1.2rem;
-    margin-bottom: 4px;
+    font-size: 1.3rem;
+    margin-bottom: 2px;
   }
   
-  /* Form inputs mais clean */
-  .form-control, .form-select {
+  .nav-item span {
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 60px;
+  }
+  
+  /* Form inputs otimizados para mobile */
+  .form-control, .form-select, .form-check-input {
     background-color: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.1);
     color: var(--text-color);
     border-radius: var(--border-radius);
-    padding: 10px 15px;
+    padding: 14px var(--mobile-padding);
+    font-size: 16px; /* Evita zoom no iOS */
+    min-height: var(--touch-target-min);
+    transition: var(--transition);
   }
   
   .form-control:focus, .form-select:focus {
     box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.25);
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(255, 255, 255, 0.08);
     color: var(--text-color);
     border-color: var(--primary-color);
+    outline: none;
+  }
+  
+  .form-control::placeholder {
+    color: var(--muted-text);
+    opacity: 0.7;
+  }
+  
+  /* Textarea específico */
+  textarea.form-control {
+    min-height: 100px;
+    resize: vertical;
+  }
+  
+  /* Select melhorado */
+  .form-select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23bdc3c7' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px 12px;
   }
   
   .form-label {
@@ -396,20 +663,56 @@
     border-bottom-color: var(--primary-color);
   }
   
-  /* Modal melhorado para mobile */
+  /* Modal otimizado para mobile */
+  .modal {
+    padding: 0;
+  }
+  
+  .modal-dialog {
+    margin: var(--mobile-padding);
+    max-width: calc(100% - 32px);
+  }
+  
   .modal-content {
     background-color: var(--card-bg);
     color: var(--text-color);
     border-radius: var(--border-radius);
     border: none;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   }
   
   .modal-header {
-    border-bottom-color: rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: var(--mobile-padding);
+  }
+  
+  .modal-body {
+    padding: var(--mobile-padding);
+    max-height: 70vh;
+    overflow-y: auto;
   }
   
   .modal-footer {
-    border-top-color: rgba(255, 255, 255, 0.1);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: var(--mobile-padding);
+    gap: 8px;
+  }
+  
+  .modal-footer .btn {
+    flex: 1;
+    margin: 0;
+  }
+  
+  /* Close button melhorado */
+  .btn-close {
+    background-size: 16px;
+    opacity: 0.7;
+    width: 32px;
+    height: 32px;
+  }
+  
+  .btn-close:focus {
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.25);
   }
   
   /* Ajustes padrões bootstrap */
@@ -656,5 +959,73 @@
   
   .invoice-button {
     background-color: #9c27b0;
+  }
+  
+  /* Dropdown mobile na bottom navigation */
+  .mobile-dropdown-menu {
+    background-color: var(--card-bg) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--border-radius);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    margin-bottom: 10px;
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+  
+  .mobile-dropdown-menu .dropdown-item {
+    color: var(--text-color) !important;
+    padding: 12px var(--mobile-padding);
+    display: flex;
+    align-items: center;
+    min-height: var(--touch-target-min);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: var(--transition);
+  }
+  
+  .mobile-dropdown-menu .dropdown-item:hover,
+  .mobile-dropdown-menu .dropdown-item:focus {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    color: var(--primary-color) !important;
+  }
+  
+  .mobile-dropdown-menu .dropdown-item:active {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+  }
+  
+  .mobile-dropdown-menu .dropdown-divider {
+    border-color: rgba(255, 255, 255, 0.1);
+    margin: 8px 0;
+  }
+  
+  .mobile-dropdown-menu .dropdown-item i {
+    width: 20px;
+    text-align: center;
+  }
+  
+  /* Melhorias gerais para performance e UX */
+  .mobile-bottom-nav * {
+    will-change: transform;
+  }
+  
+  /* Scroll suave para toda a aplicação */
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  /* Melhorias para inputs de arquivo */
+  .form-control[type="file"] {
+    padding: 8px 12px;
+    background-color: rgba(255, 255, 255, 0.03);
+  }
+  
+  .form-control[type="file"]::-webkit-file-upload-button {
+    background-color: var(--primary-color);
+    border: none;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 6px;
+    margin-right: 12px;
+    font-size: 0.9rem;
+    cursor: pointer;
   }
 }
