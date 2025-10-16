@@ -373,6 +373,45 @@
                         </a>
                         {% endif %}
                     </div>
+                    
+                    <!-- Menu do Usuário -->
+                    <div class="user-section-mobile mt-4">
+                        <hr class="mobile-divider">
+                        <div class="user-info-mobile mb-3">
+                            <img src="{{ current_user.get_profile_image() }}" 
+                                 alt="Perfil" class="profile-image-mobile">
+                            <div class="user-details-mobile">
+                                <div class="user-name-mobile">{{ current_user.name }}</div>
+                                <div class="user-email-mobile">{{ current_user.email }}</div>
+                                <div class="user-role-mobile">{{ current_user.role.value }}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="user-menu-grid">
+                            <a href="{{ url_for('profile') }}" class="menu-grid-item user-menu-item">
+                                <div class="menu-icon">
+                                    <i class="fas fa-id-card"></i>
+                                </div>
+                                <span class="menu-label">Meu Perfil</span>
+                            </a>
+                            
+                            {% if current_user.role == UserRole.admin %}
+                            <a href="{{ url_for('system_settings') }}" class="menu-grid-item user-menu-item">
+                                <div class="menu-icon">
+                                    <i class="fas fa-cogs"></i>
+                                </div>
+                                <span class="menu-label">Configurações</span>
+                            </a>
+                            {% endif %}
+                            
+                            <a href="{{ url_for('logout') }}" class="menu-grid-item user-menu-item logout-item">
+                                <div class="menu-icon">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                </div>
+                                <span class="menu-label">Sair</span>
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
