@@ -3,24 +3,25 @@
 {% block title %}Maquinários - SAMAPE{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">Maquinários</h1>
-    <div class="btn-toolbar mb-2 mb-md-0">
-        <a href="{{ url_for('new_equipment') }}" class="btn btn-primary">
-            <i class="fas fa-plus me-1"></i> Novo Equipamento
+<!-- Header Mobile Padronizado -->
+<div class="mobile-page-header d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="mobile-page-title h2">Maquinários</h1>
+    <div class="mobile-page-actions btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('new_equipment') }}" class="mobile-action-btn-expanded btn btn-primary">
+            <i class="fas fa-plus"></i> Novo Equipamento
         </a>
     </div>
 </div>
 
-<!-- Filter Form -->
-<div class="card mb-4">
+<!-- Filter Form Mobile Padronizado -->
+<div class="mobile-filters-card card mb-4">
     <div class="card-header">
         <i class="fas fa-filter me-1"></i> Filtros
     </div>
     <div class="card-body">
         <form id="searchForm" method="get" action="{{ url_for('equipment') }}">
-            <div class="row g-3">
-                <div class="col-md-6">
+            <div class="mobile-filter-row">
+                <div class="mobile-filter-col">
                     <label for="client_id" class="form-label">Cliente</label>
                     <select class="form-select" id="client_id" name="client_id">
                         <option value="">Todos</option>
@@ -32,14 +33,22 @@
                     </select>
                 </div>
                 
-                <div class="col-md-6">
+                <div class="mobile-filter-col">
                     <label for="search" class="form-label">Busca</label>
-                    <input type="text" class="form-control" id="search" name="search" placeholder="Tipo, marca, modelo ou número de série" value="{{ search }}">
+                    <input type="text" class="form-control" id="search" name="search" placeholder="Tipo, marca, modelo..." value="{{ search }}">
                 </div>
-                
-                <div class="col-12">
-                    <button type="submit" class="btn btn-primary">Filtrar</button>
-                    <a href="{{ url_for('equipment') }}" class="btn btn-secondary">Limpar</a>
+            </div>
+            
+            <div class="mobile-filter-row">
+                <div class="mobile-filter-col" style="flex: 0 0 auto;">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search d-md-none"></i>
+                        <span class="d-none d-md-inline">Filtrar</span>
+                    </button>
+                    <a href="{{ url_for('equipment') }}" class="btn btn-secondary ms-1">
+                        <i class="fas fa-times d-md-none"></i>
+                        <span class="d-none d-md-inline">Limpar</span>
+                    </a>
                 </div>
             </div>
         </form>
@@ -98,53 +107,80 @@
             </table>
         </div>
         
-        <!-- Mobile View (Cards) - Só aparece em telas menores -->
-        <div class="d-md-none">
+        <!-- Mobile View (Cards Padronizados) - Só aparece em telas menores -->
+        <div class="mobile-cards-container d-md-none">
             {% for eq in equipment %}
-            <div class="equipment-item">
-                <div class="equipment-item-header">
-                    <div class="equipment-item-title">{{ eq.type }}</div>
-                    <div class="equipment-item-subtitle">
-                        {% if eq.brand or eq.model %}
-                        {{ eq.brand or '' }} {{ eq.model or '' }}
-                        {% else %}
-                        {{ eq.serial_number or 'Sem número de série' }}
-                        {% endif %}
+            <div class="mobile-standard-card">
+                <!-- Header do Card -->
+                <div class="mobile-card-header">
+                    <div>
+                        <h5 class="mobile-card-title">{{ eq.type }}</h5>
+                        <p class="mobile-card-subtitle">
+                            {% if eq.brand or eq.model %}
+                            {{ eq.brand or '' }} {{ eq.model or '' }}
+                            {% else %}
+                            {{ eq.serial_number or 'Sem número de série' }}
+                            {% endif %}
+                        </p>
                     </div>
                 </div>
-                <div class="equipment-item-body">
-                    <div class="equipment-item-detail">
-                        <div class="equipment-item-label">Cliente:</div>
-                        <div class="equipment-item-value">
+                
+                <!-- Corpo do Card -->
+                <div class="mobile-card-body">
+                    <div class="mobile-card-row">
+                        <i class="mobile-card-icon fas fa-user"></i>
+                        <span class="mobile-card-label">Cliente</span>
+                        <span class="mobile-card-value">
                             <a href="{{ url_for('view_client', id=eq.client.id) }}">
                                 {{ eq.client.name }}
                             </a>
-                        </div>
+                        </span>
                     </div>
                     
-                    <div class="equipment-item-detail">
-                        <div class="equipment-item-label">Nº Série:</div>
-                        <div class="equipment-item-value">{{ eq.serial_number or '-' }}</div>
-                    </div>
-                    
-                    {% if eq.year %}
-                    <div class="equipment-item-detail">
-                        <div class="equipment-item-label">Ano:</div>
-                        <div class="equipment-item-value">{{ eq.year }}</div>
+                    {% if eq.serial_number %}
+                    <div class="mobile-card-row">
+                        <i class="mobile-card-icon fas fa-barcode"></i>
+                        <span class="mobile-card-label">Nº Série</span>
+                        <span class="mobile-card-value">{{ eq.serial_number }}</span>
                     </div>
                     {% endif %}
                     
-                    <div class="d-flex justify-content-end gap-2 mt-3">
-                        <a href="{{ url_for('view_equipment', id=eq.id) }}" class="btn btn-sm btn-primary">
-                            <i class="fas fa-eye me-1"></i> Ver
-                        </a>
-                        <a href="{{ url_for('edit_equipment', id=eq.id) }}" class="btn btn-sm btn-secondary">
-                            <i class="fas fa-edit me-1"></i> Editar
-                        </a>
-                        <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteEquipmentModal{{ eq.id }}">
-                            <i class="fas fa-trash me-1"></i> Excluir
-                        </button>
+                    {% if eq.year %}
+                    <div class="mobile-card-row">
+                        <i class="mobile-card-icon fas fa-calendar-alt"></i>
+                        <span class="mobile-card-label">Ano</span>
+                        <span class="mobile-card-value">{{ eq.year }}</span>
                     </div>
+                    {% endif %}
+                    
+                    {% if eq.brand %}
+                    <div class="mobile-card-row">
+                        <i class="mobile-card-icon fas fa-tag"></i>
+                        <span class="mobile-card-label">Marca</span>
+                        <span class="mobile-card-value">{{ eq.brand }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Ações do Card -->
+                <div class="mobile-card-actions">
+                    <a href="{{ url_for('view_equipment', id=eq.id) }}" 
+                       class="mobile-action-btn btn-view" 
+                       title="Visualizar Equipamento">
+                        <i class="fas fa-eye"></i>
+                    </a>
+                    <a href="{{ url_for('edit_equipment', id=eq.id) }}" 
+                       class="mobile-action-btn btn-edit" 
+                       title="Editar Equipamento">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    <button type="button" 
+                            class="mobile-action-btn btn-delete" 
+                            data-bs-toggle="modal" 
+                            data-bs-target="#deleteEquipmentModal{{ eq.id }}"
+                            title="Excluir Equipamento">
+                        <i class="fas fa-trash"></i>
+                    </button>
                 </div>
             </div>
             {% endfor %}
