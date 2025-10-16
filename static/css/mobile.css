@@ -1164,6 +1164,300 @@
     scroll-behavior: smooth;
   }
   
+  /* ===== SISTEMA DE CARDS PADRONIZADOS PARA TODAS AS PÁGINAS ===== */
+  
+  /* Card padrão mobile reutilizável */
+  .mobile-standard-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: var(--mobile-padding);
+    margin-bottom: var(--mobile-margin);
+    box-shadow: var(--shadow);
+    transition: var(--transition);
+    position: relative;
+  }
+  
+  .mobile-standard-card:active {
+    transform: scale(0.98);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Header do card com título e status */
+  .mobile-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-color);
+  }
+  
+  .mobile-card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin: 0;
+  }
+  
+  .mobile-card-subtitle {
+    font-size: 0.9rem;
+    color: var(--accent-color);
+    margin: 2px 0 0 0;
+  }
+  
+  /* Badge de status padronizado */
+  .mobile-status-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+  
+  .mobile-status-badge.status-active,
+  .mobile-status-badge.status-aberta,
+  .mobile-status-badge.status-pending {
+    background-color: var(--warning-color);
+    color: var(--text-white);
+  }
+  
+  .mobile-status-badge.status-completed,
+  .mobile-status-badge.status-fechada,
+  .mobile-status-badge.status-success {
+    background-color: var(--success-color);
+    color: var(--text-white);
+  }
+  
+  .mobile-status-badge.status-cancelled,
+  .mobile-status-badge.status-cancelada,
+  .mobile-status-badge.status-danger {
+    background-color: var(--danger-color);
+    color: var(--text-white);
+  }
+  
+  .mobile-status-badge.status-em-andamento,
+  .mobile-status-badge.status-processing {
+    background-color: var(--info-color);
+    color: var(--text-white);
+  }
+  
+  /* Corpo do card com informações */
+  .mobile-card-body {
+    margin-bottom: 12px;
+  }
+  
+  .mobile-card-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+  }
+  
+  .mobile-card-row:last-child {
+    margin-bottom: 0;
+  }
+  
+  .mobile-card-icon {
+    width: 16px;
+    color: var(--muted-text);
+    margin-right: 8px;
+    text-align: center;
+  }
+  
+  .mobile-card-label {
+    color: var(--muted-text);
+    margin-right: 8px;
+    min-width: 80px;
+  }
+  
+  .mobile-card-value {
+    color: var(--text-color);
+    flex: 1;
+  }
+  
+  /* Footer do card com botões de ação */
+  .mobile-card-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-color);
+  }
+  
+  /* Botões de ação padronizados */
+  .mobile-action-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-white);
+    text-decoration: none;
+    transition: var(--transition);
+    font-size: 0.9rem;
+  }
+  
+  .mobile-action-btn:hover,
+  .mobile-action-btn:focus {
+    color: var(--text-white);
+    transform: scale(1.1);
+  }
+  
+  .mobile-action-btn:active {
+    transform: scale(0.9);
+  }
+  
+  .mobile-action-btn.btn-view {
+    background-color: var(--info-color);
+  }
+  
+  .mobile-action-btn.btn-edit {
+    background-color: var(--warning-color);
+  }
+  
+  .mobile-action-btn.btn-delete {
+    background-color: var(--danger-color);
+  }
+  
+  .mobile-action-btn.btn-invoice {
+    background-color: var(--purple, #9c27b0);
+  }
+  
+  .mobile-action-btn.btn-download {
+    background-color: var(--success-color);
+  }
+  
+  /* Botão principal expandido */
+  .mobile-action-btn-expanded {
+    padding: 8px 16px;
+    border-radius: var(--border-radius);
+    background-color: var(--accent-color);
+    color: var(--text-white);
+    border: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    min-height: var(--touch-target-min);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    transition: var(--transition);
+  }
+  
+  .mobile-action-btn-expanded:hover,
+  .mobile-action-btn-expanded:focus {
+    color: var(--text-white);
+    background-color: var(--accent-dark, #d34572);
+    transform: translateY(-1px);
+  }
+  
+  .mobile-action-btn-expanded:active {
+    transform: scale(0.98);
+  }
+  
+  /* Lista de cards */
+  .mobile-cards-container {
+    padding: 0;
+    margin: 0;
+  }
+  
+  /* Tabs mobile padronizadas */
+  .mobile-standard-tabs {
+    display: flex;
+    overflow-x: auto;
+    background-color: var(--darker-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 4px;
+    margin-bottom: var(--mobile-padding);
+    scrollbar-width: none;
+  }
+  
+  .mobile-standard-tabs::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .mobile-standard-tab {
+    flex: 1;
+    min-width: 80px;
+    padding: 8px 12px;
+    text-align: center;
+    background-color: transparent;
+    color: var(--muted-text);
+    text-decoration: none;
+    border-radius: calc(var(--border-radius) - 2px);
+    font-size: 0.8rem;
+    font-weight: 500;
+    border: none;
+    transition: var(--transition);
+    white-space: nowrap;
+  }
+  
+  .mobile-standard-tab:hover,
+  .mobile-standard-tab:focus {
+    color: var(--text-color);
+    background-color: var(--card-bg);
+  }
+  
+  .mobile-standard-tab.active {
+    background-color: var(--accent-color);
+    color: var(--text-white);
+  }
+  
+  /* Header de página mobile padronizado */
+  .mobile-page-header {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: var(--mobile-padding);
+    margin-bottom: var(--mobile-padding);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  
+  .mobile-page-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin: 0;
+  }
+  
+  .mobile-page-actions {
+    display: flex;
+    gap: 8px;
+  }
+  
+  /* Filtros mobile padronizados */
+  .mobile-filters-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: var(--mobile-padding);
+    margin-bottom: var(--mobile-padding);
+  }
+  
+  .mobile-filter-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  
+  .mobile-filter-row:last-child {
+    margin-bottom: 0;
+  }
+  
+  .mobile-filter-col {
+    flex: 1;
+  }
+  
   /* Melhorias para inputs de arquivo */
   .form-control[type="file"] {
     padding: 8px 12px;

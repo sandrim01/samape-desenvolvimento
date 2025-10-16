@@ -9,6 +9,25 @@ document.addEventListener('DOMContentLoaded', function() {
     const isMobile = window.innerWidth <= 768;
     const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
     
+    // ===== APLICAÇÃO DA PADRONIZAÇÃO MOBILE =====
+    // Aplica padronização imediatamente se for mobile
+    if (isMobile) {
+        // Delay pequeno para garantir que o DOM esteja completamente carregado
+        setTimeout(() => {
+            applyMobileStandardization();
+        }, 100);
+    }
+    
+    // Reaplica padronização quando a tela é redimensionada para mobile
+    window.addEventListener('resize', function() {
+        const currentlyMobile = window.innerWidth <= 768;
+        if (currentlyMobile && !document.body.classList.contains('mobile-standardized')) {
+            applyMobileStandardization();
+        } else if (!currentlyMobile && document.body.classList.contains('mobile-standardized')) {
+            document.body.classList.remove('mobile-standardized');
+        }
+    });
+    
     // ===== CONFIGURAÇÕES DE VIEWPORT =====
     function setViewportHeight() {
         // Fix para altura do viewport em mobile (considera keyboard)
@@ -437,3 +456,176 @@ const mobileStyles = `
 const styleSheet = document.createElement('style');
 styleSheet.textContent = mobileStyles;
 document.head.appendChild(styleSheet);
+
+// ===== SISTEMA DE COMPONENTES PADRONIZADOS =====
+
+// Classe para criar cards padronizados
+class MobileCardBuilder {
+    constructor(data) {
+        this.data = data;
+    }
+    
+    build() {
+        return `
+            <div class="mobile-standard-card">
+                ${this.buildHeader()}
+                ${this.buildBody()}
+                ${this.buildActions()}
+            </div>
+        `;
+    }
+    
+    buildHeader() {
+        if (!this.data.title) return '';
+        
+        return `
+            <div class="mobile-card-header">
+                <div>
+                    <h5 class="mobile-card-title">${this.data.title}</h5>
+                    ${this.data.subtitle ? `<p class="mobile-card-subtitle">${this.data.subtitle}</p>` : ''}
+                </div>
+                ${this.data.status ? `<span class="mobile-status-badge status-${this.data.status.toLowerCase()}">${this.data.status}</span>` : ''}
+            </div>
+        `;
+    }
+    
+    buildBody() {
+        if (!this.data.fields || this.data.fields.length === 0) return '';
+        
+        let body = '<div class="mobile-card-body">';
+        
+        this.data.fields.forEach(field => {
+            body += `
+                <div class="mobile-card-row">
+                    ${field.icon ? `<i class="mobile-card-icon ${field.icon}"></i>` : ''}
+                    <span class="mobile-card-label">${field.label}:</span>
+                    <span class="mobile-card-value">${field.value}</span>
+                </div>
+            `;
+        });
+        
+        body += '</div>';
+        return body;
+    }
+    
+    buildActions() {
+        if (!this.data.actions || this.data.actions.length === 0) return '';
+        
+        let actions = '<div class="mobile-card-actions">';
+        
+        this.data.actions.forEach(action => {
+            if (action.type === 'expanded') {
+                actions += `
+                    <a href="${action.href}" class="mobile-action-btn-expanded">
+                        ${action.icon ? `<i class="${action.icon}"></i>` : ''}
+                        ${action.text}
+                    </a>
+                `;
+            } else {
+                actions += `
+                    <a href="${action.href}" 
+                       class="mobile-action-btn btn-${action.type}" 
+                       title="${action.title || action.text}"
+                       ${action.onclick ? `onclick="${action.onclick}"` : ''}>
+                        <i class="${action.icon}"></i>
+                    </a>
+                `;
+            }
+        });
+        
+        actions += '</div>';
+        return actions;
+    }
+}
+
+// Função para converter cards existentes para o padrão mobile
+function standardizeMobileCards() {
+    // Converte cards de OS
+    const osCards = document.querySelectorAll('.card:not(.mobile-standard-card)');
+    osCards.forEach(card => {
+        if (!card.classList.contains('mobile-converted')) {
+            card.classList.add('mobile-standard-card', 'mobile-converted');
+            
+            // Processa header se existir
+            const cardHeader = card.querySelector('.card-header');
+            if (cardHeader && !cardHeader.classList.contains('mobile-card-header')) {
+                cardHeader.classList.add('mobile-card-header');
+            }
+            
+            // Processa body se existir
+            const cardBody = card.querySelector('.card-body');
+            if (cardBody && !cardBody.classList.contains('mobile-card-body')) {
+                cardBody.classList.add('mobile-card-body');
+            }
+            
+            // Processa botões de ação
+            const actionButtons = card.querySelectorAll('.btn-sm, .btn-xs');
+            actionButtons.forEach((btn, index) => {
+                if (!btn.classList.contains('mobile-action-btn')) {
+                    btn.classList.add('mobile-action-btn');
+                    
+                    // Determina o tipo do botão baseado nas classes
+                    if (btn.classList.contains('btn-info')) {
+                        btn.classList.add('btn-view');
+                    } else if (btn.classList.contains('btn-warning')) {
+                        btn.classList.add('btn-edit');
+                    } else if (btn.classList.contains('btn-danger')) {
+                        btn.classList.add('btn-delete');
+                    }
+                }
+            });
+        }
+    });
+}
+
+// Função para padronizar tabs
+function standardizeMobileTabs() {
+    const navTabs = document.querySelectorAll('.nav-tabs:not(.mobile-standard-tabs)');
+    navTabs.forEach(nav => {
+        if (!nav.classList.contains('mobile-converted')) {
+            nav.classList.add('mobile-standard-tabs', 'mobile-converted');
+            
+            const tabs = nav.querySelectorAll('.nav-link');
+            tabs.forEach(tab => {
+                tab.classList.add('mobile-standard-tab');
+            });
+        }
+    });
+}
+
+// Função para padronizar headers de página
+function standardizeMobileHeaders() {
+    const pageHeaders = document.querySelectorAll('.d-flex.justify-content-between:not(.mobile-page-header)');
+    pageHeaders.forEach(header => {
+        if (header.querySelector('h1, h2, h3, h4') && !header.classList.contains('mobile-converted')) {
+            header.classList.add('mobile-page-header', 'mobile-converted');
+            
+            const title = header.querySelector('h1, h2, h3, h4');
+            if (title) {
+                title.classList.add('mobile-page-title');
+            }
+            
+            const actions = header.querySelector('.btn, .dropdown');
+            if (actions && actions.parentElement) {
+                if (!actions.parentElement.classList.contains('mobile-page-actions')) {
+                    const actionsWrapper = document.createElement('div');
+                    actionsWrapper.className = 'mobile-page-actions';
+                    actions.parentElement.insertBefore(actionsWrapper, actions);
+                    actionsWrapper.appendChild(actions);
+                }
+            }
+        }
+    });
+}
+
+// Função principal para aplicar padronização
+function applyMobileStandardization() {
+    if (window.innerWidth <= 768) {
+        standardizeMobileCards();
+        standardizeMobileTabs();
+        standardizeMobileHeaders();
+        
+        // Adiciona classe especial ao body para identificar modo mobile padronizado
+        document.body.classList.add('mobile-standardized');
+    }
+}
