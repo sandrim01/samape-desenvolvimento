@@ -48,10 +48,28 @@
     background-color: var(--dark-bg);
     color: var(--text-color);
     padding-bottom: 80px; /* Espaço para navegação bottom */
+    padding-top: 0; /* Remove padding superior do navbar */
     overflow-x: hidden;
     line-height: 1.4;
     font-size: 14px;
     margin: 0;
+  }
+  
+  /* Oculta completamente o navbar em mobile */
+  .navbar {
+    display: none !important;
+  }
+  
+  /* Ajusta o container principal para ocupar todo o espaço */
+  .container-fluid {
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+  }
+  
+  /* Ajusta o conteúdo principal */
+  main, .main-content {
+    padding-top: 0 !important;
+    margin-top: 0 !important;
   }
   
   /* Configuração de viewport */

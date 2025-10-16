@@ -37,48 +37,6 @@
 </head>
 <body>
     {% if current_user.is_authenticated %}
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark">
-        <div class="container-fluid">
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <!-- Logo centralizada -->
-            <a class="navbar-brand" href="{{ url_for('dashboard') }}">
-                <img src="{{ url_for('static', filename='images/logonova2.png') }}" alt="SAMAPE" class="logo-img" width="150">
-            </a>
-            <!-- Versão do sistema -->
-            <small class="text-light d-none d-md-block">V 1.0{{ config.APP_VERSION }}</small>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item dropdown">
-                        <button type="button" class="btn nav-link dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                            <img src="{{ current_user.get_profile_image() }}" 
-                                 alt="Perfil" class="profile-avatar me-1">
-                            {{ current_user.name }}
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li>
-                                <div class="user-info-header">
-                                    <img src="{{ current_user.get_profile_image() }}" 
-                                         alt="Perfil" class="profile-image">
-                                    <div class="user-name">{{ current_user.name }}</div>
-                                    <div class="user-email">{{ current_user.email }}</div>
-                                    <div class="user-role">{{ current_user.role.value }}</div>
-                                </div>
-                            </li>
-                            <li><a class="dropdown-item" href="{{ url_for('profile') }}"><i class="fas fa-id-card me-2"></i>Meu Perfil</a></li>
-                            {% if current_user.role == UserRole.admin %}
-                            <li><a class="dropdown-item" href="{{ url_for('system_settings') }}"><i class="fas fa-cogs me-2"></i>Configurações</a></li>
-                            {% endif %}
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt me-2"></i>Sair</a></li>
-                        </ul>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
 
     <div class="container-fluid">
         <div class="row">
@@ -526,17 +484,7 @@
         // Inicializa tabelas para mobile
         initMobileCardTables();
         
-        // Fecha o menu ao clicar em um item (em mobile)
-        if (window.innerWidth < 992) {
-            document.querySelectorAll('.navbar-nav .nav-link').forEach(link => {
-                link.addEventListener('click', () => {
-                    const navbarCollapse = document.querySelector('.navbar-collapse');
-                    if (navbarCollapse && navbarCollapse.classList.contains('show')) {
-                        navbarCollapse.classList.remove('show');
-                    }
-                });
-            });
-        }
+        // JavaScript do navbar removido - usando apenas menu mobile bottom
     });
     </script>
     
