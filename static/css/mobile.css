@@ -1,28 +1,36 @@
 /* Estilos específicos para dispositivos móveis - Otimizado para melhor enquadramento e usabilidade */
 
-/* Variáveis para temas e cores - Melhoradas para mobile */
+/* Variáveis para temas e cores - Alinhadas com a versão desktop */
 :root {
-  --primary-color: #3498db;
-  --primary-dark: #2980b9;
-  --secondary-color: #2ecc71;
-  --accent-color: #f39c12;
-  --danger-color: #e74c3c;
-  --light-bg: #2c3e50;
-  --dark-bg: #1a252f;
-  --card-bg: #34495e;
-  --text-color: #ecf0f1;
-  --muted-text: #bdc3c7;
-  --border-radius: 12px;
-  --shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  /* Usando as mesmas cores da versão desktop */
+  --primary-color: var(--bg-dark, #1e1e1e);
+  --secondary-color: var(--bg-card, #242424);
+  --tertiary-color: var(--bg-darker, #171717);
+  --accent-color: var(--pink, #f85d8e);
+  --danger-color: var(--pink, #f85d8e);
+  --success-color: var(--green, #37d09e);
+  --warning-color: var(--orange, #ff9353);
+  --info-color: var(--blue, #4285f4);
+  
+  /* Cores de fundo alinhadas com desktop */
+  --dark-bg: var(--bg-dark, #1e1e1e);
+  --card-bg: var(--bg-card, #242424);
+  --darker-bg: var(--bg-darker, #171717);
+  
+  /* Cores de texto alinhadas com desktop */
+  --text-color: var(--text-light, #f0f0f0);
+  --text-white: var(--text-white, #ffffff);
+  --muted-text: var(--text-muted, #a0a0a0);
+  --text-disabled: var(--text-disabled, #666666);
+  
+  /* Cores de borda alinhadas com desktop */
+  --border-color: var(--border-light, #333333);
+  --border-dark: var(--border-dark, #000000);
+  
+  /* Configurações específicas para mobile */
+  --border-radius: 8px;
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   --transition: all 0.2s ease;
-  
-  /* Novos tons azulados/escuros para o tema */
-  --blue-dark: #1a2530;
-  --blue-medium: #2c3e50;
-  --blue-light: #3a536b;
-  --blue-accent: #00aeff;
-  
-  /* Variáveis específicas para mobile touch */
   --touch-target-min: 44px;
   --mobile-padding: 16px;
   --mobile-margin: 12px;
@@ -101,11 +109,11 @@
     max-width: 100%;
   }
   
-  /* Card design otimizado para mobile */
+  /* Card design otimizado para mobile - cores desktop */
   .card {
     background-color: var(--card-bg);
     border-radius: var(--border-radius);
-    border: none;
+    border: 1px solid var(--border-color);
     box-shadow: var(--shadow);
     margin-bottom: var(--mobile-margin);
     overflow: hidden;
@@ -114,13 +122,13 @@
   
   .card:active {
     transform: scale(0.98);
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   }
   
   .card-header {
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-    color: white;
-    border-bottom: none;
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    border-bottom: 1px solid var(--border-color);
     padding: var(--mobile-margin) var(--mobile-padding);
     font-weight: 500;
     font-size: 0.95rem;
@@ -184,8 +192,8 @@
   }
   
   .list-group-item {
-    background-color: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.1);
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
     color: var(--text-color);
     padding: var(--mobile-padding);
     min-height: var(--touch-target-min);
@@ -195,12 +203,12 @@
   }
   
   .list-group-item:active {
-    background-color: rgba(255, 255, 255, 0.08);
+    background-color: var(--darker-bg);
     transform: scale(0.98);
   }
   
   .list-group-item-action:hover {
-    background-color: rgba(255, 255, 255, 0.07);
+    background-color: var(--darker-bg);
   }
   
   /* Melhorias para alertas */
@@ -273,24 +281,33 @@
   }
   
   .btn-primary {
-    background-color: var(--primary-color);
-    border-color: var(--primary-color);
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+    color: var(--text-white);
   }
   
   .btn-success {
-    background-color: var(--secondary-color);
-    border-color: var(--secondary-color);
+    background-color: var(--success-color);
+    border-color: var(--success-color);
+    color: var(--text-white);
   }
   
   .btn-warning {
-    background-color: var(--accent-color);
-    border-color: var(--accent-color);
-    color: white;
+    background-color: var(--warning-color);
+    border-color: var(--warning-color);
+    color: var(--text-white);
   }
   
   .btn-danger {
     background-color: var(--danger-color);
     border-color: var(--danger-color);
+    color: var(--text-white);
+  }
+  
+  .btn-info {
+    background-color: var(--info-color);
+    border-color: var(--info-color);
+    color: var(--text-white);
   }
   
   /* Botões de ação circular */
@@ -470,20 +487,20 @@
     font-size: 1.2rem;
   }
   
-  /* Bottom navigation melhorada */
+  /* Bottom navigation melhorada - cores desktop */
   .mobile-bottom-nav {
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
     z-index: 1030;
-    background-color: var(--dark-bg);
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: var(--card-bg);
+    border-top: 1px solid var(--border-color);
     display: flex;
     justify-content: space-around;
     align-items: center;
     padding: 8px 0 12px 0;
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(10px);
     min-height: 70px;
   }
@@ -497,7 +514,7 @@
     text-decoration: none;
     transition: var(--transition);
     padding: 4px 8px;
-    border-radius: 8px;
+    border-radius: var(--border-radius);
     min-width: var(--touch-target-min);
     min-height: var(--touch-target-min);
     justify-content: center;
@@ -505,12 +522,12 @@
   
   .nav-item:active {
     transform: scale(0.9);
-    background-color: rgba(255, 255, 255, 0.05);
+    background-color: var(--darker-bg);
   }
   
   .nav-item.active {
-    color: var(--primary-color);
-    background-color: rgba(52, 152, 219, 0.1);
+    color: var(--accent-color);
+    background-color: rgba(248, 93, 142, 0.1);
   }
   
   .nav-item i {
@@ -526,10 +543,10 @@
     max-width: 60px;
   }
   
-  /* Form inputs otimizados para mobile */
+  /* Form inputs otimizados para mobile - cores desktop */
   .form-control, .form-select, .form-check-input {
-    background-color: rgba(255, 255, 255, 0.05);
-    border: 2px solid rgba(255, 255, 255, 0.1);
+    background-color: var(--darker-bg);
+    border: 1px solid var(--border-color);
     color: var(--text-color);
     border-radius: var(--border-radius);
     padding: 14px var(--mobile-padding);
@@ -539,10 +556,10 @@
   }
   
   .form-control:focus, .form-select:focus {
-    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.25);
-    background-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 0 0 2px rgba(248, 93, 142, 0.25);
+    background-color: var(--card-bg);
     color: var(--text-color);
-    border-color: var(--primary-color);
+    border-color: var(--accent-color);
     outline: none;
   }
   
@@ -677,25 +694,28 @@
     background-color: var(--card-bg);
     color: var(--text-color);
     border-radius: var(--border-radius);
-    border: none;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
   }
   
   .modal-header {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid var(--border-color);
     padding: var(--mobile-padding);
+    background-color: var(--card-bg);
   }
   
   .modal-body {
     padding: var(--mobile-padding);
     max-height: 70vh;
     overflow-y: auto;
+    background-color: var(--card-bg);
   }
   
   .modal-footer {
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid var(--border-color);
     padding: var(--mobile-padding);
     gap: 8px;
+    background-color: var(--card-bg);
   }
   
   .modal-footer .btn {
@@ -808,7 +828,8 @@
   .mobile-tabs {
     display: flex;
     overflow-x: auto;
-    background-color: var(--blue-dark);
+    background-color: var(--darker-bg);
+    border: 1px solid var(--border-color);
     border-radius: var(--border-radius) var(--border-radius) 0 0;
     padding: 0;
     margin-bottom: 16px;
@@ -833,13 +854,14 @@
   }
   
   .mobile-tab.active {
-    color: var(--blue-accent);
-    border-bottom-color: var(--blue-accent);
+    color: var(--accent-color);
+    border-bottom-color: var(--accent-color);
   }
   
-  /* Mobile item card (estoque) */
+  /* Mobile item card (estoque) - cores desktop */
   .mobile-item-card {
-    background-color: var(--blue-medium);
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     padding: 15px;
     margin-bottom: 12px;
@@ -889,21 +911,22 @@
   }
   
   .view-btn {
-    background-color: #00bcd4;
+    background-color: var(--info-color);
   }
   
   .edit-btn {
-    background-color: #2196f3;
+    background-color: var(--warning-color);
   }
   
   .delete-btn {
-    background-color: #f44336;
+    background-color: var(--danger-color);
     border: none;
   }
   
-  /* Mobile order card (ordens de serviço) */
+  /* Mobile order card (ordens de serviço) - cores desktop */
   .mobile-order-card {
-    background-color: var(--blue-medium);
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     padding: 15px;
     margin-bottom: 12px;
@@ -950,23 +973,23 @@
   }
   
   .view-button {
-    background-color: #00bcd4;
+    background-color: var(--info-color);
   }
   
   .edit-button {
-    background-color: #2196f3;
+    background-color: var(--warning-color);
   }
   
   .invoice-button {
-    background-color: #9c27b0;
+    background-color: var(--purple, #9c27b0);
   }
   
-  /* Dropdown mobile na bottom navigation */
+  /* Dropdown mobile na bottom navigation - cores desktop */
   .mobile-dropdown-menu {
     background-color: var(--card-bg) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
     margin-bottom: 10px;
     max-height: 60vh;
     overflow-y: auto;
@@ -978,22 +1001,22 @@
     display: flex;
     align-items: center;
     min-height: var(--touch-target-min);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid var(--border-color);
     transition: var(--transition);
   }
   
   .mobile-dropdown-menu .dropdown-item:hover,
   .mobile-dropdown-menu .dropdown-item:focus {
-    background-color: rgba(255, 255, 255, 0.05) !important;
-    color: var(--primary-color) !important;
+    background-color: var(--darker-bg) !important;
+    color: var(--accent-color) !important;
   }
   
   .mobile-dropdown-menu .dropdown-item:active {
-    background-color: rgba(255, 255, 255, 0.1) !important;
+    background-color: var(--darker-bg) !important;
   }
   
   .mobile-dropdown-menu .dropdown-divider {
-    border-color: rgba(255, 255, 255, 0.1);
+    border-color: var(--border-color);
     margin: 8px 0;
   }
   
