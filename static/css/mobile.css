@@ -1025,6 +1025,135 @@
     text-align: center;
   }
   
+  /* Modal do Menu Mobile em Grade */
+  .mobile-menu-modal {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+  }
+  
+  .mobile-menu-modal .modal-header {
+    background-color: var(--darker-bg);
+    border-bottom: 1px solid var(--border-color);
+    padding: var(--mobile-padding);
+  }
+  
+  .mobile-menu-modal .modal-title {
+    color: var(--text-color);
+    font-weight: 600;
+    font-size: 1.1rem;
+  }
+  
+  .mobile-menu-modal .modal-body {
+    padding: var(--mobile-padding);
+    background-color: var(--card-bg);
+  }
+  
+  .mobile-menu-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--mobile-padding);
+    padding: 0;
+  }
+  
+  .menu-grid-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 12px;
+    background-color: var(--darker-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    text-decoration: none;
+    color: var(--text-color);
+    transition: var(--transition);
+    min-height: 100px;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .menu-grid-item:hover,
+  .menu-grid-item:focus {
+    color: var(--text-color);
+    background-color: var(--card-bg);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+  
+  .menu-grid-item:active {
+    transform: scale(0.95);
+  }
+  
+  .menu-grid-item.active {
+    background-color: var(--accent-color);
+    color: var(--text-white);
+    border-color: var(--accent-color);
+  }
+  
+  .menu-grid-item.active .menu-icon {
+    color: var(--text-white);
+  }
+  
+  .menu-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--accent-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 8px;
+    transition: var(--transition);
+  }
+  
+  .menu-icon i {
+    font-size: 1.2rem;
+    color: var(--text-white);
+  }
+  
+  .menu-label {
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-align: center;
+    line-height: 1.2;
+    margin-top: 4px;
+  }
+  
+  /* Responsividade para telas muito pequenas */
+  @media (max-width: 480px) {
+    .mobile-menu-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    
+    .menu-grid-item {
+      min-height: 90px;
+      padding: 16px 8px;
+    }
+    
+    .menu-icon {
+      width: 36px;
+      height: 36px;
+    }
+    
+    .menu-icon i {
+      font-size: 1.1rem;
+    }
+    
+    .menu-label {
+      font-size: 0.75rem;
+    }
+  }
+  
+  /* Animação de entrada do modal */
+  .modal.fade .modal-dialog {
+    transition: transform 0.3s ease-out;
+  }
+  
+  .modal.show .modal-dialog {
+    transform: none;
+  }
+  
   /* Melhorias gerais para performance e UX */
   .mobile-bottom-nav * {
     will-change: transform;

@@ -308,33 +308,118 @@
             <i class="fas fa-tools"></i>
             <span>Máquinas</span>
         </a>
-        <!-- Menu "Mais" com dropdown -->
-        <div class="nav-item dropdown" data-bs-toggle="dropdown" aria-expanded="false">
-            <i class="fas fa-ellipsis-h"></i>
+        <!-- Menu "Mais" com modal -->
+        <div class="nav-item" data-bs-toggle="modal" data-bs-target="#mobileMenuModal">
+            <i class="fas fa-th-large"></i>
             <span>Mais</span>
-            <ul class="dropdown-menu dropdown-menu-end mobile-dropdown-menu">
-                <li><a class="dropdown-item" href="{{ url_for('suppliers') }}"><i class="fas fa-truck me-2"></i>Fornecedores</a></li>
-                <li><a class="dropdown-item" href="{{ url_for('parts') }}"><i class="fas fa-cogs me-2"></i>Peças</a></li>
-                <li><a class="dropdown-item" href="{{ url_for('part_sales') }}"><i class="fas fa-shopping-cart me-2"></i>Vendas</a></li>
-                <li><a class="dropdown-item" href="{{ url_for('supplier_orders') }}"><i class="fas fa-shipping-fast me-2"></i>Pedidos</a></li>
-                <li><a class="dropdown-item" href="{{ url_for('stock_items') }}"><i class="fas fa-hard-hat me-2"></i>EPIs</a></li>
-                <li><a class="dropdown-item" href="{{ url_for('fleet') }}"><i class="fas fa-truck-monster me-2"></i>Frota</a></li>
-                {% if current_user.role == UserRole.admin or current_user.role == UserRole.gerente %}
-                <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item" href="{{ url_for('employees') }}"><i class="fas fa-user-tie me-2"></i>Funcionários</a></li>
-                <li><a class="dropdown-item" href="{{ url_for('ponto.index') }}"><i class="fas fa-clock me-2"></i>Ponto</a></li>
-                <li><a class="dropdown-item" href="{{ url_for('financial') }}"><i class="fas fa-dollar-sign me-2"></i>Financeiro</a></li>
-                <li><a class="dropdown-item" href="{{ url_for('invoices') }}"><i class="fas fa-file-invoice me-2"></i>N. Fiscais</a></li>
-                {% endif %}
-                {% if current_user.role == UserRole.admin %}
-                <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item" href="{{ url_for('logs') }}"><i class="fas fa-history me-2"></i>Logs</a></li>
-                {% endif %}
-            </ul>
         </div>
     </nav>
+
+    <!-- Modal do Menu Mobile -->
+    <div class="modal fade" id="mobileMenuModal" tabindex="-1" aria-labelledby="mobileMenuModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
+            <div class="modal-content mobile-menu-modal">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="mobileMenuModalLabel">
+                        <i class="fas fa-th-large me-2"></i>
+                        Menu do Sistema
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mobile-menu-grid">
+                        <!-- Primeira linha -->
+                        <a href="{{ url_for('suppliers') }}" class="menu-grid-item {% if '/fornecedores' in request.path %}active{% endif %}">
+                            <div class="menu-icon">
+                                <i class="fas fa-truck"></i>
+                            </div>
+                            <span class="menu-label">Fornecedores</span>
+                        </a>
+                        
+                        <a href="{{ url_for('parts') }}" class="menu-grid-item {% if '/pecas' in request.path and '/vendas-pecas' not in request.path %}active{% endif %}">
+                            <div class="menu-icon">
+                                <i class="fas fa-cogs"></i>
+                            </div>
+                            <span class="menu-label">Peças</span>
+                        </a>
+                        
+                        <a href="{{ url_for('part_sales') }}" class="menu-grid-item {% if '/vendas-pecas' in request.path %}active{% endif %}">
+                            <div class="menu-icon">
+                                <i class="fas fa-shopping-cart"></i>
+                            </div>
+                            <span class="menu-label">Venda de Peças</span>
+                        </a>
+                        
+                        <!-- Segunda linha -->
+                        <a href="{{ url_for('supplier_orders') }}" class="menu-grid-item {% if '/pedidos-fornecedor' in request.path %}active{% endif %}">
+                            <div class="menu-icon">
+                                <i class="fas fa-shipping-fast"></i>
+                            </div>
+                            <span class="menu-label">Pedidos</span>
+                        </a>
+                        
+                        <a href="{{ url_for('stock_items') }}" class="menu-grid-item {% if '/estoque' in request.path %}active{% endif %}">
+                            <div class="menu-icon">
+                                <i class="fas fa-hard-hat"></i>
+                            </div>
+                            <span class="menu-label">EPIs e Ferramentas</span>
+                        </a>
+                        
+                        <a href="{{ url_for('fleet') }}" class="menu-grid-item {% if '/frota' in request.path %}active{% endif %}">
+                            <div class="menu-icon">
+                                <i class="fas fa-truck-monster"></i>
+                            </div>
+                            <span class="menu-label">Controle de Frota</span>
+                        </a>
+                        
+                        {% if current_user.role == UserRole.admin or current_user.role == UserRole.gerente %}
+                        <!-- Terceira linha - Admin/Gerente -->
+                        <a href="{{ url_for('employees') }}" class="menu-grid-item {% if '/funcionarios' in request.path %}active{% endif %}">
+                            <div class="menu-icon">
+                                <i class="fas fa-user-tie"></i>
+                            </div>
+                            <span class="menu-label">Funcionários</span>
+                        </a>
+                        
+                        <a href="{{ url_for('ponto.index') }}" class="menu-grid-item {% if '/ponto' in request.path %}active{% endif %}">
+                            <div class="menu-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <span class="menu-label">Controle de Ponto</span>
+                        </a>
+                        
+                        <a href="{{ url_for('financial') }}" class="menu-grid-item {% if '/financeiro' in request.path %}active{% endif %}">
+                            <div class="menu-icon">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                            <span class="menu-label">Financeiro</span>
+                        </a>
+                        
+                        <!-- Quarta linha - Admin/Gerente -->
+                        <a href="{{ url_for('invoices') }}" class="menu-grid-item {% if '/notas-fiscais' in request.path %}active{% endif %}">
+                            <div class="menu-icon">
+                                <i class="fas fa-file-invoice"></i>
+                            </div>
+                            <span class="menu-label">Notas Fiscais</span>
+                        </a>
+                        {% endif %}
+                        
+                        {% if current_user.role == UserRole.admin %}
+                        <!-- Quinta linha - Apenas Admin -->
+                        <a href="{{ url_for('logs') }}" class="menu-grid-item {% if '/logs' in request.path %}active{% endif %}">
+                            <div class="menu-icon">
+                                <i class="fas fa-history"></i>
+                            </div>
+                            <span class="menu-label">Logs de Ação</span>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     {% endif %}
-    
+
     <!-- Snack notification para mobile -->
     <div id="snackNotification" class="snack-notification">
         <span id="snackText"></span>

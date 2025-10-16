@@ -155,6 +155,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // ===== MELHORIAS DE MODAL =====
     const modals = document.querySelectorAll('.modal');
+    const mobileMenuModal = document.getElementById('mobileMenuModal');
     
     modals.forEach(modal => {
         modal.addEventListener('shown.bs.modal', function() {
@@ -173,6 +174,45 @@ document.addEventListener('DOMContentLoaded', function() {
             document.body.style.overflow = '';
         });
     });
+    
+    // ===== MODAL DO MENU MOBILE =====
+    if (mobileMenuModal && isMobile) {
+        // Adiciona animação aos itens do grid
+        const gridItems = mobileMenuModal.querySelectorAll('.menu-grid-item');
+        
+        mobileMenuModal.addEventListener('shown.bs.modal', function() {
+            // Anima entrada dos itens com delay escalonado
+            gridItems.forEach((item, index) => {
+                item.style.opacity = '0';
+                item.style.transform = 'translateY(20px)';
+                
+                setTimeout(() => {
+                    item.style.transition = 'all 0.3s ease';
+                    item.style.opacity = '1';
+                    item.style.transform = 'translateY(0)';
+                }, index * 50);
+            });
+        });
+        
+        // Fecha modal ao clicar em um item
+        gridItems.forEach(item => {
+            item.addEventListener('click', function() {
+                // Pequeno delay para feedback visual
+                setTimeout(() => {
+                    bootstrap.Modal.getInstance(mobileMenuModal)?.hide();
+                }, 100);
+            });
+        });
+        
+        // Haptic feedback para dispositivos que suportam
+        if ('vibrate' in navigator) {
+            gridItems.forEach(item => {
+                item.addEventListener('touchstart', function() {
+                    navigator.vibrate(10); // Vibração leve
+                }, { passive: true });
+            });
+        }
+    }
     
     // ===== LOADING STATES =====
     function showLoading(element) {
