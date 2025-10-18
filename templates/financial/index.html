@@ -3,26 +3,58 @@
 {% block title %}Financeiro - SAMAPE{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">Financeiro</h1>
-    <div class="btn-toolbar mb-2 mb-md-0">
-        <a href="{{ url_for('new_financial_entry') }}" class="btn btn-primary me-2">
-            <i class="fas fa-plus me-1"></i> Novo Registro
-        </a>
-        <a href="{{ url_for('accounts_payable_receivable') }}" class="btn btn-warning me-2">
-            <i class="fas fa-calendar-check me-1"></i> Contas a Pagar/Receber
-        </a>
-        <button type="button" class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#financialAdjustmentModal">
-            <i class="fas fa-balance-scale me-1"></i> Acerto Manual
-        </button>
-        <a href="{{ url_for('export_financial', month=month, year=year) }}" class="btn btn-outline-secondary">
-            <i class="fas fa-file-export me-1"></i> Exportar CSV
-        </a>
+<!-- Mobile Page Header -->
+<div class="mobile-page-header">
+    <div class="mobile-header-content">
+        <h1 class="mobile-page-title">
+            <i class="fas fa-dollar-sign me-2"></i>Financeiro
+        </h1>
+        <div class="mobile-header-actions">
+            <!-- Desktop Actions -->
+            <div class="d-none d-md-flex">
+                <a href="{{ url_for('new_financial_entry') }}" class="btn btn-primary me-2">
+                    <i class="fas fa-plus me-1"></i> Novo Registro
+                </a>
+                <a href="{{ url_for('accounts_payable_receivable') }}" class="btn btn-warning me-2">
+                    <i class="fas fa-calendar-check me-1"></i> Contas a Pagar/Receber
+                </a>
+                <button type="button" class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#financialAdjustmentModal">
+                    <i class="fas fa-balance-scale me-1"></i> Acerto Manual
+                </button>
+                <a href="{{ url_for('export_financial', month=month, year=year) }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-file-export me-1"></i> Exportar CSV
+                </a>
+            </div>
+            
+            <!-- Mobile Actions -->
+            <div class="d-md-none">
+                <a href="{{ url_for('new_financial_entry') }}" class="mobile-action-btn">
+                    <i class="fas fa-plus"></i>
+                </a>
+                <div class="btn-group">
+                    <button class="mobile-action-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="{{ url_for('accounts_payable_receivable') }}">
+                            <i class="fas fa-calendar-check me-2"></i>Contas a Pagar/Receber
+                        </a></li>
+                        <li><button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#financialAdjustmentModal">
+                            <i class="fas fa-balance-scale me-2"></i>Acerto Manual
+                        </button></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{{ url_for('export_financial', month=month, year=year) }}">
+                            <i class="fas fa-file-export me-2"></i>Exportar CSV
+                        </a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
-<!-- Month Selector and Filters -->
-<div class="card mb-4">
+<!-- Mobile Filters Card -->
+<div class="mobile-filters-card">
     <div class="card-header">
         <i class="fas fa-filter me-1"></i> Filtros e Período
     </div>

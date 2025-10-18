@@ -3,26 +3,41 @@
 {% block title %}Controle de Ponto - SAMAPE{% endblock %}
 
 {% block content %}
-<div class="content-header">
-    <div class="container-fluid">
-        <div class="row mb-2">
-            <div class="col-sm-6">
-                <h1 class="m-0">
-                    <i class="fas fa-clock me-2"></i>Controle de Ponto
-                </h1>
+<!-- Mobile Page Header -->
+<div class="mobile-page-header">
+    <div class="mobile-header-content">
+        <h1 class="mobile-page-title">
+            <i class="fas fa-clock me-2"></i>Controle de Ponto
+        </h1>
+        <div class="mobile-header-actions">
+            {% if current_user.is_admin() or current_user.is_manager() %}
+            <!-- Desktop Actions -->
+            <div class="d-none d-md-flex">
+                <a href="{{ url_for('ponto.admin_view') }}" class="btn btn-info me-2">
+                    <i class="fas fa-users me-1"></i> Visão Geral
+                </a>
+                <a href="{{ url_for('ponto.relatorio') }}" class="btn btn-secondary">
+                    <i class="fas fa-chart-bar me-1"></i> Relatórios
+                </a>
             </div>
-            <div class="col-sm-6">
-                <div class="float-sm-right">
-                    {% if current_user.is_admin() or current_user.is_manager() %}
-                    <a href="{{ url_for('ponto.admin_view') }}" class="btn btn-info me-2">
-                        <i class="fas fa-users me-1"></i> Visão Geral
-                    </a>
-                    <a href="{{ url_for('ponto.relatorio') }}" class="btn btn-secondary">
-                        <i class="fas fa-chart-bar me-1"></i> Relatórios
-                    </a>
-                    {% endif %}
+            
+            <!-- Mobile Actions -->
+            <div class="d-md-none">
+                <div class="btn-group">
+                    <button class="mobile-action-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="{{ url_for('ponto.admin_view') }}">
+                            <i class="fas fa-users me-2"></i>Visão Geral
+                        </a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('ponto.relatorio') }}">
+                            <i class="fas fa-chart-bar me-2"></i>Relatórios
+                        </a></li>
+                    </ul>
                 </div>
             </div>
+            {% endif %}
         </div>
     </div>
 </div>

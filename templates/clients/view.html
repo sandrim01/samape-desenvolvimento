@@ -3,21 +3,55 @@
 {% block title %}Cliente: {{ client.name }} - SAMAPE{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">Cliente: {{ client.name }}</h1>
-    <div class="btn-toolbar mb-2 mb-md-0">
-        <a href="{{ url_for('edit_client', id=client.id) }}" class="btn btn-outline-secondary me-2">
-            <i class="fas fa-edit me-1"></i> Editar
-        </a>
-        <a href="{{ url_for('new_equipment') }}?client_id={{ client.id }}" class="btn btn-outline-primary me-2">
-            <i class="fas fa-plus me-1"></i> Adicionar Equipamento
-        </a>
-        <a href="{{ url_for('new_service_order') }}" class="btn btn-primary me-2">
-            <i class="fas fa-clipboard-list me-1"></i> Nova OS
-        </a>
-        <a href="{{ url_for('clients') }}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left me-1"></i> Voltar
-        </a>
+<!-- Mobile Page Header -->
+<div class="mobile-page-header">
+    <div class="mobile-header-content">
+        <h1 class="mobile-page-title">
+            <i class="fas fa-user me-2"></i>{{ client.name }}
+        </h1>
+        <div class="mobile-header-actions">
+            <!-- Desktop Actions -->
+            <div class="d-none d-md-flex">
+                <a href="{{ url_for('edit_client', id=client.id) }}" class="btn btn-outline-secondary me-2">
+                    <i class="fas fa-edit me-1"></i> Editar
+                </a>
+                <a href="{{ url_for('new_equipment') }}?client_id={{ client.id }}" class="btn btn-outline-primary me-2">
+                    <i class="fas fa-plus me-1"></i> Adicionar Equipamento
+                </a>
+                <a href="{{ url_for('new_service_order') }}" class="btn btn-primary me-2">
+                    <i class="fas fa-clipboard-list me-1"></i> Nova OS
+                </a>
+                <a href="{{ url_for('clients') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i> Voltar
+                </a>
+            </div>
+            
+            <!-- Mobile Actions -->
+            <div class="d-md-none">
+                <a href="{{ url_for('edit_client', id=client.id) }}" class="mobile-action-btn">
+                    <i class="fas fa-edit"></i>
+                </a>
+                <div class="btn-group">
+                    <button class="mobile-action-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="{{ url_for('new_equipment') }}?client_id={{ client.id }}">
+                            <i class="fas fa-plus me-2"></i>Adicionar Equipamento
+                        </a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('new_service_order') }}">
+                            <i class="fas fa-clipboard-list me-2"></i>Nova OS
+                        </a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{{ url_for('clients') }}">
+                            <i class="fas fa-arrow-left me-2"></i>Voltar
+                        </a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
     </div>
 </div>
 

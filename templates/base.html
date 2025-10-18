@@ -9,34 +9,37 @@
     <!-- Favicon -->
     <link rel="icon" href="{{ url_for('static', filename='images/logonova2.png') }}">
     
-    <!-- Bootstrap 5 CSS -->
+    <!-- CSS CRÍTICO - Carregamento prioritário -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/samape-optimized.css') }}?v={{ cache_buster }}" rel="stylesheet">
     
-    <!-- Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <!-- CSS NÃO-CRÍTICO - Carregamento adiado -->
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"></noscript>
     
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    
-    <!-- Fancybox para visualização de imagens -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css"/>
-    
-    <!-- Custom CSS -->
-    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/menu-updates.css') }}" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/mobile-enhanced.css') }}" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/dashboard-metrics.css') }}" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/contrast-fixes.css') }}" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/dark-forms.css') }}?v={{ cache_buster }}" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/mobile.css') }}?v={{ cache_buster }}" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/mobile-optimized.css') }}?v={{ cache_buster }}" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/mobile-auto-standardization.css') }}?v={{ cache_buster }}" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/dropdown-fix.css') }}?v={{ cache_buster }}" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/sidebar-profile-enhanced.css') }}?v={{ cache_buster }}" rel="stylesheet">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"></noscript>
     
     {% block extra_css %}{% endblock %}
+    
+    <!-- CSS Inline crítico para evitar FOUC -->
+    <style>
+        /* CSS crítico inline para carregamento instantâneo */
+        body { 
+            background-color: #1e1e1e !important; 
+            color: #ffffff !important; 
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+        .loading-initial { 
+            opacity: 0; 
+            transition: opacity 0.3s ease; 
+        }
+        .loaded { 
+            opacity: 1; 
+        }
+    </style>
 </head>
-<body>
+<body class="loading-initial">
     {% if current_user.is_authenticated %}
 
     <div class="container-fluid">
@@ -179,42 +182,6 @@
     <!-- Non-authenticated content -->
     {% block auth_content %}{% endblock %}
     {% endif %}
-
-    <!-- Bootstrap JS Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <!-- Custom JavaScript -->
-    <script src="{{ url_for('static', filename='js/main.js') }}?v={{ cache_buster }}"></script>
-    <script src="{{ url_for('static', filename='js/charts.js') }}?v={{ cache_buster }}"></script>
-    
-    <!-- Script block for child templates -->
-    {% block scripts %}{% endblock %}
-    
-    <!-- Theme Detection -->
-    <script>
-        // Force dark theme as specified by user requirement
-        document.addEventListener('DOMContentLoaded', function() {
-            // Always use dark theme by default
-            document.documentElement.setAttribute('data-bs-theme', 'dark');
-            
-            // We still keep the listener for system changes in case we want to implement
-            // auto theme switching in the future
-            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
-                // Uncomment this line to enable auto theme switching
-                // document.documentElement.setAttribute('data-bs-theme', event.matches ? 'dark' : 'light');
-            });
-        });
-    </script>
-    
-    <!-- Fancybox JS -->
-    <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js"></script>
-    <script>
-        // Inicializar Fancybox para galerias de imagens
-        document.addEventListener("DOMContentLoaded", function() {
-            Fancybox.bind("[data-fancybox]", {
                 // Opções personalizadas
                 Toolbar: {
                     display: [
@@ -423,145 +390,175 @@
         <span id="snackText"></span>
     </div>
 
-    <!-- Mobile JS helper -->
-    <script>
-    // Função para mostrar notificação em estilo snackbar
-    function showSnack(message, duration = 3000) {
-        const snack = document.getElementById('snackNotification');
-        const text = document.getElementById('snackText');
-        
-        text.textContent = message;
-        snack.classList.add('show');
-        
-        setTimeout(() => {
-            snack.classList.remove('show');
-        }, duration);
-    }
-    
-    // Função para converter tabelas para cards em mobile
-    function initMobileCardTables() {
-        document.querySelectorAll('.mobile-card-table').forEach(container => {
-            const table = container.querySelector('table');
-            if (!table) return;
-            
-            const headerRow = table.querySelector('thead tr');
-            if (!headerRow) return;
-            
-            const headings = Array.from(headerRow.querySelectorAll('th')).map(th => th.textContent.trim());
-            
-            const rows = Array.from(table.querySelectorAll('tbody tr'));
-            
-            rows.forEach(row => {
-                const values = Array.from(row.querySelectorAll('td')).map(td => td.innerHTML);
-                
-                // Cria o card
-                const card = document.createElement('div');
-                card.className = 'mobile-card-row d-lg-none';
-                
-                // Header do card (primeiro elemento)
-                const header = document.createElement('div');
-                header.className = 'row-header';
-                
-                const title = document.createElement('div');
-                title.className = 'title';
-                title.innerHTML = values[0];
-                
-                // Status ou badge no header (se existir)
-                const statusIndex = values.findIndex(v => v.includes('badge') || v.includes('status'));
-                
-                if (statusIndex !== -1) {
-                    const status = document.createElement('div');
-                    status.className = 'status';
-                    status.innerHTML = values[statusIndex];
-                    
-                    header.appendChild(title);
-                    header.appendChild(status);
-                } else {
-                    header.appendChild(title);
-                }
-                
-                card.appendChild(header);
-                
-                // Conteúdo do card (exceto primeiro elemento e possível status)
-                for (let i = 1; i < values.length; i++) {
-                    if (i === statusIndex) continue;
-                    
-                    // Pula células vazias ou apenas com espaços
-                    if (!values[i] || values[i].trim() === '') continue;
-                    
-                    // Se for uma célula de ações, cria uma seção especial
-                    if (values[i].includes('btn') || values[i].includes('fa-')) {
-                        const actions = document.createElement('div');
-                        actions.className = 'row-actions';
-                        actions.innerHTML = values[i];
-                        card.appendChild(actions);
-                        continue;
-                    }
-                    
-                    const item = document.createElement('div');
-                    item.className = 'row-item';
-                    
-                    const label = document.createElement('div');
-                    label.className = 'item-label';
-                    label.textContent = headings[i];
-                    
-                    const value = document.createElement('div');
-                    value.className = 'item-value';
-                    value.innerHTML = values[i];
-                    
-                    item.appendChild(label);
-                    item.appendChild(value);
-                    card.appendChild(item);
-                }
-                
-                container.appendChild(card);
-            });
-        });
-    }
-    
-    // Executa quando o documento estiver pronto
-    document.addEventListener('DOMContentLoaded', function() {
-        // Inicializa tabelas para mobile
-        initMobileCardTables();
-        
-        // JavaScript do navbar removido - usando apenas menu mobile bottom
-    });
-    </script>
-    
-    <!-- jQuery e Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- JavaScript CRÍTICO - Carregamento prioritário -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- Fancybox para imagens -->
-    <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js"></script>
-    
-    <!-- Dropdown Fix específico -->
-    <script src="{{ url_for('static', filename='js/dropdown-fix.js') }}?v={{ cache_buster }}"></script>
-    
-    <!-- Mobile Optimizations -->
-    <script src="{{ url_for('static', filename='js/mobile-optimized.js') }}?v={{ cache_buster }}"></script>
-    
-    <!-- Inicializar componentes do Bootstrap -->
+    <!-- JavaScript NÃO-CRÍTICO - Carregamento adiado -->
     <script>
+        // Carregamento eficiente de recursos não-críticos
+        function loadScript(src, callback) {
+            const script = document.createElement('script');
+            script.src = src;
+            script.async = true;
+            if (callback) script.onload = callback;
+            document.head.appendChild(script);
+        }
+        
+        // Remove classe de loading e configura tema
         document.addEventListener('DOMContentLoaded', function() {
-            // Inicializar todos os componentes do Bootstrap (dropdowns, tooltips, popovers)
-            var dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'));
-            dropdownElementList.forEach(function (dropdownToggleEl) {
-                new bootstrap.Dropdown(dropdownToggleEl);
+            document.body.classList.remove('loading-initial');
+            document.body.classList.add('loaded');
+            
+            // Force dark theme
+            document.documentElement.setAttribute('data-bs-theme', 'dark');
+            
+            // Inicialização mínima do Bootstrap
+            const dropdowns = document.querySelectorAll('.dropdown-toggle');
+            dropdowns.forEach(dropdown => {
+                new bootstrap.Dropdown(dropdown);
             });
             
-            // Inicializar tooltips do Bootstrap
-            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-            tooltipTriggerList.forEach(function (tooltipTriggerEl) {
-                new bootstrap.Tooltip(tooltipTriggerEl);
-            });
-            
-            // Inicializar popovers do Bootstrap
-            var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
-            popoverTriggerList.forEach(function (popoverTriggerEl) {
-                new bootstrap.Popover(popoverTriggerEl);
-            });
+            // Inicializa tabelas para mobile
+            initMobileCardTables();
         });
+        
+        // Carregamento lazy de recursos pesados
+        setTimeout(() => {
+            // jQuery apenas se necessário
+            if (typeof jQuery === 'undefined' && document.querySelector('.requires-jquery')) {
+                loadScript('https://code.jquery.com/jquery-3.6.0.min.js');
+            }
+            
+            // Fancybox apenas se necessário
+            if (document.querySelector('[data-fancybox]')) {
+                loadScript('https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js', function() {
+                    Fancybox.bind("[data-fancybox]", {
+                        Toolbar: {
+                            display: [
+                                { id: "prev", position: "center" },
+                                { id: "counter", position: "center" },
+                                { id: "next", position: "center" },
+                                { id: "zoom", position: "right" },
+                                { id: "close", position: "right" },
+                            ],
+                        },
+                        Thumbs: { autoStart: false },
+                        Image: { zoom: true },
+                        on: {
+                            initLayout: (fancybox) => {
+                                const $container = fancybox.$container;
+                                if ($container) {
+                                    $container.style.setProperty("--f-bg-color", "rgba(33, 37, 41, 0.95)");
+                                    $container.style.setProperty("--f-button-color", "#fff");
+                                }
+                            }
+                        }
+                    });
+                });
+            }
+            
+            // Chart.js apenas se necessário
+            if (document.querySelector('canvas[data-chart]')) {
+                loadScript('https://cdn.jsdelivr.net/npm/chart.js');
+            }
+        }, 1000);
+        
+        // Função para mostrar notificação em estilo snackbar
+        function showSnack(message, duration = 3000) {
+            const snack = document.getElementById('snackNotification');
+            const text = document.getElementById('snackText');
+            
+            if (snack && text) {
+                text.textContent = message;
+                snack.classList.add('show');
+                
+                setTimeout(() => {
+                    snack.classList.remove('show');
+                }, duration);
+            }
+        }
+        
+        // Função para converter tabelas para cards em mobile
+        function initMobileCardTables() {
+            document.querySelectorAll('.mobile-card-table').forEach(container => {
+                const table = container.querySelector('table');
+                if (!table) return;
+                
+                const headerRow = table.querySelector('thead tr');
+                if (!headerRow) return;
+                
+                const headings = Array.from(headerRow.querySelectorAll('th')).map(th => th.textContent.trim());
+                const rows = Array.from(table.querySelectorAll('tbody tr'));
+                
+                rows.forEach(row => {
+                    const values = Array.from(row.querySelectorAll('td')).map(td => td.innerHTML);
+                    
+                    // Cria o card
+                    const card = document.createElement('div');
+                    card.className = 'mobile-card-row d-lg-none';
+                    
+                    // Header do card (primeiro elemento)
+                    const header = document.createElement('div');
+                    header.className = 'row-header';
+                    
+                    const title = document.createElement('div');
+                    title.className = 'title';
+                    title.innerHTML = values[0];
+                    
+                    // Status ou badge no header (se existir)
+                    const statusIndex = values.findIndex(v => v.includes('badge') || v.includes('status'));
+                    
+                    if (statusIndex !== -1) {
+                        const status = document.createElement('div');
+                        status.className = 'status';
+                        status.innerHTML = values[statusIndex];
+                        
+                        header.appendChild(title);
+                        header.appendChild(status);
+                    } else {
+                        header.appendChild(title);
+                    }
+                    
+                    card.appendChild(header);
+                    
+                    // Conteúdo do card (exceto primeiro elemento e possível status)
+                    for (let i = 1; i < values.length; i++) {
+                        if (i === statusIndex) continue;
+                        
+                        // Pula células vazias ou apenas com espaços
+                        if (!values[i] || values[i].trim() === '') continue;
+                        
+                        // Se for uma célula de ações, cria uma seção especial
+                        if (values[i].includes('btn') || values[i].includes('fa-')) {
+                            const actions = document.createElement('div');
+                            actions.className = 'row-actions';
+                            actions.innerHTML = values[i];
+                            card.appendChild(actions);
+                            continue;
+                        }
+                        
+                        const item = document.createElement('div');
+                        item.className = 'row-item';
+                        
+                        const label = document.createElement('div');
+                        label.className = 'item-label';
+                        label.textContent = headings[i];
+                        
+                        const value = document.createElement('div');
+                        value.className = 'item-value';
+                        value.innerHTML = values[i];
+                        
+                        item.appendChild(label);
+                        item.appendChild(value);
+                        card.appendChild(item);
+                    }
+                    
+                    container.appendChild(card);
+                });
+            });
+        }
     </script>
+    
+    {% block scripts %}{% endblock %}
 </body>
 </html>

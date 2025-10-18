@@ -55,18 +55,34 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3 mb-0 text-gray-800">Estoque de EPIs e Ferramentas</h1>
-        <div>
-            <a href="{{ url_for('new_stock_item') }}" class="btn btn-primary btn-sm">
-                <i class="fas fa-plus"></i> Novo Item
-            </a>
+<!-- Mobile Page Header -->
+<div class="mobile-page-header">
+    <div class="mobile-header-content">
+        <h1 class="mobile-page-title">
+            <i class="fas fa-boxes me-2"></i>Estoque de EPIs e Ferramentas
+        </h1>
+        <div class="mobile-header-actions">
+            <!-- Desktop Actions -->
+            <div class="d-none d-md-flex">
+                <a href="{{ url_for('new_stock_item') }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-1"></i> Novo Item
+                </a>
+            </div>
+            
+            <!-- Mobile Actions -->
+            <div class="d-md-none">
+                <a href="{{ url_for('new_stock_item') }}" class="mobile-action-btn">
+                    <i class="fas fa-plus"></i>
+                </a>
+            </div>
         </div>
     </div>
+</div>
 
-    <!-- Filtros Simplificados -->
-    <div class="card mb-4">
+<div class="container-fluid">
+
+    <!-- Mobile Filters Card -->
+    <div class="mobile-filters-card">
         <div class="card-header py-3 bg-gradient-primary">
             <h6 class="m-0 font-weight-bold text-white"><i class="fas fa-filter me-1"></i> Busca Rápida</h6>
         </div>

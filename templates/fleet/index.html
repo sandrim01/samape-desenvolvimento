@@ -3,30 +3,45 @@
 {% block title %}Controle de Frota{% endblock %}
 
 {% block content %}
-<div class="content-header">
-    <div class="container-fluid">
-        <div class="row mb-2">
-            <div class="col-sm-6">
-                <h1 class="m-0 text-dark"><i class="fas fa-truck-pickup text-primary mr-2"></i>Controle de Frota</h1>
-                <p class="text-muted mt-2">
-                    <i class="fas fa-info-circle mr-1"></i> 
-                    Gerenciamento completo de veículos, manutenções e registros da frota
-                </p>
+<!-- Mobile Page Header -->
+<div class="mobile-page-header">
+    <div class="mobile-header-content">
+        <h1 class="mobile-page-title">
+            <i class="fas fa-truck-pickup me-2"></i>Controle de Frota
+        </h1>
+        <p class="mobile-page-subtitle d-none d-md-block">
+            <i class="fas fa-info-circle me-1"></i> 
+            Gerenciamento completo de veículos, manutenções e registros da frota
+        </p>
+        <div class="mobile-header-actions">
+            {% if current_user.role.value in ['admin', 'gerente'] %}
+            <!-- Desktop Actions -->
+            <div class="d-none d-md-flex">
+                <a href="{{ url_for('fleet') }}" class="btn btn-outline-secondary me-2">
+                    <i class="fas fa-home me-1"></i> Visão Geral
+                </a>
+                <a href="{{ url_for('new_vehicle') }}" class="btn btn-primary">
+                    <i class="fas fa-plus-circle me-1"></i> Novo Veículo
+                </a>
             </div>
-            <div class="col-sm-6">
-                <div class="float-sm-right mt-2">
-                    {% if current_user.role.value in ['admin', 'gerente'] %}
-                    <div class="btn-group">
-                        <a href="{{ url_for('fleet') }}" class="btn btn-outline-secondary">
-                            <i class="fas fa-home mr-1"></i> Visão Geral
-                        </a>
-                        <a href="{{ url_for('new_vehicle') }}" class="btn btn-primary">
-                            <i class="fas fa-plus-circle mr-1"></i> Novo Veículo
-                        </a>
-                    </div>
-                    {% endif %}
+            
+            <!-- Mobile Actions -->
+            <div class="d-md-none">
+                <a href="{{ url_for('new_vehicle') }}" class="mobile-action-btn">
+                    <i class="fas fa-plus"></i>
+                </a>
+                <div class="btn-group">
+                    <button class="mobile-action-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="{{ url_for('fleet') }}">
+                            <i class="fas fa-home me-2"></i>Visão Geral
+                        </a></li>
+                    </ul>
                 </div>
             </div>
+            {% endif %}
         </div>
     </div>
 </div>

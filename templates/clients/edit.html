@@ -3,8 +3,18 @@
 {% block title %}Editar Cliente - SAMAPE{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">Editar Cliente</h1>
+<!-- Mobile Page Header -->
+<div class="mobile-page-header">
+    <div class="mobile-header-content">
+        <h1 class="mobile-page-title">
+            <i class="fas fa-user-edit me-2"></i>Editar Cliente
+        </h1>
+        <div class="mobile-header-actions">
+            <a href="{{ url_for('view_client', id=client.id) }}" class="mobile-action-btn">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+        </div>
+    </div>
 </div>
 
 <div class="card">

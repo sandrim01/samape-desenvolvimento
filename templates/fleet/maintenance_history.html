@@ -3,19 +3,16 @@
 {% block title %}Histórico de Manutenção{% endblock %}
 
 {% block content %}
-<div class="content-header">
-    <div class="container-fluid">
-        <div class="row mb-2">
-            <div class="col-sm-6">
-                <h1 class="m-0">Histórico de Manutenção</h1>
-            </div>
-            <div class="col-sm-6">
-                <div class="float-sm-right">
-                    <a href="{{ url_for('fleet') }}" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left mr-1"></i> Voltar para Frota
-                    </a>
-                </div>
-            </div>
+<!-- Mobile Page Header -->
+<div class="mobile-page-header">
+    <div class="mobile-header-content">
+        <h1 class="mobile-page-title">
+            <i class="fas fa-wrench me-2"></i>Histórico de Manutenção
+        </h1>
+        <div class="mobile-header-actions">
+            <a href="{{ url_for('fleet') }}" class="mobile-action-btn">
+                <i class="fas fa-arrow-left"></i>
+            </a>
         </div>
     </div>
 </div>

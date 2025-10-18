@@ -3,15 +3,33 @@
 {% block title %}Contas a Pagar/Receber - SAMAPE{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">Contas a Pagar e Receber</h1>
-    <div class="btn-toolbar mb-2 mb-md-0">
-        <a href="{{ url_for('new_financial_entry') }}" class="btn btn-primary me-2">
-            <i class="fas fa-plus me-1"></i> Nova Conta
-        </a>
-        <a href="{{ url_for('financial') }}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left me-1"></i> Voltar ao Financeiro
-        </a>
+<!-- Mobile Page Header -->
+<div class="mobile-page-header">
+    <div class="mobile-header-content">
+        <h1 class="mobile-page-title">
+            <i class="fas fa-calendar-check me-2"></i>Contas a Pagar e Receber
+        </h1>
+        <div class="mobile-header-actions">
+            <!-- Desktop Actions -->
+            <div class="d-none d-md-flex">
+                <a href="{{ url_for('new_financial_entry') }}" class="btn btn-primary me-2">
+                    <i class="fas fa-plus me-1"></i> Nova Conta
+                </a>
+                <a href="{{ url_for('financial') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i> Voltar ao Financeiro
+                </a>
+            </div>
+            
+            <!-- Mobile Actions -->
+            <div class="d-md-none">
+                <a href="{{ url_for('new_financial_entry') }}" class="mobile-action-btn">
+                    <i class="fas fa-plus"></i>
+                </a>
+                <a href="{{ url_for('financial') }}" class="mobile-action-btn">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+            </div>
+        </div>
     </div>
 </div>
 
