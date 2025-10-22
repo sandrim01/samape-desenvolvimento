@@ -403,9 +403,10 @@
                 </div>
             </div>
         </div>
+            </div>
+        </div>
     </div>
-    {% endif %}
-
+    
     <!-- Modal de Configurações do Usuário (Desktop) -->
     <div class="modal fade" id="userProfileModal" tabindex="-1" aria-labelledby="userProfileModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -476,6 +477,11 @@
             </div>
         </div>
     </div>
+    {% endif %}
+
+    <!-- Non-authenticated content -->
+    {% else %}
+    {% block auth_content %}{% endblock %}
 
     <!-- Snack notification para mobile -->
     <div id="snackNotification" class="snack-notification">
