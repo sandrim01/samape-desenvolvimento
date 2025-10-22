@@ -476,12 +476,12 @@
                 </div>
             </div>
         </div>
+        </div>
     </div>
-    {% endif %}
-
-    <!-- Non-authenticated content -->
     {% else %}
+    <!-- Non-authenticated content -->
     {% block auth_content %}{% endblock %}
+    {% endif %}
 
     <!-- Snack notification para mobile -->
     <div id="snackNotification" class="snack-notification">
