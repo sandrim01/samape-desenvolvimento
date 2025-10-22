@@ -6,17 +6,21 @@
 
 /* ===== CORREÇÕES GERAIS ===== */
 
-/* Garantir que body e html tenham configuração correta */
+/* Configurações de tema - Apenas se necessário */
 /* APENAS para páginas autenticadas - NÃO para login */
 body:not(.login-page) {
-    background-color: #1e1e1e !important;
-    color: #ffffff !important;
-    font-family: 'Roboto', system-ui, -apple-system, sans-serif !important;
+    font-family: 'Roboto', system-ui, -apple-system, sans-serif;
+}
+
+/* Aplica cores de tema somente se não houver outras definidas */
+html[data-bs-theme="dark"] body:not(.login-page) {
+    background-color: #1e1e1e;
+    color: #ffffff;
 }
 
 html[data-bs-theme="light"] body:not(.login-page) {
-    background-color: #f8f9fa !important;
-    color: #212529 !important;
+    background-color: #f8f9fa;
+    color: #212529;
 }
 
 /* ===== SIDEBAR FIXES ===== */
@@ -186,15 +190,15 @@ html[data-bs-theme="light"] .sidebar-profile-dropdown .dropdown-item:hover {
 
 /* ===== MAIN CONTENT FIXES ===== */
 
-/* Área principal de conteúdo */
-.content {
-    padding: 1.5rem !important;
-    background-color: #1e1e1e !important;
-    min-height: 100vh !important;
+/* Área principal de conteúdo - Apenas se não tiver outros estilos específicos */
+main.content {
+    padding: 1.5rem;
+    background-color: #1e1e1e;
+    min-height: 100vh;
 }
 
-html[data-bs-theme="light"] .content {
-    background-color: #f8f9fa !important;
+html[data-bs-theme="light"] main.content {
+    background-color: #f8f9fa;
 }
 
 /* ===== MODAL FIXES ===== */
