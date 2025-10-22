@@ -1,0 +1,365 @@
+{% extends 'base.html' %}
+
+{% block title %}Histórico de Manutenção{% endblock %}
+
+{% block content %}
+<!-- Mobile Page Header -->
+<div class="mobile-page-header">
+    <div class="mobile-header-content">
+        <h1 class="mobile-page-title">
+            <i class="fas fa-wrench me-2"></i>Histórico de Manutenção
+        </h1>
+        <div class="mobile-header-actions">
+            <a href="{{ url_for('fleet') }}" class="mobile-action-btn">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="card card-info">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-tools mr-2"></i>Histórico Geral de Manutenções
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="info-box bg-info">
+                                    <span class="info-box-icon"><i class="fas fa-truck"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Total de Veículos</span>
+                                        <span class="info-box-number">{{ vehicles|length }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="info-box bg-warning">
+                                    <span class="info-box-icon"><i class="fas fa-tools"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Total de Manutenções</span>
+                                        <span class="info-box-number">{{ maintenance_history.total }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="info-box bg-success">
+                                    <span class="info-box-icon"><i class="fas fa-calendar-alt"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Período</span>
+                                        <span class="info-box-number">{{ data_inicio if data_inicio else 'Todas' }} até {{ data_fim if data_fim else 'Hoje' }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Filtros -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Filtros</h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <form method="get" action="{{ url_for('vehicle_maintenance_history') }}">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Data de Início</label>
+                                <input type="date" name="start_date" class="form-control" value="{{ request.args.get('start_date', '') }}">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Data de Fim</label>
+                                <input type="date" name="end_date" class="form-control" value="{{ request.args.get('end_date', '') }}">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Tipo de Serviço</label>
+                                <input type="text" name="service_type" class="form-control" placeholder="Ex: Troca de óleo" value="{{ request.args.get('service_type', '') }}">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>&nbsp;</label>
+                                <div>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-search mr-1"></i> Filtrar
+                                    </button>
+                                    <a href="{{ url_for('vehicle_maintenance_history') }}" class="btn btn-default">
+                                        <i class="fas fa-times mr-1"></i> Limpar
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Abas para alternar entre Manutenção e Abastecimento -->
+        <div class="card">
+            <div class="card-header">
+                <ul class="nav nav-tabs card-header-tabs">
+                    <li class="nav-item">
+                        <a class="nav-link {{ 'active' if not request.args.get('view') or request.args.get('view') == 'maintenance' }}" href="{{ url_for('vehicle_maintenance_history', view='maintenance') }}">
+                            <i class="fas fa-tools mr-1"></i> Manutenções
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ 'active' if request.args.get('view') == 'refueling' }}" href="{{ url_for('vehicle_maintenance_history', view='refueling') }}">
+                            <i class="fas fa-gas-pump mr-1"></i> Abastecimentos
+                        </a>
+                    </li>
+                </ul>
+                
+                {% if current_user.role.value in ['admin', 'gerente'] %}
+                <div class="card-tools mt-2">
+                    <a href="{{ url_for('fleet') }}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-truck mr-1"></i> Selecione um Veículo
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="card-body p-0">
+                {% if not request.args.get('view') or request.args.get('view') == 'maintenance' %}
+                    <!-- Tabela de Manutenções -->
+                    {% if maintenance_history.items %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th style="width: 10%">Data</th>
+                                    <th style="width: 10%">Veículo</th>
+                                    <th style="width: 30%">Descrição</th>
+                                    <th style="width: 10%">Hodômetro</th>
+                                    <th style="width: 10%">Custo</th>
+                                    <th style="width: 15%">Oficina</th>
+                                    <th style="width: 15%">Realizado por</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for record in maintenance_history.items %}
+                                <tr>
+                                    <td>{{ record.date.strftime('%d/%m/%Y') }}</td>
+                                    <td>{{ record.vehicle.plate }}</td>
+                                    <td>{{ record.description }}</td>
+                                    <td>{{ record.odometer if record.odometer is not none else '-' }}</td>
+                                    <td>{{ "R$ {:.2f}".format(record.cost) if record.cost else '-' }}</td>
+                                    <td>{{ record.workshop or 'Serviço Interno' }}</td>
+                                    <td>{{ record.creator.name if record.creator else 'Serviço Externo' }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-tools fa-4x text-muted mb-3"></i>
+                        <p class="text-muted">Nenhum registro de manutenção encontrado.</p>
+                    </div>
+                    {% endif %}
+                {% else %}
+                    <!-- Tabela de Abastecimentos -->
+                    {% if refuelings and refuelings.items %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th style="width: 10%">Data</th>
+                                    <th style="width: 15%">Veículo</th>
+                                    <th style="width: 10%">Hodômetro</th>
+                                    <th style="width: 10%">Combustível</th>
+                                    <th style="width: 10%">Litros</th>
+                                    <th style="width: 10%">Preço/L</th>
+                                    <th style="width: 10%">Total</th>
+                                    <th style="width: 15%">Posto</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for record in refuelings.items %}
+                                <tr>
+                                    <td>{{ record.date.strftime('%d/%m/%Y') }}</td>
+                                    <td>{{ record.vehicle.plate }}</td>
+                                    <td>{{ record.odometer if record.odometer is not none else '-' }}</td>
+                                    <td>{{ record.fuel_type.value }}</td>
+                                    <td>{{ "{:.2f}".format(record.liters) }} L</td>
+                                    <td>R$ {{ "{:.2f}".format(record.price_per_liter) }}</td>
+                                    <td>R$ {{ "{:.2f}".format(record.total_cost) }}</td>
+                                    <td>{{ record.gas_station or '-' }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-gas-pump fa-4x text-muted mb-3"></i>
+                        <p class="text-muted">Nenhum registro de abastecimento encontrado.</p>
+                    </div>
+                    {% endif %}
+                {% endif %}
+            </div>
+            
+            <div class="card-footer">
+                <div class="row">
+                    <div class="col-sm-12 col-md-5">
+                        <div class="dataTables_info" role="status">
+                            {% if not request.args.get('view') or request.args.get('view') == 'maintenance' %}
+                                Total de {{ maintenance_history.total if maintenance_history else 0 }} registros de manutenção
+                            {% else %}
+                                Total de {{ refuelings.total if refuelings else 0 }} registros de abastecimento
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-sm-12 col-md-7">
+                        <div class="dataTables_paginate paging_simple_numbers float-right">
+                            {% if pagination.pages > 1 %}
+                            <ul class="pagination">
+                                <li class="paginate_button page-item previous {% if not pagination.has_prev %}disabled{% endif %}">
+                                    <a href="{{ url_for('vehicle_maintenance_history', id=vehicle.id, page=pagination.prev_num, **request.args) if pagination.has_prev else '#' }}" class="page-link">
+                                        Anterior
+                                    </a>
+                                </li>
+                                {% for page in pagination.iter_pages() %}
+                                    {% if page %}
+                                        <li class="paginate_button page-item {% if page == pagination.page %}active{% endif %}">
+                                            <a href="{{ url_for('vehicle_maintenance_history', id=vehicle.id, page=page, **request.args) }}" class="page-link">{{ page }}</a>
+                                        </li>
+                                    {% else %}
+                                        <li class="paginate_button page-item disabled">
+                                            <a href="#" class="page-link">...</a>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+                                <li class="paginate_button page-item next {% if not pagination.has_next %}disabled{% endif %}">
+                                    <a href="{{ url_for('vehicle_maintenance_history', id=vehicle.id, page=pagination.next_num, **request.args) if pagination.has_next else '#' }}" class="page-link">
+                                        Próximo
+                                    </a>
+                                </li>
+                            </ul>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Gráficos e Estatísticas -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Custos de Manutenção por Mês</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="costChart" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Estatísticas de Manutenção</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="info-box bg-light">
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Custo Total</span>
+                                        <span class="info-box-number">R$ {{ "{:.2f}".format(stats.total_cost) }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="info-box bg-light">
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Média por Manutenção</span>
+                                        <span class="info-box-number">R$ {{ "{:.2f}".format(stats.avg_cost) }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <div class="info-box bg-light">
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Intervalo Médio</span>
+                                        <span class="info-box-number">{{ stats.avg_interval_days }} dias</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="info-box bg-light">
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Total de Manutenções</span>
+                                        <span class="info-box-number">{{ stats.maintenance_count }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Dados para o gráfico de custos
+        var ctx = document.getElementById('costChart').getContext('2d');
+        
+        var costChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: {{ chart_data.months|tojson }},
+                datasets: [{
+                    label: 'Custo de Manutenção (R$)',
+                    data: {{ chart_data.costs|tojson }},
+                    backgroundColor: 'rgba(60, 141, 188, 0.7)',
+                    borderColor: 'rgba(60, 141, 188, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return 'R$ ' + value;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

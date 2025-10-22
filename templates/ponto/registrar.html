@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Bater Ponto (com localização)</h2>
+<form method="post" action="{{ url_for('ponto.bater_ponto') }}" id="formPonto">
+    <div class="mb-3">
+        <label for="observacao" class="form-label">Observação</label>
+        <input type="text" class="form-control" name="observacao" id="observacao">
+    </div>
+    <input type="hidden" name="latitude" id="latitude">
+    <input type="hidden" name="longitude" id="longitude">
+    <button type="submit" class="btn btn-success">Registrar Ponto</button>
+</form>
+<script>
+window.onload = function() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+            document.getElementById('latitude').value = position.coords.latitude;
+            document.getElementById('longitude').value = position.coords.longitude;
+        }, function(error) {
+            alert('Não foi possível obter a localização. Permita o acesso à localização para registrar o ponto.');
+        });
+    } else {
+        alert('Geolocalização não suportada pelo navegador.');
+    }
+};
+</script>
+{% endblock %}

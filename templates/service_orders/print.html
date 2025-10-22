@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ordem de Serviço #{{ service_order.id }} - {{ service_order.client.name }}</title>
+    <style>
+        /* CSS otimizado para impressão */
+        @media print {
+            body { margin: 0; }
+            .no-print { display: none !important; }
+            .page-break { page-break-after: always; }
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 11pt;
+            line-height: 1.4;
+            color: #000;
+            background: white;
+            width: 100%;
+            padding: 15px;
+        }
+
+        /* Botões de controle - não aparecem na impressão */
+        .print-controls {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 8px 16px;
+            margin: 0 5px;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 3px;
+            border: none;
+            cursor: pointer;
+            font-size: 12pt;
+        }
+
+        .btn-success { background: #28a745; }
+        .btn-secondary { background: #6c757d; }
+
+        /* Cabeçalho da OS */
+        .os-header {
+            display: flex;
+            border: 2px solid #000;
+            margin-bottom: 15px;
+            min-height: 120px;
+        }
+
+        .header-left {
+            flex: 2;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .company-info {
+            text-align: center;
+            width: 100%;
+        }
+
+        .company-logo {
+            max-height: 70px;
+            max-width: 200px;
+            height: auto;
+            margin-bottom: 6px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            /* Fallback se a imagem não carregar */
+            border: 1px solid transparent;
+        }
+
+        .company-name {
+            font-size: 16pt;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #2c5282;
+            display: none; /* Esconder o nome já que agora temos a logo */
+        }
+
+        .company-details {
+            font-size: 9pt;
+            line-height: 1.2;
+        }
+
+        .header-right {
+            width: 180px;
+            border-left: 2px solid #000;
+            padding: 10px;
+            text-align: center;
+            background-color: #f8f9fa;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .os-title {
+            font-size: 13pt;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #2c5282;
+        }
+
+        .os-number {
+            font-size: 15pt;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .os-date {
+            font-size: 9pt;
+        }
+
+        /* Blocos de informação */
+        .info-block {
+            border: 1px solid #000;
+            margin-bottom: 10px;
+            overflow: hidden;
+            break-inside: avoid;
+        }
+
+        .block-title {
+            font-size: 10pt;
+            font-weight: bold;
+            background: #e2e8f0;
+            padding: 5px 8px;
+            border-bottom: 1px solid #000;
+        }
+
+        .block-content {
+            padding: 8px;
+        }
+
+        /* Cliente */
+        .cliente-info {
+            display: flex;
+            gap: 25px;
+            font-size: 9pt;
+        }
+
+        .cliente-col {
+            flex: 1;
+        }
+
+        .info-item {
+            margin-bottom: 6px;
+        }
+
+        .info-label {
+            font-weight: bold;
+            display: inline-block;
+            width: 110px;
+        }
+
+        /* Equipamentos */
+        .equipamentos-list {
+            font-size: 9pt;
+        }
+
+        .equipamento-item {
+            padding: 6px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .equipamento-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Descrição do Serviço */
+        .descricao-servico {
+            font-size: 9pt;
+            min-height: 60px;
+            white-space: pre-wrap;
+            line-height: 1.4;
+        }
+
+        /* Status */
+        .status-info {
+            display: flex;
+            gap: 25px;
+            font-size: 9pt;
+        }
+
+        .status-item {
+            flex: 1;
+        }
+
+        .status-badge {
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 8pt;
+            border: 1px solid #000;
+        }
+
+        /* Valores */
+        .valores-info {
+            display: flex;
+            gap: 25px;
+            font-size: 10pt;
+        }
+
+        .valor-item {
+            flex: 1;
+            text-align: center;
+            padding: 8px;
+            border: 1px solid #d1d5db;
+        }
+
+        .valor-label {
+            font-size: 8pt;
+            margin-bottom: 3px;
+        }
+
+        .valor-amount {
+            font-size: 11pt;
+            font-weight: bold;
+        }
+
+        /* Observações */
+        .observacoes-content {
+            font-size: 9pt;
+            min-height: 50px;
+            white-space: pre-wrap;
+            line-height: 1.4;
+        }
+
+        /* Assinaturas */
+        .assinaturas {
+            margin-top: 25px;
+            display: flex;
+            gap: 40px;
+        }
+
+        .assinatura-campo {
+            flex: 1;
+            text-align: center;
+        }
+
+        .assinatura-linha {
+            border-bottom: 1px solid #000;
+            height: 35px;
+            margin-bottom: 5px;
+        }
+
+        .assinatura-label {
+            font-size: 8pt;
+            font-weight: bold;
+        }
+
+        /* Rodapé */
+        .rodape {
+            margin-top: 25px;
+            text-align: center;
+            font-size: 8pt;
+            color: #6b7280;
+            border-top: 1px solid #e5e7eb;
+            padding-top: 8px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Controles de impressão (não aparece no PDF/impressão) -->
+    <div class="print-controls no-print">
+        <button onclick="window.print()" class="btn btn-success">
+            <i class="fas fa-print"></i> Imprimir
+        </button>
+        <button onclick="window.history.back()" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Voltar
+        </button>
+    </div>
+
+    <!-- Layout da OS para impressão -->
+    <div class="os-document">
+        <!-- Cabeçalho principal -->
+        <div class="os-header">
+            <div class="header-left">
+                <div class="company-info">
+                    <img src="{{ url_for('static', filename='images/logonova2.png') }}" alt="{{ company_settings.trade_name or company_settings.company_name or 'SAMAPE' }}" class="company-logo">
+                    <div class="company-name">{{ company_settings.trade_name or company_settings.company_name or 'SAMAPE' }}</div>
+                    <div class="company-details">
+                        {% if company_settings.description %}{{ company_settings.description }}<br>{% endif %}
+                        {% if company_settings.document %}{{ company_settings.document }}<br>{% endif %}
+                        {% if company_settings.address %}{{ company_settings.address }}{% endif %}
+                        {% if company_settings.city or company_settings.state or company_settings.zip_code %}<br>{% endif %}
+                        {% if company_settings.zip_code %}CEP: {{ company_settings.zip_code }}{% endif %}
+                        {% if company_settings.city %} - {{ company_settings.city }}{% endif %}
+                        {% if company_settings.state %}/{{ company_settings.state }}{% endif %}
+                        {% if company_settings.phone %}<br>Telefone: {{ company_settings.phone }}{% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="os-title">ORDEM DE SERVIÇO</div>
+                <div class="os-number">#{{ service_order.id }}</div>
+                <div class="os-date">{{ service_order.created_at.strftime('%d/%m/%Y') if service_order.created_at else 'Data não definida' }}</div>
+            </div>
+        </div>
+        
+        <!-- Informações do Cliente -->
+        <div class="info-block">
+            <div class="block-title">DADOS DO CLIENTE</div>
+            <div class="block-content">
+                <div class="cliente-info">
+                    <div class="cliente-col">
+                        <div class="info-item">
+                            <span class="info-label">Nome/Razão Social:</span>
+                            {{ service_order.client.name }}
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">CPF/CNPJ:</span>
+                            {{ service_order.client.document | format_document if service_order.client.document else 'Não informado' }}
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">E-mail:</span>
+                            {{ service_order.client.email if service_order.client.email else 'Não informado' }}
+                        </div>
+                    </div>
+                    <div class="cliente-col">
+                        <div class="info-item">
+                            <span class="info-label">Telefone:</span>
+                            {{ service_order.client.phone if service_order.client.phone else 'Não informado' }}
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Endereço:</span>
+                            {{ service_order.client.address if service_order.client.address else 'Não informado' }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Equipamentos -->
+        {% if service_order.equipment %}
+        <div class="info-block">
+            <div class="block-title">EQUIPAMENTOS</div>
+            <div class="block-content">
+                <div class="equipamentos-list">
+                    {% for equipment in service_order.equipment %}
+                    <div class="equipamento-item">
+                        <strong>{{ equipment.type }}</strong> - {{ equipment.brand }} {{ equipment.model }}
+                        {% if equipment.serial_number %}
+                        (Série: {{ equipment.serial_number }})
+                        {% endif %}
+                        {% if equipment.year %}
+                        - Ano: {{ equipment.year }}
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Descrição do Serviço -->
+        <div class="info-block">
+            <div class="block-title">DESCRIÇÃO DO SERVIÇO</div>
+            <div class="block-content">
+                <div class="descricao-servico">{{ service_order.description or 'Descrição não informada.' }}</div>
+            </div>
+        </div>
+
+        <!-- Kilometragem (se informada) -->
+        {% if service_order.km_inicial or service_order.km_final %}
+        <div class="info-block">
+            <div class="block-title">KILOMETRAGEM</div>
+            <div class="block-content">
+                <div class="cliente-info">
+                    {% if service_order.km_inicial %}
+                    <div class="cliente-col">
+                        <div class="info-item">
+                            <span class="info-label">KM Inicial:</span>
+                            {{ '%.2f'|format(service_order.km_inicial) }} km
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if service_order.km_final %}
+                    <div class="cliente-col">
+                        <div class="info-item">
+                            <span class="info-label">KM Final:</span>
+                            {{ '%.2f'|format(service_order.km_final) }} km
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if service_order.km_total %}
+                    <div class="cliente-col">
+                        <div class="info-item">
+                            <span class="info-label">Total Percorrido:</span>
+                            <strong>{{ '%.2f'|format(service_order.km_total) }} km</strong>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Detalhes do Serviço (se a OS estiver fechada) -->
+        {% if service_order.status.name == 'fechada' and service_order.service_details %}
+        <div class="info-block">
+            <div class="block-title">DETALHES DOS SERVIÇOS EXECUTADOS</div>
+            <div class="block-content">
+                <div class="descricao-servico">{{ service_order.service_details }}</div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Status e Responsável -->
+        <div class="info-block">
+            <div class="block-title">STATUS E RESPONSABILIDADE</div>
+            <div class="block-content">
+                <div class="status-info">
+                    <div class="status-item">
+                        <div class="info-item">
+                            <span class="info-label">Status:</span>
+                            <span class="status-badge">
+                                {% if service_order.status.name == 'aberta' %}ABERTA
+                                {% elif service_order.status.name == 'em_andamento' %}EM ANDAMENTO
+                                {% elif service_order.status.name == 'fechada' %}FECHADA
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Responsável:</span>
+                            {{ service_order.responsible.name if service_order.responsible else 'A ser definido' }}
+                        </div>
+                    </div>
+                    <div class="status-item">
+                        <div class="info-item">
+                            <span class="info-label">Data de Abertura:</span>
+                            {{ service_order.created_at.strftime('%d/%m/%Y às %H:%M') if service_order.created_at else 'Não definida' }}
+                        </div>
+                        {% if service_order.closed_at %}
+                        <div class="info-item">
+                            <span class="info-label">Data de Fechamento:</span>
+                            {{ service_order.closed_at.strftime('%d/%m/%Y às %H:%M') }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Valores -->
+        {% if service_order.estimated_value or service_order.invoice_amount or service_order.invoice_number %}
+        <div class="info-block">
+            <div class="block-title">INFORMAÇÕES FINANCEIRAS</div>
+            <div class="block-content">
+                <div class="valores-info">
+                    {% if service_order.estimated_value %}
+                    <div class="valor-item">
+                        <div class="valor-label">VALOR ESTIMADO</div>
+                        <div class="valor-amount">R$ {{ service_order.estimated_value | safe_money }}</div>
+                    </div>
+                    {% endif %}
+                    {% if service_order.invoice_amount %}
+                    <div class="valor-item">
+                        <div class="valor-label">VALOR FINAL</div>
+                        <div class="valor-amount">R$ {{ service_order.invoice_amount | safe_money }}</div>
+                    </div>
+                    {% endif %}
+                    {% if service_order.invoice_number %}
+                    <div class="valor-item">
+                        <div class="valor-label">NOTA FISCAL</div>
+                        <div class="valor-amount"># {{ service_order.invoice_number }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Observações adicionais -->
+        <div class="info-block">
+            <div class="block-title">OBSERVAÇÕES</div>
+            <div class="block-content">
+                <div class="observacoes-content">{% if service_order.status.name == 'fechada' %}Serviço executado e finalizado em {{ service_order.closed_at.strftime('%d/%m/%Y às %H:%M') if service_order.closed_at else 'data não definida' }}.
+{% if service_order.invoice_number %}Nota fiscal emitida: {{ service_order.invoice_number }}.{% endif %}
+
+{% else %}Esta ordem de serviço está com status: {{ service_order.status.name | replace('_', ' ') | title }}.
+{% if service_order.status.name == 'aberta' %}Aguardando início dos trabalhos.{% endif %}
+
+{% endif %}Qualquer dúvida ou alteração deve ser comunicada imediatamente à administração.</div>
+            </div>
+        </div>
+        
+        <!-- Assinaturas -->
+        <div class="assinaturas">
+            <div class="assinatura-campo">
+                <div class="assinatura-linha"></div>
+                <div class="assinatura-label">CLIENTE</div>
+            </div>
+            <div class="assinatura-campo">
+                <div class="assinatura-linha"></div>
+                <div class="assinatura-label">RESPONSÁVEL TÉCNICO</div>
+            </div>
+        </div>
+        
+        <!-- Rodapé -->
+        <div class="rodape">
+            Documento gerado automaticamente pelo sistema {{ company_settings.trade_name or company_settings.company_name or 'SAMAPE' }} em {{ datetime.now().strftime('%d/%m/%Y às %H:%M') }}<br>
+            Este documento é válido e possui valor legal para fins de comprovação de serviços.
+        </div>
+    </div>
+
+    <!-- Script para melhorar a experiência de impressão -->
+    <script>
+        // Auto-focus na impressão se o parâmetro print=1 estiver na URL
+        if (window.location.search.includes('print=1')) {
+            window.onload = function() {
+                setTimeout(function() {
+                    window.print();
+                }, 500);
+            };
+        }
+    </script>
+</body>
+</html>

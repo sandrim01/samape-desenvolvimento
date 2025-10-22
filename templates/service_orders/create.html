@@ -1,0 +1,265 @@
+{% extends "base.html" %}
+
+{% block title %}Nova Ordem de Serviço - SAMAPE{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Nova Ordem de Serviço</h1>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-plus-circle me-1"></i> Cadastrar Nova OS
+    </div>
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data" novalidate>
+            {{ form.hidden_tag() }}
+            
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="client_id" class="form-label">Cliente *</label>
+                    {{ form.client_id(class="form-control client-select", id="client_id") }}
+                    {% if form.client_id.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.client_id.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="responsible_id" class="form-label">Responsável</label>
+                    {{ form.responsible_id(class="form-control", id="responsible_id") }}
+                    {% if form.responsible_id.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.responsible_id.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">Equipamentos</label>
+                <div id="equipment-container">
+                    <p class="text-muted" id="equipment-instructions">Selecione um cliente para mostrar os equipamentos disponíveis.</p>
+                    <div class="equipment-select-container" id="equipment-select-container" style="display: none;">
+                        <select id="equipment_select" class="form-control" multiple>
+                        </select>
+                        <div class="form-text mt-1">Mantenha a tecla Ctrl pressionada para selecionar múltiplos equipamentos.</div>
+                        
+                        <div id="selected-equipment-container" style="display: none; margin-top: 15px;">
+                            <div class="mt-2 mb-2">
+                                <strong>Equipamentos selecionados:</strong>
+                            </div>
+                            <div id="selected_equipment" class="d-flex flex-wrap">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {{ form.equipment_ids(class="d-none", id="equipment_ids") }}
+            </div>
+            
+            <div class="mb-3">
+                <label for="description" class="form-label">Descrição do Serviço *</label>
+                {{ form.description(class="form-control", id="description", rows=5) }}
+                {% if form.description.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.description.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="estimated_value" class="form-label">Valor Estimado (R$)</label>
+                    {{ form.estimated_value(class="form-control", id="estimated_value") }}
+                    {% if form.estimated_value.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.estimated_value.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="status" class="form-label">Status *</label>
+                    {{ form.status(class="form-control", id="status") }}
+                    {% if form.status.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.status.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Seção de Kilometragem -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-tachometer-alt me-1"></i> Controle de Kilometragem</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label for="km_inicial" class="form-label">Kilometragem Inicial</label>
+                            {{ form.km_inicial(class="form-control", id="km_inicial", onchange="calculateKmTotal()") }}
+                            {% if form.km_inicial.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.km_inicial.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label for="km_final" class="form-label">Kilometragem Final</label>
+                            {{ form.km_final(class="form-control", id="km_final", onchange="calculateKmTotal()") }}
+                            {% if form.km_final.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.km_final.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label for="km_total" class="form-label">Total Percorrido (KM)</label>
+                            {{ form.km_total(class="form-control bg-light", id="km_total") }}
+                            <small class="form-text text-muted">Calculado automaticamente</small>
+                            {% if form.km_total.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.km_total.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="images" class="form-label">Imagens do Equipamento (máx. 500KB por imagem)</label>
+                {{ form.images(class="form-control", id="images", onchange="checkFileSize()") }}
+                <small class="form-text text-muted">
+                    Você pode selecionar múltiplas imagens. Formatos aceitos: jpg, jpeg, png, gif, webp, bmp.
+                    Cada imagem deve ter no máximo 500KB.
+                </small>
+                <div id="fileSize" class="mt-2"></div>
+                
+                <script>
+                function checkFileSize() {
+                    const fileInput = document.getElementById('images');
+                    const fileSize = document.getElementById('fileSize');
+                    fileSize.innerHTML = '';
+                    
+                    if (fileInput.files.length > 0) {
+                        const maxSize = 500 * 1024; // 500KB em bytes
+                        
+                        for (let i = 0; i < fileInput.files.length; i++) {
+                            const file = fileInput.files[i];
+                            const size = file.size;
+                            const sizeKB = Math.round(size / 1024);
+                            
+                            const div = document.createElement('div');
+                            div.className = 'mb-1';
+                            
+                            if (size > maxSize) {
+                                div.className += ' text-danger';
+                                div.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${file.name} (${sizeKB}KB) - Excede o limite de 500KB`;
+                            } else {
+                                div.className += ' text-success';
+                                div.innerHTML = `<i class="fas fa-check-circle"></i> ${file.name} (${sizeKB}KB)`;
+                            }
+                            
+                            fileSize.appendChild(div);
+                        }
+                    }
+                }
+                </script>
+                {% if form.images.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.images.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="mb-3">
+                <label for="image_descriptions" class="form-label">Descrições das Imagens</label>
+                {{ form.image_descriptions(class="form-control", id="image_descriptions", rows=2) }}
+                <small class="form-text text-muted">
+                    Se estiver enviando múltiplas imagens, separe as descrições com ponto e vírgula (;)
+                </small>
+                {% if form.image_descriptions.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.image_descriptions.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">Salvar</button>
+                <a href="{{ url_for('service_orders') }}" class="btn btn-secondary ms-2">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function calculateKmTotal() {
+    const kmInicial = document.getElementById('km_inicial').value;
+    const kmFinal = document.getElementById('km_final').value;
+    const kmTotalField = document.getElementById('km_total');
+    
+    if (kmInicial && kmFinal) {
+        const inicial = parseFloat(kmInicial);
+        const final = parseFloat(kmFinal);
+        
+        if (final > inicial) {
+            const total = (final - inicial).toFixed(2);
+            kmTotalField.value = total;
+            kmTotalField.classList.remove('is-invalid');
+            kmTotalField.classList.add('is-valid');
+        } else if (final < inicial) {
+            kmTotalField.value = '';
+            kmTotalField.classList.remove('is-valid');
+            kmTotalField.classList.add('is-invalid');
+            
+            // Mostrar mensagem de erro
+            let errorDiv = kmTotalField.parentNode.querySelector('.invalid-feedback');
+            if (!errorDiv) {
+                errorDiv = document.createElement('div');
+                errorDiv.className = 'invalid-feedback d-block';
+                kmTotalField.parentNode.appendChild(errorDiv);
+            }
+            errorDiv.textContent = 'A kilometragem final deve ser maior que a inicial.';
+        } else {
+            kmTotalField.value = '0.00';
+            kmTotalField.classList.remove('is-invalid', 'is-valid');
+        }
+    } else {
+        kmTotalField.value = '';
+        kmTotalField.classList.remove('is-invalid', 'is-valid');
+        
+        // Remover mensagem de erro se existir
+        const errorDiv = kmTotalField.parentNode.querySelector('.invalid-feedback');
+        if (errorDiv && errorDiv.textContent.includes('kilometragem final')) {
+            errorDiv.remove();
+        }
+    }
+}
+</script>
+{% endblock %}

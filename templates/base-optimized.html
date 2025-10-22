@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>{% block title %}SAMAPE - Sistema de Gestão de Serviços{% endblock %}</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" href="{{ url_for('static', filename='images/logonova2.png') }}">
+    
+    <!-- CSS CRÍTICO - Carregamento prioritário -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/samape-optimized.css') }}?v={{ cache_buster }}" rel="stylesheet">
+    
+    <!-- CSS NÃO-CRÍTICO - Carregamento adiado -->
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"></noscript>
+    
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"></noscript>
+    
+    {% block extra_css %}{% endblock %}
+    
+    <!-- CSS Inline crítico para evitar FOUC -->
+    <style>
+        /* CSS crítico inline para carregamento instantâneo */
+        body { 
+            background-color: #1e1e1e !important; 
+            color: #ffffff !important; 
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+        .loading-initial { 
+            opacity: 0; 
+            transition: opacity 0.3s ease; 
+        }
+        .loaded { 
+            opacity: 1; 
+        }
+    </style>
+</head>
+<body class="loading-initial">
+    {% if current_user.is_authenticated %}
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+                <div class="position-sticky pt-3">
+                    <!-- User info in sidebar -->
+                    <div class="sidebar-user-info mb-4 dropdown">
+                        <div class="sidebar-profile-wrapper" role="button" data-bs-toggle="dropdown" aria-expanded="false" id="sidebarProfileDropdown">
+                            <img src="{{ current_user.get_profile_image() }}" 
+                                alt="Perfil" class="sidebar-profile-image" loading="lazy">
+                            <div class="sidebar-user-name">{{ current_user.username }}</div>
+                            <div class="sidebar-user-role">{{ current_user.role.value|title }}</div>
+                        </div>
+                        
+                        <!-- Menu dropdown de perfil na sidebar -->
+                        <ul class="dropdown-menu sidebar-profile-dropdown" aria-labelledby="sidebarProfileDropdown">
+                            <li>
+                                <div class="user-info-header">
+                                    <img src="{{ current_user.get_profile_image() }}" 
+                                         alt="Perfil" class="profile-image" loading="lazy">
+                                    <div class="user-name">{{ current_user.name }}</div>
+                                    <div class="user-email">{{ current_user.email }}</div>
+                                    <div class="user-role">{{ current_user.role.value }}</div>
+                                </div>
+                            </li>
+                            <li><a class="dropdown-item" href="{{ url_for('profile') }}"><i class="fas fa-id-card me-2"></i>Meu Perfil</a></li>
+                            {% if current_user.role == UserRole.admin %}
+                            <li><a class="dropdown-item" href="{{ url_for('system_settings') }}"><i class="fas fa-cogs me-2"></i>Configurações</a></li>
+                            {% endif %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt me-2"></i>Sair</a></li>
+                        </ul>
+                    </div>
+                    
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.path == '/dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">
+                                <i class="fas fa-tachometer-alt"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if '/os' in request.path %}active{% endif %}" href="{{ url_for('service_orders') }}">
+                                <i class="fas fa-clipboard-list"></i> Ordens de Serviço
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if '/clientes' in request.path %}active{% endif %}" href="{{ url_for('clients') }}">
+                                <i class="fas fa-users"></i> Clientes
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if '/maquinarios' in request.path %}active{% endif %}" href="{{ url_for('equipment') }}">
+                                <i class="fas fa-tools"></i> Maquinários
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if '/fornecedores' in request.path %}active{% endif %}" href="{{ url_for('suppliers') }}">
+                                <i class="fas fa-truck"></i> Fornecedores
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if '/pecas' in request.path %}active{% endif %}" href="{{ url_for('parts') }}">
+                                <i class="fas fa-cog"></i> Peças
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if '/estoque' in request.path %}active{% endif %}" href="{{ url_for('stock_items') }}">
+                                <i class="fas fa-boxes"></i> Estoque EPIs
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if '/frota' in request.path %}active{% endif %}" href="{{ url_for('fleet') }}">
+                                <i class="fas fa-truck-pickup"></i> Frota
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if '/financeiro' in request.path %}active{% endif %}" href="{{ url_for('financial') }}">
+                                <i class="fas fa-dollar-sign"></i> Financeiro
+                            </a>
+                        </li>
+                        {% if current_user.role.value in ['admin', 'gerente'] %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if '/funcionarios' in request.path %}active{% endif %}" href="{{ url_for('employees') }}">
+                                <i class="fas fa-user-tie"></i> Funcionários
+                            </a>
+                        </li>
+                        {% endif %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if '/ponto' in request.path %}active{% endif %}" href="{{ url_for('ponto.view') }}">
+                                <i class="fas fa-clock"></i> Ponto
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if '/notas-fiscais' in request.path %}active{% endif %}" href="{{ url_for('invoices') }}">
+                                <i class="fas fa-file-invoice"></i> Notas Fiscais
+                            </a>
+                        </li>
+                        {% if current_user.role == UserRole.admin %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if '/logs' in request.path %}active{% endif %}" href="{{ url_for('system_logs') }}">
+                                <i class="fas fa-list-alt"></i> Logs do Sistema
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Main content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    {% else %}
+    <!-- Login page content -->
+    <div class="container-fluid">
+        {% block content %}{% endblock %}
+    </div>
+    {% endif %}
+
+    <!-- JavaScript CRÍTICO - Carregamento prioritário -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- JavaScript NÃO-CRÍTICO - Carregamento adiado -->
+    <script>
+        // Carregamento eficiente de recursos não-críticos
+        function loadScript(src, callback) {
+            const script = document.createElement('script');
+            script.src = src;
+            script.async = true;
+            if (callback) script.onload = callback;
+            document.head.appendChild(script);
+        }
+        
+        // Carrega jQuery apenas se necessário
+        if (typeof jQuery === 'undefined') {
+            loadScript('https://code.jquery.com/jquery-3.6.0.min.js');
+        }
+        
+        // Remove classe de loading
+        document.addEventListener('DOMContentLoaded', function() {
+            document.body.classList.remove('loading-initial');
+            document.body.classList.add('loaded');
+            
+            // Inicialização mínima do Bootstrap
+            const dropdowns = document.querySelectorAll('[data-bs-toggle="dropdown"]');
+            dropdowns.forEach(dropdown => {
+                try {
+                    new bootstrap.Dropdown(dropdown);
+                } catch (e) {
+                    console.warn('Erro ao inicializar dropdown:', e);
+                }
+            });
+            
+            // Inicialização específica para o dropdown da sidebar
+            const sidebarDropdown = document.getElementById('sidebarProfileDropdown');
+            if (sidebarDropdown) {
+                try {
+                    new bootstrap.Dropdown(sidebarDropdown);
+                } catch (e) {
+                    console.warn('Erro ao inicializar dropdown da sidebar:', e);
+                }
+            }
+        });
+        
+        // Carregamento lazy de recursos pesados
+        setTimeout(() => {
+            // Fancybox apenas se necessário
+            if (document.querySelector('[data-fancybox]')) {
+                loadScript('https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js');
+            }
+        }, 2000);
+    </script>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>

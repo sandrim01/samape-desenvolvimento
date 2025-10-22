@@ -1,0 +1,37 @@
+<div class="card compact-card">
+    <div class="card-header bg-primary text-white">
+        <h5 class="card-title mb-0">
+            <i class="fas fa-history me-2"></i>Atividades Recentes
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="activity-timeline">
+            {% for log in recent_logs %}
+            <div class="activity-item">
+                <div class="activity-icon">
+                    {% if log.entity_type == 'service_order' %}
+                    <i class="fas fa-clipboard-list text-primary"></i>
+                    {% elif log.entity_type == 'client' %}
+                    <i class="fas fa-user text-success"></i>
+                    {% elif log.entity_type == 'equipment' %}
+                    <i class="fas fa-tools text-warning"></i>
+                    {% elif log.entity_type == 'financial' %}
+                    <i class="fas fa-dollar-sign text-danger"></i>
+                    {% elif log.entity_type == 'part' %}
+                    <i class="fas fa-box text-info"></i>
+                    {% else %}
+                    <i class="fas fa-cog text-secondary"></i>
+                    {% endif %}
+                </div>
+                <div class="activity-content">
+                    <div class="activity-text">{{ log.action }}</div>
+                    <small class="text-muted">{{ log.timestamp.strftime('%d/%m/%Y %H:%M') if log.timestamp else '-' }}</small>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="card-footer text-end">
+        <a href="{{ url_for('logs') }}" class="btn btn-sm btn-outline-primary">Histórico Completo</a>
+    </div>
+</div>

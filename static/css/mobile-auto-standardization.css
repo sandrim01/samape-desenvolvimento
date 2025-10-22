@@ -1,0 +1,229 @@
+/* Auto-padronização para páginas que ainda não foram atualizadas manualmente */
+
+/* Força padronização automática em mobile */
+@media (max-width: 991.98px) {
+  
+  /* Auto-converte headers de página não padronizados */
+  .d-flex.justify-content-between.align-items-center:not(.mobile-page-header) {
+    /* Aplica estilo do mobile-page-header automaticamente */
+    background-color: var(--card-bg) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: var(--border-radius) !important;
+    padding: var(--mobile-padding) !important;
+    margin-bottom: var(--mobile-padding) !important;
+  }
+  
+  /* Auto-converte títulos de página */
+  .d-flex.justify-content-between h1:not(.mobile-page-title),
+  .d-flex.justify-content-between h2:not(.mobile-page-title) {
+    font-size: 1.2rem !important;
+    font-weight: 600 !important;
+    color: var(--text-color) !important;
+    margin: 0 !important;
+  }
+  
+  /* Auto-converte botões de ação em headers */
+  .d-flex.justify-content-between .btn:not(.mobile-action-btn-expanded) {
+    padding: 8px 16px !important;
+    border-radius: var(--border-radius) !important;
+    background-color: var(--accent-color) !important;
+    color: var(--text-white) !important;
+    border: none !important;
+    font-size: 0.9rem !important;
+    font-weight: 500 !important;
+    min-height: var(--touch-target-min) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    text-decoration: none !important;
+  }
+  
+  /* Auto-converte cards não padronizados */
+  .card:not(.mobile-standard-card):not(.mobile-filters-card) {
+    background-color: var(--card-bg) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: var(--border-radius) !important;
+    margin-bottom: var(--mobile-margin) !important;
+    box-shadow: var(--shadow) !important;
+  }
+  
+  /* Auto-converte card headers */
+  .card-header:not(.mobile-card-header) {
+    background-color: var(--darker-bg) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    padding: 12px var(--mobile-padding) !important;
+    font-weight: 600 !important;
+    color: var(--text-color) !important;
+  }
+  
+  /* Auto-converte card bodies */
+  .card-body:not(.mobile-card-body) {
+    padding: var(--mobile-padding) !important;
+  }
+  
+  /* Auto-otimiza tabelas para mobile */
+  .table-responsive:not(.d-none) {
+    /* Oculta tabelas em mobile se não tiver classe d-none d-md-block */
+    display: none !important;
+  }
+  
+  /* Auto-otimiza botões pequenos */
+  .btn-sm:not(.mobile-action-btn),
+  .btn-xs:not(.mobile-action-btn) {
+    min-width: var(--touch-target-min) !important;
+    min-height: var(--touch-target-min) !important;
+    border-radius: 50% !important;
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 4px !important;
+  }
+  
+  /* Auto-converte btn-info para btn-view */
+  .btn-info:not(.mobile-action-btn) {
+    background-color: var(--info-color) !important;
+    border-color: var(--info-color) !important;
+  }
+  
+  /* Auto-converte btn-primary/secondary para btn-edit */
+  .btn-primary.btn-sm:not(.mobile-action-btn),
+  .btn-secondary.btn-sm:not(.mobile-action-btn) {
+    background-color: var(--warning-color) !important;
+    border-color: var(--warning-color) !important;
+  }
+  
+  /* Auto-converte btn-danger para btn-delete */
+  .btn-danger.btn-sm:not(.mobile-action-btn) {
+    background-color: var(--danger-color) !important;
+    border-color: var(--danger-color) !important;
+  }
+  
+  /* Auto-otimiza formulários */
+  .form-control {
+    min-height: var(--touch-target-min) !important;
+    border: 1px solid var(--border-color) !important;
+    background-color: var(--darker-bg) !important;
+    color: var(--text-color) !important;
+    border-radius: var(--border-radius) !important;
+    padding: 8px 12px !important;
+  }
+  
+  .form-select {
+    min-height: var(--touch-target-min) !important;
+    border: 1px solid var(--border-color) !important;
+    background-color: var(--darker-bg) !important;
+    color: var(--text-color) !important;
+    border-radius: var(--border-radius) !important;
+  }
+  
+  /* Auto-otimiza labels */
+  .form-label {
+    color: var(--text-color) !important;
+    font-weight: 500 !important;
+    margin-bottom: 4px !important;
+  }
+  
+  /* Auto-otimiza badges */
+  .badge {
+    padding: 4px 8px !important;
+    border-radius: 12px !important;
+    font-size: 0.7rem !important;
+    font-weight: 600 !important;
+  }
+  
+  .badge.bg-success {
+    background-color: var(--success-color) !important;
+  }
+  
+  .badge.bg-warning {
+    background-color: var(--warning-color) !important;
+  }
+  
+  .badge.bg-danger {
+    background-color: var(--danger-color) !important;
+  }
+  
+  .badge.bg-info {
+    background-color: var(--info-color) !important;
+  }
+  
+  .badge.bg-secondary {
+    background-color: var(--muted-text) !important;
+  }
+  
+  /* Auto-otimiza paginação */
+  .pagination {
+    margin-top: var(--mobile-padding) !important;
+  }
+  
+  .page-link {
+    color: var(--text-color) !important;
+    background-color: var(--card-bg) !important;
+    border: 1px solid var(--border-color) !important;
+    padding: 8px 12px !important;
+    min-height: var(--touch-target-min) !important;
+    min-width: var(--touch-target-min) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  
+  .page-item.active .page-link {
+    background-color: var(--accent-color) !important;
+    border-color: var(--accent-color) !important;
+    color: var(--text-white) !important;
+  }
+  
+  /* Auto-otimiza modals */
+  .modal-content {
+    background-color: var(--card-bg) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: var(--border-radius) !important;
+  }
+  
+  .modal-header {
+    background-color: var(--darker-bg) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    color: var(--text-color) !important;
+  }
+  
+  .modal-body {
+    color: var(--text-color) !important;
+  }
+  
+  .modal-footer {
+    border-top: 1px solid var(--border-color) !important;
+  }
+  
+  /* Auto-otimiza alertas */
+  .alert {
+    border-radius: var(--border-radius) !important;
+    margin-bottom: var(--mobile-margin) !important;
+  }
+  
+  /* Auto-feedback em touch */
+  .btn:active,
+  .card:active,
+  .nav-link:active,
+  .dropdown-item:active,
+  .list-group-item:active {
+    transform: scale(0.98) !important;
+    opacity: 0.8 !important;
+    transition: var(--transition) !important;
+  }
+}
+
+/* Classe especial para desabilitar auto-padronização quando necessário */
+.mobile-manual-override {
+  /* Esta classe pode ser usada para desabilitar a auto-padronização */
+}
+
+/* Força aplicação de variáveis CSS globalmente */
+:root {
+  /* Garantir que variáveis estejam sempre disponíveis */
+  --mobile-auto-padding: 16px;
+  --mobile-auto-margin: 12px;
+  --mobile-auto-border-radius: 8px;
+  --mobile-auto-touch-target: 44px;
+}

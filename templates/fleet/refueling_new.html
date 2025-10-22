@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+
+{% block title %}Registrar Abastecimento{% endblock %}
+
+{% block content %}
+<!-- Mobile Page Header -->
+<div class="mobile-page-header">
+    <div class="mobile-header-content">
+        <h1 class="mobile-page-title">
+            <i class="fas fa-gas-pump me-2"></i>Registrar Abastecimento
+        </h1>
+        <div class="mobile-header-actions">
+            <a href="{{ url_for('view_vehicle', id=vehicle.id) }}" class="mobile-action-btn">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="content">
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-header bg-gradient-primary">
+                <h3 class="card-title">Veículo: {{ vehicle.brand }} {{ vehicle.model }} ({{ vehicle.plate }})</h3>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form.date.label(class="form-label") }}
+                                {{ form.date(class="form-control", value=today) }}
+                                {% if form.date.errors %}
+                                <div class="invalid-feedback" style="display:block">
+                                    {% for error in form.date.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="form-group">
+                                {{ form.odometer.label(class="form-label") }}
+                                {{ form.odometer(class="form-control", value=vehicle.current_km or 0) }}
+                                <small class="text-muted">Km atual do veículo</small>
+                                {% if form.odometer.errors %}
+                                <div class="invalid-feedback" style="display:block">
+                                    {% for error in form.odometer.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="form-group">
+                                {{ form.fuel_type.label(class="form-label") }}
+                                {{ form.fuel_type(class="form-control") }}
+                                {% if form.fuel_type.errors %}
+                                <div class="invalid-feedback" style="display:block">
+                                    {% for error in form.fuel_type.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="form-group">
+                                {{ form.liters.label(class="form-label") }}
+                                {{ form.liters(class="form-control", step="0.01") }}
+                                {% if form.liters.errors %}
+                                <div class="invalid-feedback" style="display:block">
+                                    {% for error in form.liters.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form.price_per_liter.label(class="form-label") }}
+                                {{ form.price_per_liter(class="form-control", step="0.01") }}
+                                {% if form.price_per_liter.errors %}
+                                <div class="invalid-feedback" style="display:block">
+                                    {% for error in form.price_per_liter.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="form-group">
+                                {{ form.total_cost.label(class="form-label") }}
+                                {{ form.total_cost(class="form-control", step="0.01") }}
+                                {% if form.total_cost.errors %}
+                                <div class="invalid-feedback" style="display:block">
+                                    {% for error in form.total_cost.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="form-group">
+                                {{ form.gas_station.label(class="form-label") }}
+                                {{ form.gas_station(class="form-control") }}
+                                {% if form.gas_station.errors %}
+                                <div class="invalid-feedback" style="display:block">
+                                    {% for error in form.gas_station.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="form-group">
+                                <div class="custom-control custom-checkbox">
+                                    {{ form.full_tank(class="custom-control-input") }}
+                                    {{ form.full_tank.label(class="custom-control-label") }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                {{ form.notes.label(class="form-label") }}
+                                {{ form.notes(class="form-control", rows=3) }}
+                                {% if form.notes.errors %}
+                                <div class="invalid-feedback" style="display:block">
+                                    {% for error in form.notes.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save mr-1"></i> Registrar Abastecimento
+                        </button>
+                        <a href="{{ url_for('view_vehicle', id=vehicle.id) }}" class="btn btn-secondary ml-2">
+                            <i class="fas fa-times mr-1"></i> Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Calcular valor total automaticamente
+document.addEventListener('DOMContentLoaded', function() {
+    const litersField = document.getElementById('liters');
+    const priceField = document.getElementById('price_per_liter');
+    const totalField = document.getElementById('total_cost');
+    
+    function calculateTotal() {
+        const liters = parseFloat(litersField.value) || 0;
+        const price = parseFloat(priceField.value) || 0;
+        const total = (liters * price).toFixed(2);
+        totalField.value = total;
+    }
+    
+    litersField.addEventListener('input', calculateTotal);
+    priceField.addEventListener('input', calculateTotal);
+});
+</script>
+{% endblock %}

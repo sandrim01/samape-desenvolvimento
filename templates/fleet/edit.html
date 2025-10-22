@@ -1,0 +1,286 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Veículo{% endblock %}
+
+{% block content %}
+<!-- Mobile Page Header -->
+<div class="mobile-page-header">
+    <div class="mobile-header-content">
+        <h1 class="mobile-page-title">
+            <i class="fas fa-edit me-2"></i>Editar Veículo
+        </h1>
+        <div class="mobile-header-actions">
+            <a href="{{ url_for('view_vehicle', id=vehicle.id) }}" class="mobile-action-btn">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid">
+</div>
+
+<div class="content">
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Dados do Veículo</h3>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form.plate.label(class="form-label") }}
+                                {{ form.plate(class="form-control") }}
+                                {% if form.plate.errors %}
+                                <div class="invalid-feedback" style="display:block">
+                                    {% for error in form.plate.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Tipo</label>
+                                <input type="text" class="form-control" value="Veículo" readonly>
+                                <small class="text-muted">Tipo fixo para todos os veículos da frota</small>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        {{ form.brand.label(class="form-label") }}
+                                        {{ form.brand(class="form-control") }}
+                                        {% if form.brand.errors %}
+                                        <div class="invalid-feedback" style="display:block">
+                                            {% for error in form.brand.errors %}
+                                            <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        {{ form.model.label(class="form-label") }}
+                                        {{ form.model(class="form-control") }}
+                                        {% if form.model.errors %}
+                                        <div class="invalid-feedback" style="display:block">
+                                            {% for error in form.model.errors %}
+                                            <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        {{ form.year.label(class="form-label") }}
+                                        {{ form.year(class="form-control") }}
+                                        {% if form.year.errors %}
+                                        <div class="invalid-feedback" style="display:block">
+                                            {% for error in form.year.errors %}
+                                            <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        {{ form.color.label(class="form-label") }}
+                                        {{ form.color(class="form-control") }}
+                                        {% if form.color.errors %}
+                                        <div class="invalid-feedback" style="display:block">
+                                            {% for error in form.color.errors %}
+                                            <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <!-- Já temos o campo plate no topo do formulário, este campo é duplicado e pode ser removido -->
+                                    <div class="form-group">
+                                        <label class="form-label">Renavam</label>
+                                        <input type="text" class="form-control" value="Não cadastrado" readonly>
+                                        <small class="text-muted">Use o formulário de detalhes para atualizar</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        {{ form.chassis.label(class="form-label") }}
+                                        {{ form.chassis(class="form-control") }}
+                                        {% if form.chassis.errors %}
+                                        <div class="invalid-feedback" style="display:block">
+                                            {% for error in form.chassis.errors %}
+                                            <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        {{ form.acquisition_date.label(class="form-label") }}
+                                        {{ form.acquisition_date(class="form-control") }}
+                                        {% if form.acquisition_date.errors %}
+                                        <div class="invalid-feedback" style="display:block">
+                                            {% for error in form.acquisition_date.errors %}
+                                            <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        {{ form.current_km.label(class="form-label") }}
+                                        {{ form.current_km(class="form-control") }}
+                                        {% if form.current_km.errors %}
+                                        <div class="invalid-feedback" style="display:block">
+                                            {% for error in form.current_km.errors %}
+                                            <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">Valor de Aquisição</label>
+                                        <input type="text" class="form-control" value="Não definido" disabled>
+                                        <small class="text-muted">Edite no detalhamento do veículo</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">Valor Atual</label>
+                                        <input type="text" class="form-control" value="Não definido" disabled>
+                                        <small class="text-muted">Edite no detalhamento do veículo</small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">Última Manutenção</label>
+                                        <input type="text" class="form-control" value="Ver histórico" disabled>
+                                        <small class="text-muted">Consulte o histórico de manutenções</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        {{ form.next_maintenance_date.label(class="form-label") }}
+                                        {{ form.next_maintenance_date(class="form-control") }}
+                                        {% if form.next_maintenance_date.errors %}
+                                        <div class="invalid-feedback" style="display:block">
+                                            {% for error in form.next_maintenance_date.errors %}
+                                            <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        {{ form.responsible_id.label(class="form-label") }}
+                                        {{ form.responsible_id(class="form-control") }}
+                                        {% if form.responsible_id.errors %}
+                                        <div class="invalid-feedback" style="display:block">
+                                            {% for error in form.responsible_id.errors %}
+                                            <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        {{ form.status.label(class="form-label") }}
+                                        {{ form.status(class="form-control") }}
+                                        {% if form.status.errors %}
+                                        <div class="invalid-feedback" style="display:block">
+                                            {% for error in form.status.errors %}
+                                            <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                {{ form.image.label(class="form-label") }}
+                                {{ form.image(class="form-control-file") }}
+                                {% if form.image.errors %}
+                                <div class="invalid-feedback" style="display:block">
+                                    {% for error in form.image.errors %}
+                                    <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                                <small class="form-text text-muted">Imagens suportadas: JPG, JPEG, PNG</small>
+                                
+                                {% if vehicle.image %}
+                                <div class="mt-2">
+                                    <div class="custom-control custom-checkbox">
+                                        {{ form.delete_image(class="custom-control-input") }}
+                                        {{ form.delete_image.label(class="custom-control-label") }}
+                                    </div>
+                                    <div class="mt-2">
+                                        <img src="{{ url_for('static', filename='uploads/vehicles/' + vehicle.image) }}" 
+                                             class="img-thumbnail" alt="Imagem atual" style="max-height: 100px;">
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        {{ form.notes.label(class="form-label") }}
+                        {{ form.notes(class="form-control", rows=4) }}
+                        {% if form.notes.errors %}
+                        <div class="invalid-feedback" style="display:block">
+                            {% for error in form.notes.errors %}
+                            <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group text-right">
+                        <a href="{{ url_for('view_vehicle', id=vehicle.id) }}" class="btn btn-secondary mr-2">Cancelar</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save mr-1"></i> Salvar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,228 @@
+/* SAMAPE - CSS OTIMIZADO E CONSOLIDADO */
+/* Versão consolidada para melhor performance */
+
+/* ===== VARIÁVEIS CSS ESSENCIAIS ===== */
+:root {
+    /* Cores principais */
+    --primary-color: #1e1e1e;
+    --secondary-color: #242424;
+    --accent-color: #f85d8e;
+    --text-color: #ffffff;
+    --text-muted: #a0a0a0;
+    --border-color: #333333;
+    --bg-dark: #1e1e1e;
+    --bg-card: #242424;
+    --shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    --border-radius: 8px;
+    --transition: all 0.2s ease;
+    
+    /* Mobile específico */
+    --mobile-padding: 16px;
+    --mobile-margin: 12px;
+    --touch-target-min: 44px;
+}
+
+/* ===== RESET E BASE ===== */
+* {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+}
+
+body {
+    background-color: var(--primary-color) !important;
+    color: var(--text-color) !important;
+    font-family: 'Roboto', sans-serif;
+    line-height: 1.5;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* ===== COMPONENTES PRINCIPAIS ===== */
+
+/* Headers Mobile Padronizados */
+.mobile-page-header {
+    background: linear-gradient(135deg, var(--bg-dark) 0%, var(--secondary-color) 100%);
+    padding: var(--mobile-padding);
+    margin-bottom: var(--mobile-margin);
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: var(--shadow);
+}
+
+.mobile-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.mobile-page-title {
+    color: var(--text-color) !important;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+    display: flex;
+    align-items: center;
+}
+
+.mobile-header-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+/* Botões Mobile */
+.mobile-action-btn {
+    width: var(--touch-target-min);
+    height: var(--touch-target-min);
+    border-radius: 50%;
+    background-color: var(--accent-color);
+    color: white !important;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-size: 1.1rem;
+    transition: var(--transition);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.mobile-action-btn:hover,
+.mobile-action-btn:focus {
+    background-color: #d34572;
+    transform: scale(1.05);
+    color: white !important;
+}
+
+.mobile-action-btn:active {
+    transform: scale(0.95);
+}
+
+/* Cards e Filtros */
+.mobile-filters-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    margin-bottom: var(--mobile-margin);
+    box-shadow: var(--shadow);
+}
+
+.mobile-cards-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--mobile-margin);
+}
+
+/* ===== RESPONSIVIDADE ===== */
+@media (max-width: 767.98px) {
+    /* Container otimizado */
+    .container-fluid {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+    
+    /* Sidebar oculta em mobile */
+    .sidebar {
+        display: none !important;
+    }
+    
+    /* Conteúdo principal ocupa tela toda */
+    .main-content {
+        width: 100% !important;
+        margin-left: 0 !important;
+    }
+    
+    /* Navbar compacta */
+    .navbar {
+        padding: 8px 12px;
+        min-height: 56px;
+    }
+    
+    /* Botões responsivos */
+    .btn {
+        min-height: var(--touch-target-min);
+        padding: 10px 16px;
+        border-radius: var(--border-radius);
+        font-weight: 500;
+        transition: var(--transition);
+    }
+    
+    /* Cards otimizados */
+    .card {
+        background-color: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius);
+        margin-bottom: var(--mobile-margin);
+        box-shadow: var(--shadow);
+    }
+    
+    /* Formulários otimizados */
+    .form-control,
+    .form-select {
+        min-height: var(--touch-target-min);
+        background-color: var(--secondary-color);
+        border: 1px solid var(--border-color);
+        color: var(--text-color);
+        border-radius: var(--border-radius);
+    }
+    
+    /* Tabelas viram cards */
+    .table-responsive .table {
+        display: none;
+    }
+    
+    .mobile-cards-container {
+        display: block !important;
+    }
+}
+
+/* ===== DARK THEME ENHANCEMENTS ===== */
+[data-bs-theme="dark"] {
+    --bs-body-bg: var(--primary-color);
+    --bs-body-color: var(--text-color);
+    --bs-card-bg: var(--bg-card);
+    --bs-border-color: var(--border-color);
+}
+
+/* ===== OTIMIZAÇÕES DE PERFORMANCE ===== */
+.card,
+.btn,
+.nav-item {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+}
+
+/* Remove delays de click em mobile */
+a, button, input, select, textarea {
+    touch-action: manipulation;
+}
+
+/* Loading states */
+.loading-state {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.loading-state::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid transparent;
+    border-top: 2px solid var(--accent-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

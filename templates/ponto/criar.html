@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+
+{% block title %}Criar Novo Ponto{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-plus"></i> Criar Novo Ponto
+        </h1>
+        <a href="{{ url_for('ponto.admin_view') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Voltar
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-clock"></i> Dados do Novo Ponto
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <form method="POST" id="criarPontoForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="user_id" class="form-label">Funcionário *</label>
+                                    <select class="form-control" id="user_id" name="user_id" required>
+                                        <option value="">Selecione um funcionário</option>
+                                        {% for usuario in usuarios %}
+                                        <option value="{{ usuario.id }}">{{ usuario.name }} ({{ usuario.email }})</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="data" class="form-label">Data *</label>
+                                    <input type="date" class="form-control" id="data" name="data" 
+                                           value="{{ moment().format('YYYY-MM-DD') }}" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="hora_entrada" class="form-label">Hora de Entrada *</label>
+                                    <input type="time" class="form-control" id="hora_entrada" name="hora_entrada" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="hora_saida" class="form-label">Hora de Saída</label>
+                                    <input type="time" class="form-control" id="hora_saida" name="hora_saida">
+                                    <small class="form-text text-muted">Opcional - pode ser preenchida posteriormente</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="observacao" class="form-label">Observações</label>
+                            <textarea class="form-control" id="observacao" name="observacao" rows="3" 
+                                      placeholder="Digite aqui qualquer observação sobre este registro..."></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="senha_admin" class="form-label text-danger">
+                                <i class="fas fa-lock"></i> Senha de Administrador *
+                            </label>
+                            <input type="password" class="form-control" id="senha_admin" name="senha_admin" 
+                                   placeholder="Digite sua senha para confirmar a criação" required>
+                            <small class="form-text text-muted">
+                                Por segurança, digite sua senha de administrador para criar o registro.
+                            </small>
+                        </div>
+
+                        <div class="form-group text-right">
+                            <button type="button" class="btn btn-secondary mr-2" onclick="history.back()">
+                                <i class="fas fa-times"></i> Cancelar
+                            </button>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-plus"></i> Criar Ponto
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-info">
+                        <i class="fas fa-info-circle"></i> Instruções
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-lightbulb"></i>
+                        <strong>Dicas:</strong>
+                        <ul class="mt-2 mb-0">
+                            <li>Verifique se já não existe um ponto para o funcionário na data selecionada</li>
+                            <li>A hora de saída é opcional e pode ser preenchida depois</li>
+                            <li>Todas as alterações são registradas no log do sistema</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow mt-3">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-warning">
+                        <i class="fas fa-exclamation-triangle"></i> Atenção
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <small class="text-muted">
+                        <i class="fas fa-shield-alt"></i> Apenas administradores podem criar pontos para outros funcionários.<br><br>
+                        <i class="fas fa-history"></i> Esta ação será registrada no log do sistema com seu nome de usuário.<br><br>
+                        <i class="fas fa-key"></i> A confirmação por senha é obrigatória por questões de segurança.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Definir data atual como padrão
+    const hoje = new Date().toISOString().split('T')[0];
+    document.getElementById('data').value = hoje;
+
+    // Validação do formulário
+    document.getElementById('criarPontoForm').addEventListener('submit', function(e) {
+        const userId = document.getElementById('user_id').value;
+        const data = document.getElementById('data').value;
+        const horaEntrada = document.getElementById('hora_entrada').value;
+        const senhaAdmin = document.getElementById('senha_admin').value;
+        
+        if (!userId) {
+            e.preventDefault();
+            alert('Por favor, selecione um funcionário.');
+            document.getElementById('user_id').focus();
+            return false;
+        }
+
+        if (!data) {
+            e.preventDefault();
+            alert('Por favor, selecione uma data.');
+            document.getElementById('data').focus();
+            return false;
+        }
+
+        if (!horaEntrada) {
+            e.preventDefault();
+            alert('Por favor, informe a hora de entrada.');
+            document.getElementById('hora_entrada').focus();
+            return false;
+        }
+
+        if (!senhaAdmin) {
+            e.preventDefault();
+            alert('Por favor, digite sua senha de administrador para confirmar a criação.');
+            document.getElementById('senha_admin').focus();
+            return false;
+        }
+
+        if (!confirm('Tem certeza que deseja criar este registro de ponto?')) {
+            e.preventDefault();
+            return false;
+        }
+    });
+
+    // Validação de hora de saída não pode ser menor que entrada
+    document.getElementById('hora_saida').addEventListener('change', function() {
+        const horaEntrada = document.getElementById('hora_entrada').value;
+        const horaSaida = this.value;
+        
+        if (horaEntrada && horaSaida && horaSaida <= horaEntrada) {
+            alert('A hora de saída deve ser maior que a hora de entrada.');
+            this.value = '';
+        }
+    });
+});
+</script>
+{% endblock %}

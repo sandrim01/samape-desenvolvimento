@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - SAMAPE{% endblock %}
+
+{% block extra_css %}
+<link href="{{ url_for('static', filename='css/dashboard-compact.css') }}?v={{ now }}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4">
+    <h1 class="page-title">Painel de Controle</h1>
+    <div class="d-flex align-items-center ms-auto">
+        <button type="button" class="btn btn-lg btn-success me-3 d-flex align-items-center" style="font-size:1.2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.15); border-radius: 2rem; padding: 0.75rem 2rem;" data-bs-toggle="modal" data-bs-target="#modalBaterPonto">
+            <i class="fas fa-clock me-2"></i> Bater Ponto
+        </button>
+{% include 'dashboard/bater_ponto_modal.html' %}
+        <div class="dashboard-clock-container">
+            <div id="dashboard-clock" class="dashboard-clock"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Dashboard Grid System -->
+<div class="dashboard-grid dashboard-responsive">
+  <!-- Primeira linha: [MANUTENÇÕES] [DISTRIBUIÇÃO DE OS] [TEMPO MÉDIO] [FORNECEDORES] -->
+  <div class="dashboard-col-3">{% include 'dashboard/cards/manutencoes.html' %}</div>
+  <div class="dashboard-col-3">{% include 'dashboard/cards/notas_fiscais.html' %}</div>
+  <div class="dashboard-col-3">{% include 'dashboard/cards/tempo_medio.html' %}</div>
+  <div class="dashboard-col-3">{% include 'dashboard/cards/fornecedores.html' %}</div>
+
+  <!-- Segunda linha: [PEDIDOS A FORNECEDORES] [RESUMO FINANCEIRO] -->
+  <div class="dashboard-col-6">{% include 'dashboard/cards/pedidos_fornecedores.html' %}</div>
+  <div class="dashboard-col-6">{% include 'dashboard/cards/resumo_financeiro.html' %}</div>
+
+  <!-- Terceira linha: [STATUS DA FROTA] [ESTOQUE DE PEÇAS] [EPIS E FERRAMENTAS] -->
+  <div class="dashboard-col-4">{% include 'dashboard/cards/status_frota.html' %}</div>
+  <div class="dashboard-col-4">{% include 'dashboard/cards/estoque_pecas.html' %}</div>
+  <div class="dashboard-col-4">{% include 'dashboard/cards/epis_ferramentas.html' %}</div>
+
+  <!-- Quarta linha: [ORDENS RECENTES] [ATIVIDADES RECENTES] -->
+  <div class="dashboard-col-6">{% include 'dashboard/cards/ordens_recentes.html' %}</div>
+  <div class="dashboard-col-6">{% include 'dashboard/cards/atividades_recentes.html' %}</div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+
+<script>
+// Relógio do Dashboard
+function updateDashboardClock() {
+    const now = new Date();
+    const options = { weekday: 'short', year: 'numeric', month: 'short', day: '2-digit' };
+    const dateStr = now.toLocaleDateString('pt-BR', options);
+    const timeStr = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    document.getElementById('dashboard-clock').innerHTML = `<span style='font-size:1.2rem;font-weight:bold;'>${dateStr}</span><br><span style='font-size:2rem;font-weight:bold;'>${timeStr}</span>`;
+}
+setInterval(updateDashboardClock, 1000);
+updateDashboardClock();
+</script>
+
+<style>
+.dashboard-clock-container {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    min-width: 220px;
+    margin-bottom: 10px;
+}
+.dashboard-clock {
+    color: #fff;
+    background: #23272b;
+    border-radius: 8px;
+    padding: 8px 18px;
+    box-shadow: 0 1px 6px #0002;
+    text-align: center;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    letter-spacing: 1px;
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+<script>
+    // Gráfico de Pizza - Distribuição de OS
+    const orderCtx = document.getElementById('orderDistributionChart').getContext('2d');
+    const orderData = {{ [metrics.pending_orders, metrics.in_progress_orders, metrics.closed_orders]|tojson }};
+    const orderLabels = ['Em Espera', 'Em Andamento', 'Concluídas'];
+    const orderColors = ['#ffc107', '#0d6efd', '#43d17a'];
+    const orderTotal = orderData.reduce((a, b) => a + b, 0);
+
+    const orderDistributionChart = new Chart(orderCtx, {
+        type: 'pie',
+        data: {
+            labels: orderLabels,
+            datasets: [{
+                data: orderData,
+                backgroundColor: orderColors,
+                borderWidth: 2,
+                borderColor: '#181a1b',
+                hoverOffset: 10
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'right',
+                    labels: {
+                        color: '#fff',
+                        font: { size: 13, weight: 'bold' }, // fonte menor
+                        usePointStyle: true,
+                        padding: 10,
+                        boxWidth: 14,
+                        boxHeight: 14,
+                        textAlign: 'left',
+                        // Garante que as legendas não sejam cortadas
+                        generateLabels: function(chart) {
+                            const data = chart.data;
+                            if (data.labels.length && data.datasets.length) {
+                                return data.labels.map(function(label, i) {
+                                    const meta = chart.getDatasetMeta(0);
+                                    const style = meta.controller.getStyle(i);
+                                    return {
+                                        text: label,
+                                        fillStyle: style.backgroundColor,
+                                        strokeStyle: style.borderColor,
+                                        lineWidth: style.borderWidth,
+                                        hidden: isNaN(data.datasets[0].data[i]) || meta.data[i].hidden,
+                                        index: i
+                                    };
+                                });
+                            }
+                            return [];
+                        }
+                    }
+                },
+                datalabels: {
+                    color: '#fff',
+                    font: { weight: 'bold', size: 13 }, // porcentagem menor
+                    formatter: function(value, ctx) {
+                        if (orderTotal === 0) return '';
+                        const percent = Math.round((value/orderTotal)*100);
+                        return value > 0 ? percent + '%' : '';
+                    },
+                    anchor: 'center',
+                    align: 'center',
+                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    borderRadius: 6,
+                    padding: 4
+                },
+                tooltip: {
+                    backgroundColor: '#222',
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                    callbacks: {
+                        label: function(context) {
+                            const value = context.parsed;
+                            const percent = orderTotal > 0 ? Math.round((value/orderTotal)*100) : 0;
+                            return `${context.label}: ${percent}%`;
+                        }
+                    }
+                }
+            },
+            layout: { padding: 30 }, // aumenta o padding para o gráfico ficar maior
+        },
+        plugins: [ChartDataLabels]
+    });
+
+    // Financial Chart
+    const financialCtx = document.getElementById('financialChart').getContext('2d');
+    const financialChart = new Chart(financialCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'],
+            datasets: [
+                {
+                    label: 'Receitas',
+                    backgroundColor: 'rgba(25, 135, 84, 0.7)',
+                    borderColor: 'rgba(25, 135, 84, 1)',
+                    borderWidth: 1,
+                    data: {{ metrics.income_data|tojson }},
+                },
+                {
+                    label: 'Despesas',
+                    backgroundColor: 'rgba(220, 53, 69, 0.7)',
+                    borderColor: 'rgba(220, 53, 69, 1)',
+                    borderWidth: 1,
+                    data: {{ metrics.expense_data|tojson }}
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        color: '#6c757d'
+                    },
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)'
+                    }
+                },
+                x: {
+                    ticks: {
+                        color: '#6c757d'
+                    },
+                    grid: {
+                        display: false
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        boxWidth: 12,
+                        color: '#6c757d'
+                    }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

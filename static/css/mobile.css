@@ -1,0 +1,1622 @@
+/* Estilos específicos para dispositivos móveis - Otimizado para melhor enquadramento e usabilidade */
+
+/* Variáveis para temas e cores - Alinhadas com a versão desktop */
+:root {
+  /* Usando as mesmas cores da versão desktop */
+  --primary-color: var(--bg-dark, #1e1e1e);
+  --secondary-color: var(--bg-card, #242424);
+  --tertiary-color: var(--bg-darker, #171717);
+  --accent-color: var(--pink, #f85d8e);
+  --danger-color: var(--pink, #f85d8e);
+  --success-color: var(--green, #37d09e);
+  --warning-color: var(--orange, #ff9353);
+  --info-color: var(--blue, #4285f4);
+  
+  /* Cores de fundo alinhadas com desktop */
+  --dark-bg: var(--bg-dark, #1e1e1e);
+  --card-bg: var(--bg-card, #242424);
+  --darker-bg: var(--bg-darker, #171717);
+  
+  /* Cores de texto alinhadas com desktop */
+  --text-color: var(--text-light, #f0f0f0);
+  --text-white: var(--text-white, #ffffff);
+  --muted-text: var(--text-muted, #a0a0a0);
+  --text-disabled: var(--text-disabled, #666666);
+  
+  /* Cores de borda alinhadas com desktop */
+  --border-color: var(--border-light, #333333);
+  --border-dark: var(--border-dark, #000000);
+  
+  /* Configurações específicas para mobile */
+  --border-radius: 8px;
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --transition: all 0.2s ease;
+  --touch-target-min: 44px;
+  --mobile-padding: 16px;
+  --mobile-margin: 12px;
+}
+
+/* Estilos gerais para mobile - Otimizado para enquadramento e usabilidade */
+@media (max-width: 991.98px) {
+  /* Reset e configurações base */
+  * {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+  }
+  
+  body {
+    background-color: var(--dark-bg);
+    color: var(--text-color);
+    padding-bottom: 80px; /* Espaço para navegação bottom */
+    padding-top: 0; /* Remove padding superior do navbar */
+    overflow-x: hidden;
+    line-height: 1.4;
+    font-size: 14px;
+    margin: 0;
+  }
+  
+  /* Oculta completamente o navbar em mobile */
+  .navbar {
+    display: none !important;
+  }
+  
+  /* Ajusta o container principal para ocupar todo o espaço */
+  .container-fluid {
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+  }
+  
+  /* Ajusta o conteúdo principal */
+  main, .main-content {
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+  }
+  
+  /* Configuração de viewport */
+  html {
+    touch-action: manipulation;
+    -webkit-text-size-adjust: 100%;
+  }
+  
+  /* Navbar otimizada para mobile */
+  .navbar {
+    padding: 8px var(--mobile-padding);
+    background-color: var(--dark-bg) !important;
+    position: sticky;
+    top: 0;
+    z-index: 1020;
+    box-shadow: var(--shadow);
+    min-height: 56px;
+  }
+  
+  .navbar-brand {
+    font-size: 1.1rem;
+    padding: 0;
+  }
+  
+  .navbar-brand img {
+    max-width: 120px;
+    height: auto;
+  }
+  
+  .navbar-toggler {
+    border: none;
+    padding: 4px 8px;
+    font-size: 1.1rem;
+  }
+  
+  .navbar-toggler:focus {
+    box-shadow: none;
+  }
+  
+  /* Container principal otimizado */
+  .container-fluid {
+    padding-left: var(--mobile-padding);
+    padding-right: var(--mobile-padding);
+    max-width: 100%;
+  }
+  
+  /* Sidebar escondida em mobile - usa bottom nav */
+  .sidebar {
+    display: none !important;
+  }
+  
+  /* Main content ocupa toda a largura em mobile */
+  .col-md-9, .col-lg-10 {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+  
+  /* Card design otimizado para mobile - cores desktop */
+  .card {
+    background-color: var(--card-bg);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow);
+    margin-bottom: var(--mobile-margin);
+    overflow: hidden;
+    transition: var(--transition);
+  }
+  
+  .card:active {
+    transform: scale(0.98);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  }
+  
+  .card-header {
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    border-bottom: 1px solid var(--border-color);
+    padding: var(--mobile-margin) var(--mobile-padding);
+    font-weight: 500;
+    font-size: 0.95rem;
+  }
+  
+  .card-body {
+    padding: var(--mobile-padding);
+  }
+  
+  .card-footer {
+    padding: var(--mobile-margin) var(--mobile-padding);
+    background-color: rgba(255, 255, 255, 0.02);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  
+  /* Ícones interativos */
+  .card-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+    color: white;
+    margin-right: 15px;
+    font-size: 1.5rem;
+  }
+  
+  /* Status markers */
+  .status-badge {
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  .status-badge.pending {
+    background-color: var(--accent-color);
+    color: white;
+  }
+  
+  .status-badge.completed {
+    background-color: var(--secondary-color);
+    color: white;
+  }
+  
+  .status-badge.cancelled {
+    background-color: var(--danger-color);
+    color: white;
+  }
+  
+  /* Listas otimizadas para mobile */
+  .list-group {
+    margin-top: 8px;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  
+  .list-group-item {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+    color: var(--text-color);
+    padding: var(--mobile-padding);
+    min-height: var(--touch-target-min);
+    display: flex;
+    align-items: center;
+    transition: var(--transition);
+  }
+  
+  .list-group-item:active {
+    background-color: var(--darker-bg);
+    transform: scale(0.98);
+  }
+  
+  .list-group-item-action:hover {
+    background-color: var(--darker-bg);
+  }
+  
+  /* Melhorias para alertas */
+  .alert {
+    border-radius: var(--border-radius);
+    border: none;
+    margin-bottom: var(--mobile-margin);
+    padding: var(--mobile-padding);
+    box-shadow: var(--shadow);
+  }
+  
+  /* Loading states */
+  .loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+  }
+  
+  .loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: var(--primary-color);
+    animation: spin 1s ease-in-out infinite;
+  }
+  
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+  
+  /* Botões otimizados para touch */
+  .btn {
+    border-radius: var(--border-radius);
+    padding: 12px 20px;
+    font-weight: 500;
+    font-size: 0.9rem;
+    letter-spacing: 0.3px;
+    transition: var(--transition);
+    min-height: var(--touch-target-min);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .btn:active {
+    transform: scale(0.95);
+  }
+  
+  .btn-sm {
+    padding: 8px 16px;
+    font-size: 0.8rem;
+    min-height: 36px;
+  }
+  
+  .btn-lg {
+    padding: 16px 32px;
+    font-size: 1rem;
+    min-height: 52px;
+  }
+  
+  .btn-primary {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+    color: var(--text-white);
+  }
+  
+  .btn-success {
+    background-color: var(--success-color);
+    border-color: var(--success-color);
+    color: var(--text-white);
+  }
+  
+  .btn-warning {
+    background-color: var(--warning-color);
+    border-color: var(--warning-color);
+    color: var(--text-white);
+  }
+  
+  .btn-danger {
+    background-color: var(--danger-color);
+    border-color: var(--danger-color);
+    color: var(--text-white);
+  }
+  
+  .btn-info {
+    background-color: var(--info-color);
+    border-color: var(--info-color);
+    color: var(--text-white);
+  }
+  
+  /* Botões de ação circular */
+  .btn-circle {
+    width: var(--touch-target-min);
+    height: var(--touch-target-min);
+    border-radius: 50%;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  /* Esconde elementos não essenciais em mobile */
+  .d-mobile-none {
+    display: none !important;
+  }
+  
+  /* Mostra apenas em mobile */
+  .d-mobile-only {
+    display: block !important;
+  }
+  
+  /* Tables responsivas melhoradas */
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    margin-bottom: var(--mobile-margin);
+  }
+  
+  .table {
+    margin-bottom: 0;
+    font-size: 0.9rem;
+  }
+  
+  .table th {
+    border-top: none;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+    padding: 12px 8px;
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  .table td {
+    padding: 12px 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    vertical-align: middle;
+  }
+  
+  /* Tabela para cards em mobile muito pequeno */
+  @media (max-width: 576px) {
+    .table-mobile-cards {
+      display: block;
+    }
+    
+    .table-mobile-cards thead {
+      display: none;
+    }
+    
+    .table-mobile-cards tbody {
+      display: block;
+    }
+    
+    .table-mobile-cards tr {
+      display: block;
+      background-color: var(--card-bg);
+      border-radius: var(--border-radius);
+      margin-bottom: var(--mobile-margin);
+      padding: var(--mobile-padding);
+      box-shadow: var(--shadow);
+    }
+    
+    .table-mobile-cards td {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border: none;
+    }
+    
+    .table-mobile-cards td:before {
+      content: attr(data-label) ": ";
+      font-weight: 600;
+      color: var(--muted-text);
+      margin-right: 10px;
+    }
+  }
+  
+  /* Action buttons em dropdowns para economizar espaço */
+  .action-dropdown .dropdown-menu {
+    background-color: var(--card-bg);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .action-dropdown .dropdown-item {
+    color: var(--text-color);
+    padding: 8px 16px;
+  }
+  
+  .action-dropdown .dropdown-item:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+  
+  /* Cards de resumo */
+  .summary-card {
+    position: relative;
+    padding: 16px;
+    border-radius: var(--border-radius);
+    background: linear-gradient(135deg, rgba(52, 152, 219, 0.8), rgba(41, 128, 185, 0.8));
+    color: white;
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  
+  .summary-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('/static/img/pattern.svg');
+    opacity: 0.05;
+  }
+  
+  .summary-card .value {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  
+  .summary-card .label {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.8;
+  }
+  
+  /* Listagem de cards interativos */
+  .interactive-card {
+    display: flex;
+    align-items: center;
+    background-color: var(--card-bg);
+    border-radius: var(--border-radius);
+    padding: 12px 16px;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow);
+    transition: var(--transition);
+  }
+  
+  .interactive-card:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.2);
+  }
+  
+  .interactive-card .content {
+    flex: 1;
+  }
+  
+  .interactive-card .title {
+    font-weight: 500;
+    margin-bottom: 4px;
+    font-size: 1rem;
+  }
+  
+  .interactive-card .subtitle {
+    color: var(--muted-text);
+    font-size: 0.8rem;
+  }
+  
+  .interactive-card .action {
+    color: var(--primary-color);
+    font-size: 1.2rem;
+  }
+  
+  /* Bottom navigation melhorada - cores desktop */
+  .mobile-bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1030;
+    background-color: var(--card-bg);
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 8px 0 12px 0;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(10px);
+    min-height: 70px;
+  }
+  
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: var(--muted-text);
+    font-size: 0.75rem;
+    text-decoration: none;
+    transition: var(--transition);
+    padding: 4px 8px;
+    border-radius: var(--border-radius);
+    min-width: var(--touch-target-min);
+    min-height: var(--touch-target-min);
+    justify-content: center;
+  }
+  
+  .nav-item:active {
+    transform: scale(0.9);
+    background-color: var(--darker-bg);
+  }
+  
+  .nav-item.active {
+    color: var(--accent-color);
+    background-color: rgba(248, 93, 142, 0.1);
+  }
+  
+  .nav-item i {
+    font-size: 1.3rem;
+    margin-bottom: 2px;
+  }
+  
+  .nav-item span {
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 60px;
+  }
+  
+  /* Form inputs otimizados para mobile - cores desktop */
+  .form-control, .form-select, .form-check-input {
+    background-color: var(--darker-bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    border-radius: var(--border-radius);
+    padding: 14px var(--mobile-padding);
+    font-size: 16px; /* Evita zoom no iOS */
+    min-height: var(--touch-target-min);
+    transition: var(--transition);
+  }
+  
+  .form-control:focus, .form-select:focus {
+    box-shadow: 0 0 0 2px rgba(248, 93, 142, 0.25);
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    border-color: var(--accent-color);
+    outline: none;
+  }
+  
+  .form-control::placeholder {
+    color: var(--muted-text);
+    opacity: 0.7;
+  }
+  
+  /* Textarea específico */
+  textarea.form-control {
+    min-height: 100px;
+    resize: vertical;
+  }
+  
+  /* Select melhorado */
+  .form-select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23bdc3c7' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px 12px;
+  }
+  
+  .form-label {
+    color: var(--muted-text);
+    font-size: 0.85rem;
+    margin-bottom: 5px;
+    font-weight: 500;
+  }
+  
+  /* Melhorias para galeria de imagens */
+  .card .position-relative:hover > div {
+    opacity: 1 !important;
+  }
+  
+  .gallery-image {
+    transition: transform 0.3s ease;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+  }
+  
+  .gallery-image:hover {
+    transform: scale(1.03);
+  }
+  
+  /* Snack notifications */
+  .snack-notification {
+    position: fixed;
+    bottom: 70px;
+    left: 16px;
+    right: 16px;
+    background-color: var(--primary-color);
+    color: white;
+    padding: 12px 16px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 1100;
+  }
+  
+  .snack-notification.show {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  
+  /* Search bar simplified */
+  .search-bar {
+    position: relative;
+    margin-bottom: 16px;
+  }
+  
+  .search-bar input {
+    background-color: rgba(255, 255, 255, 0.05);
+    border: none;
+    border-radius: 20px;
+    padding: 10px 40px 10px 16px;
+    width: 100%;
+    color: var(--text-color);
+  }
+  
+  .search-bar i {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted-text);
+  }
+  
+  /* Ajustes para formulários */
+  .form-container {
+    background-color: var(--card-bg);
+    border-radius: var(--border-radius);
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  
+  /* Tabs simplificados */
+  .mobile-tabs {
+    display: flex;
+    overflow-x: auto;
+    padding-bottom: 10px;
+    margin-bottom: 16px;
+  }
+  
+  .mobile-tab {
+    padding: 8px 16px;
+    background-color: transparent;
+    color: var(--muted-text);
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-right: 10px;
+    white-space: nowrap;
+  }
+  
+  .mobile-tab.active {
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
+  }
+  
+  /* Modal otimizado para mobile */
+  .modal {
+    padding: 0;
+  }
+  
+  .modal-dialog {
+    margin: var(--mobile-padding);
+    max-width: calc(100% - 32px);
+  }
+  
+  .modal-content {
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  }
+  
+  .modal-header {
+    border-bottom: 1px solid var(--border-color);
+    padding: var(--mobile-padding);
+    background-color: var(--card-bg);
+  }
+  
+  .modal-body {
+    padding: var(--mobile-padding);
+    max-height: 70vh;
+    overflow-y: auto;
+    background-color: var(--card-bg);
+  }
+  
+  .modal-footer {
+    border-top: 1px solid var(--border-color);
+    padding: var(--mobile-padding);
+    gap: 8px;
+    background-color: var(--card-bg);
+  }
+  
+  .modal-footer .btn {
+    flex: 1;
+    margin: 0;
+  }
+  
+  /* Close button melhorado */
+  .btn-close {
+    background-size: 16px;
+    opacity: 0.7;
+    width: 32px;
+    height: 32px;
+  }
+  
+  .btn-close:focus {
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.25);
+  }
+  
+  /* Ajustes padrões bootstrap */
+  .container-fluid {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  
+  /* Detail display */
+  .detail-item {
+    margin-bottom: 16px;
+  }
+  
+  .detail-label {
+    font-size: 0.8rem;
+    color: var(--muted-text);
+    margin-bottom: 4px;
+  }
+  
+  .detail-value {
+    font-size: 1rem;
+    color: var(--text-color);
+  }
+  
+  /* Breadcrumbs simplificados */
+  .breadcrumb {
+    background-color: transparent;
+    padding: 0;
+    margin-bottom: 16px;
+    font-size: 0.8rem;
+  }
+  
+  .breadcrumb-item a {
+    color: var(--primary-color);
+  }
+  
+  .breadcrumb-item.active {
+    color: var(--muted-text);
+  }
+  
+  /* Ajustes para tabelas que viram cards em mobile */
+  .mobile-card-table .table {
+    display: none;
+  }
+  
+  .mobile-card-row {
+    background-color: var(--card-bg);
+    border-radius: var(--border-radius);
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow);
+  }
+  
+  .mobile-card-row .row-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  
+  .mobile-card-row .row-header .title {
+    font-weight: 500;
+  }
+  
+  .mobile-card-row .row-item {
+    display: flex;
+    margin-bottom: 4px;
+  }
+  
+  .mobile-card-row .item-label {
+    flex: 1;
+    color: var(--muted-text);
+    font-size: 0.85rem;
+  }
+  
+  .mobile-card-row .item-value {
+    flex: 2;
+    text-align: right;
+  }
+  
+  .mobile-card-row .row-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 12px;
+  }
+  
+  .mobile-card-row .row-actions .btn {
+    padding: 4px 8px;
+    font-size: 0.7rem;
+    margin-left: 8px;
+  }
+  
+  /* Novos estilos para cards de itens de estoque (baseado no screenshot) */
+  .mobile-tabs {
+    display: flex;
+    overflow-x: auto;
+    background-color: var(--darker-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+    padding: 0;
+    margin-bottom: 16px;
+    scrollbar-width: none; /* Firefox */
+  }
+  
+  .mobile-tabs::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Edge */
+  }
+  
+  .mobile-tab {
+    flex: 1;
+    text-align: center;
+    color: var(--text-color);
+    padding: 12px 5px;
+    text-decoration: none;
+    border-bottom: 3px solid transparent;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+    min-width: 80px;
+  }
+  
+  .mobile-tab.active {
+    color: var(--accent-color);
+    border-bottom-color: var(--accent-color);
+  }
+  
+  /* Mobile item card (estoque) - cores desktop */
+  .mobile-item-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 15px;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow);
+  }
+  
+  .mobile-item-card .item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  
+  .mobile-item-card .item-name {
+    font-size: 1.1rem;
+    margin: 0;
+    color: var(--text-color);
+  }
+  
+  .mobile-item-card .qty-info {
+    color: var(--muted-text);
+    font-size: 0.9rem;
+  }
+  
+  .mobile-item-card .location-info {
+    color: var(--muted-text);
+    font-size: 0.85rem;
+  }
+  
+  .mobile-item-card .item-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 12px;
+    gap: 10px;
+  }
+  
+  .action-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-color);
+    transition: all 0.2s ease;
+    text-decoration: none;
+  }
+  
+  .view-btn {
+    background-color: var(--info-color);
+  }
+  
+  .edit-btn {
+    background-color: var(--warning-color);
+  }
+  
+  .delete-btn {
+    background-color: var(--danger-color);
+    border: none;
+  }
+  
+  /* Mobile order card (ordens de serviço) - cores desktop */
+  .mobile-order-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 15px;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow);
+  }
+  
+  .mobile-order-card .order-header {
+    margin-bottom: 8px;
+  }
+  
+  .mobile-order-card .order-id {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-color);
+  }
+  
+  .mobile-order-card .client-name {
+    font-size: 1rem;
+    color: var(--text-color);
+  }
+  
+  .mobile-order-card .order-details {
+    color: var(--muted-text);
+    font-size: 0.9rem;
+  }
+  
+  .mobile-order-card .order-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 12px;
+    gap: 10px;
+  }
+  
+  .action-button {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-color);
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+  
+  .view-button {
+    background-color: var(--info-color);
+  }
+  
+  .edit-button {
+    background-color: var(--warning-color);
+  }
+  
+  .invoice-button {
+    background-color: var(--purple, #9c27b0);
+  }
+  
+  /* Dropdown mobile na bottom navigation - cores desktop */
+  .mobile-dropdown-menu {
+    background-color: var(--card-bg) !important;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    margin-bottom: 10px;
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+  
+  .mobile-dropdown-menu .dropdown-item {
+    color: var(--text-color) !important;
+    padding: 12px var(--mobile-padding);
+    display: flex;
+    align-items: center;
+    min-height: var(--touch-target-min);
+    border-bottom: 1px solid var(--border-color);
+    transition: var(--transition);
+  }
+  
+  .mobile-dropdown-menu .dropdown-item:hover,
+  .mobile-dropdown-menu .dropdown-item:focus {
+    background-color: var(--darker-bg) !important;
+    color: var(--accent-color) !important;
+  }
+  
+  .mobile-dropdown-menu .dropdown-item:active {
+    background-color: var(--darker-bg) !important;
+  }
+  
+  .mobile-dropdown-menu .dropdown-divider {
+    border-color: var(--border-color);
+    margin: 8px 0;
+  }
+  
+  .mobile-dropdown-menu .dropdown-item i {
+    width: 20px;
+    text-align: center;
+  }
+  
+  /* Modal do Menu Mobile em Grade */
+  .mobile-menu-modal {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+  }
+  
+  .mobile-menu-modal .modal-header {
+    background-color: var(--darker-bg);
+    border-bottom: 1px solid var(--border-color);
+    padding: var(--mobile-padding);
+  }
+  
+  .mobile-menu-modal .modal-title {
+    color: var(--text-color);
+    font-weight: 600;
+    font-size: 1.1rem;
+  }
+  
+  .mobile-menu-modal .modal-body {
+    padding: var(--mobile-padding);
+    background-color: var(--card-bg);
+  }
+  
+  .mobile-menu-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--mobile-padding);
+    padding: 0;
+  }
+  
+  .menu-grid-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 12px;
+    background-color: var(--darker-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    text-decoration: none;
+    color: var(--text-color);
+    transition: var(--transition);
+    min-height: 100px;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .menu-grid-item:hover,
+  .menu-grid-item:focus {
+    color: var(--text-color);
+    background-color: var(--card-bg);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+  
+  .menu-grid-item:active {
+    transform: scale(0.95);
+  }
+  
+  .menu-grid-item.active {
+    background-color: var(--accent-color);
+    color: var(--text-white);
+    border-color: var(--accent-color);
+  }
+  
+  .menu-grid-item.active .menu-icon {
+    color: var(--text-white);
+  }
+  
+  .menu-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--accent-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 8px;
+    transition: var(--transition);
+  }
+  
+  .menu-icon i {
+    font-size: 1.2rem;
+    color: var(--text-white);
+  }
+  
+  .menu-label {
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-align: center;
+    line-height: 1.2;
+    margin-top: 4px;
+  }
+  
+  /* Responsividade para telas muito pequenas */
+  @media (max-width: 480px) {
+    .mobile-menu-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    
+    .menu-grid-item {
+      min-height: 90px;
+      padding: 16px 8px;
+    }
+    
+    .menu-icon {
+      width: 36px;
+      height: 36px;
+    }
+    
+    .menu-icon i {
+      font-size: 1.1rem;
+    }
+    
+    .menu-label {
+      font-size: 0.75rem;
+    }
+  }
+  
+  /* Animação de entrada do modal */
+  .modal.fade .modal-dialog {
+    transition: transform 0.3s ease-out;
+  }
+  
+  .modal.show .modal-dialog {
+    transform: none;
+  }
+  
+  /* Melhorias gerais para performance e UX */
+  .mobile-bottom-nav * {
+    will-change: transform;
+  }
+  
+  /* Scroll suave para toda a aplicação */
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  /* ===== SISTEMA DE CARDS PADRONIZADOS PARA TODAS AS PÁGINAS ===== */
+  
+  /* Card padrão mobile reutilizável */
+  .mobile-standard-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: var(--mobile-padding);
+    margin-bottom: var(--mobile-margin);
+    box-shadow: var(--shadow);
+    transition: var(--transition);
+    position: relative;
+  }
+  
+  .mobile-standard-card:active {
+    transform: scale(0.98);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Header do card com título e status */
+  .mobile-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-color);
+  }
+  
+  .mobile-card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin: 0;
+  }
+  
+  .mobile-card-subtitle {
+    font-size: 0.9rem;
+    color: var(--accent-color);
+    margin: 2px 0 0 0;
+  }
+  
+  /* Badge de status padronizado */
+  .mobile-status-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+  
+  .mobile-status-badge.status-active,
+  .mobile-status-badge.status-aberta,
+  .mobile-status-badge.status-pending {
+    background-color: var(--warning-color);
+    color: var(--text-white);
+  }
+  
+  .mobile-status-badge.status-completed,
+  .mobile-status-badge.status-fechada,
+  .mobile-status-badge.status-success {
+    background-color: var(--success-color);
+    color: var(--text-white);
+  }
+  
+  .mobile-status-badge.status-cancelled,
+  .mobile-status-badge.status-cancelada,
+  .mobile-status-badge.status-danger {
+    background-color: var(--danger-color);
+    color: var(--text-white);
+  }
+  
+  .mobile-status-badge.status-em-andamento,
+  .mobile-status-badge.status-processing {
+    background-color: var(--info-color);
+    color: var(--text-white);
+  }
+  
+  /* Corpo do card com informações */
+  .mobile-card-body {
+    margin-bottom: 12px;
+  }
+  
+  .mobile-card-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+  }
+  
+  .mobile-card-row:last-child {
+    margin-bottom: 0;
+  }
+  
+  .mobile-card-icon {
+    width: 16px;
+    color: var(--muted-text);
+    margin-right: 8px;
+    text-align: center;
+  }
+  
+  .mobile-card-label {
+    color: var(--muted-text);
+    margin-right: 8px;
+    min-width: 80px;
+  }
+  
+  .mobile-card-value {
+    color: var(--text-color);
+    flex: 1;
+  }
+  
+  /* Footer do card com botões de ação */
+  .mobile-card-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-color);
+  }
+  
+  /* Botões de ação padronizados */
+  .mobile-action-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-white);
+    text-decoration: none;
+    transition: var(--transition);
+    font-size: 0.9rem;
+  }
+  
+  .mobile-action-btn:hover,
+  .mobile-action-btn:focus {
+    color: var(--text-white);
+    transform: scale(1.1);
+  }
+  
+  .mobile-action-btn:active {
+    transform: scale(0.9);
+  }
+  
+  .mobile-action-btn.btn-view {
+    background-color: var(--info-color);
+  }
+  
+  .mobile-action-btn.btn-edit {
+    background-color: var(--warning-color);
+  }
+  
+  .mobile-action-btn.btn-delete {
+    background-color: var(--danger-color);
+  }
+  
+  .mobile-action-btn.btn-invoice {
+    background-color: var(--purple, #9c27b0);
+  }
+  
+  .mobile-action-btn.btn-download {
+    background-color: var(--success-color);
+  }
+  
+  /* Botão principal expandido */
+  .mobile-action-btn-expanded {
+    padding: 8px 16px;
+    border-radius: var(--border-radius);
+    background-color: var(--accent-color);
+    color: var(--text-white);
+    border: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    min-height: var(--touch-target-min);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    transition: var(--transition);
+  }
+  
+  .mobile-action-btn-expanded:hover,
+  .mobile-action-btn-expanded:focus {
+    color: var(--text-white);
+    background-color: var(--accent-dark, #d34572);
+    transform: translateY(-1px);
+  }
+  
+  .mobile-action-btn-expanded:active {
+    transform: scale(0.98);
+  }
+  
+  /* Lista de cards */
+  .mobile-cards-container {
+    padding: 0;
+    margin: 0;
+  }
+  
+  /* Tabs mobile padronizadas */
+  .mobile-standard-tabs {
+    display: flex;
+    overflow-x: auto;
+    background-color: var(--darker-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 4px;
+    margin-bottom: var(--mobile-padding);
+    scrollbar-width: none;
+  }
+  
+  .mobile-standard-tabs::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .mobile-standard-tab {
+    flex: 1;
+    min-width: 80px;
+    padding: 8px 12px;
+    text-align: center;
+    background-color: transparent;
+    color: var(--muted-text);
+    text-decoration: none;
+    border-radius: calc(var(--border-radius) - 2px);
+    font-size: 0.8rem;
+    font-weight: 500;
+    border: none;
+    transition: var(--transition);
+    white-space: nowrap;
+  }
+  
+  .mobile-standard-tab:hover,
+  .mobile-standard-tab:focus {
+    color: var(--text-color);
+    background-color: var(--card-bg);
+  }
+  
+  .mobile-standard-tab.active {
+    background-color: var(--accent-color);
+    color: var(--text-white);
+  }
+  
+  /* Header de página mobile padronizado */
+  .mobile-page-header {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: var(--mobile-padding);
+    margin-bottom: var(--mobile-padding);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  
+  .mobile-page-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin: 0;
+  }
+  
+  .mobile-page-actions {
+    display: flex;
+    gap: 8px;
+  }
+  
+  /* Filtros mobile padronizados */
+  .mobile-filters-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: var(--mobile-padding);
+    margin-bottom: var(--mobile-padding);
+  }
+  
+  .mobile-filter-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  
+  .mobile-filter-row:last-child {
+    margin-bottom: 0;
+  }
+  
+  .mobile-filter-col {
+    flex: 1;
+  }
+  
+  /* Melhorias para inputs de arquivo */
+  .form-control[type="file"] {
+    padding: 8px 12px;
+    background-color: rgba(255, 255, 255, 0.03);
+  }
+  
+  .form-control[type="file"]::-webkit-file-upload-button {
+    background-color: var(--primary-color);
+    border: none;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 6px;
+    margin-right: 12px;
+    font-size: 0.9rem;
+    cursor: pointer;
+  }
+  
+  /* Menu do usuário no modal */
+  .user-section-mobile {
+    padding-top: 20px;
+  }
+  
+  .mobile-divider {
+    border: none;
+    height: 1px;
+    background: linear-gradient(90deg, 
+      transparent 0%, 
+      rgba(255, 255, 255, 0.2) 20%, 
+      rgba(255, 255, 255, 0.4) 50%, 
+      rgba(255, 255, 255, 0.2) 80%, 
+      transparent 100%);
+    margin: 20px 0;
+  }
+  
+  .user-info-mobile {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    background: linear-gradient(135deg, 
+      rgba(var(--primary-rgb), 0.1) 0%, 
+      rgba(var(--secondary-rgb), 0.1) 100%);
+    padding: 15px;
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 20px;
+  }
+  
+  .profile-image-mobile {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: 2px solid var(--primary-color);
+    object-fit: cover;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  }
+  
+  .user-details-mobile {
+    text-align: left;
+  }
+  
+  .user-name-mobile {
+    color: var(--text-color);
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 3px;
+  }
+  
+  .user-email-mobile {
+    color: var(--muted-text);
+    font-size: 0.85rem;
+    margin-bottom: 2px;
+  }
+  
+  .user-role-mobile {
+    color: var(--accent-color);
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  .user-menu-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: center;
+  }
+  
+  .user-menu-item {
+    flex: 1;
+    min-width: 100px;
+    max-width: 150px;
+    background: linear-gradient(135deg, 
+      rgba(255, 255, 255, 0.08) 0%, 
+      rgba(255, 255, 255, 0.04) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 15px 10px;
+    text-decoration: none;
+    color: var(--text-color);
+    text-align: center;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
+  }
+  
+  .user-menu-item:hover {
+    background: linear-gradient(135deg, 
+      rgba(var(--primary-rgb), 0.2) 0%, 
+      rgba(var(--primary-rgb), 0.1) 100%);
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+    color: var(--text-color);
+    box-shadow: 0 5px 15px rgba(var(--primary-rgb), 0.3);
+  }
+  
+  .user-menu-item .menu-icon {
+    font-size: 1.4rem;
+    margin-bottom: 8px;
+    color: var(--primary-color);
+  }
+  
+  .user-menu-item .menu-label {
+    font-size: 0.85rem;
+    font-weight: 500;
+  }
+  
+  .logout-item:hover {
+    background: linear-gradient(135deg, 
+      rgba(var(--danger-rgb), 0.2) 0%, 
+      rgba(var(--danger-rgb), 0.1) 100%);
+    border-color: var(--danger-color);
+    box-shadow: 0 5px 15px rgba(var(--danger-rgb), 0.3);
+  }
+  
+  .logout-item .menu-icon {
+    color: var(--danger-color);
+  }
+  
+  /* Ocultar dropdown da sidebar no mobile */
+  .sidebar-profile-dropdown {
+    display: none !important;
+  }
+}

@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NF-e #{{ service_order.invoice_number }}</title>
+    <style>
+        /* CSS específico para exportação PDF de notas fiscais */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 8pt;
+            line-height: 1.2;
+            color: #000;
+            background: white;
+            width: 100%;
+            padding: 10px;
+        }
+
+        /* Cabeçalho */
+        .nfe-header {
+            display: flex;
+            border: 1px solid #000;
+            margin-bottom: 5px;
+            height: 80px;
+        }
+
+        .header-left {
+            flex: 1;
+            border-right: 1px solid #000;
+            padding: 5px;
+        }
+
+        .header-right {
+            width: 200px;
+            padding: 5px;
+            text-align: center;
+        }
+
+        .recibo-box {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .recibo-text {
+            font-size: 7pt;
+            text-align: justify;
+            margin-bottom: 5px;
+            flex: 1;
+        }
+
+        .recibo-signature {
+            display: flex;
+            justify-content: space-between;
+            font-size: 6pt;
+            font-weight: bold;
+        }
+
+        .nfe-title {
+            font-size: 12pt;
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+
+        .nfe-number {
+            font-size: 10pt;
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+
+        .nfe-serie {
+            font-size: 8pt;
+        }
+
+        /* Blocos principais */
+        .emitente-block, .destinatario-block, .fatura-block, .impostos-block, .produtos-block {
+            border: 1px solid #000;
+            margin-bottom: 5px;
+            overflow: hidden;
+        }
+
+        .emitente-block {
+            display: flex;
+            height: 100px;
+        }
+
+        .emitente-logo {
+            width: 100px;
+            border-right: 1px solid #000;
+            padding: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .company-logo {
+            max-width: 80px;
+            max-height: 80px;
+        }
+
+        .emitente-dados {
+            flex: 1;
+            padding: 5px;
+        }
+
+        .emitente-title {
+            font-size: 8pt;
+            font-weight: bold;
+            background: #f0f0f0;
+            padding: 2px;
+            margin-bottom: 3px;
+        }
+
+        .emitente-content {
+            font-size: 7pt;
+        }
+
+        /* Destinatário */
+        .destinatario-block {
+            padding: 5px;
+        }
+
+        .destinatario-title {
+            font-size: 8pt;
+            font-weight: bold;
+            background: #f0f0f0;
+            padding: 2px;
+            margin-bottom: 3px;
+        }
+
+        .destinatario-info {
+            display: flex;
+            gap: 20px;
+            font-size: 7pt;
+        }
+
+        /* Fatura */
+        .fatura-block {
+            display: flex;
+            height: 60px;
+        }
+
+        .fatura-content {
+            flex: 1;
+            padding: 5px;
+            border-right: 1px solid #000;
+        }
+
+        .fatura-title {
+            font-size: 8pt;
+            font-weight: bold;
+            background: #f0f0f0;
+            padding: 2px;
+            margin-bottom: 3px;
+        }
+
+        .fatura-valor, .fatura-valor-liquido {
+            font-size: 7pt;
+            margin-bottom: 2px;
+        }
+
+        .fatura-valor-liquido {
+            font-weight: bold;
+        }
+
+        /* Impostos */
+        .impostos-block {
+            display: flex;
+            height: 60px;
+        }
+
+        .imposto-item {
+            flex: 1;
+            border-right: 1px solid #000;
+            padding: 5px;
+            text-align: center;
+        }
+
+        .imposto-item:last-child {
+            border-right: none;
+        }
+
+        .imposto-title {
+            font-size: 6pt;
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+
+        .imposto-value {
+            font-size: 7pt;
+            font-weight: bold;
+        }
+
+        /* Produtos */
+        .produtos-block {
+            padding: 5px;
+        }
+
+        .produtos-title {
+            font-size: 8pt;
+            font-weight: bold;
+            background: #f0f0f0;
+            padding: 2px;
+            margin-bottom: 3px;
+        }
+
+        .produtos-header {
+            display: flex;
+            border-bottom: 1px solid #000;
+            font-size: 6pt;
+            font-weight: bold;
+            padding: 2px 0;
+        }
+
+        .produtos-row {
+            display: flex;
+            border-bottom: 1px solid #ccc;
+            font-size: 7pt;
+            padding: 2px 0;
+        }
+
+        .prod-codigo { width: 80px; }
+        .prod-descricao { flex: 1; }
+        .prod-ncm { width: 80px; }
+        .prod-cfop { width: 60px; }
+        .prod-unidade { width: 40px; }
+        .prod-quantidade { width: 60px; }
+        .prod-valor-un { width: 80px; }
+        .prod-valor-total { width: 80px; }
+
+        .produtos-header > div, .produtos-row > div {
+            padding: 0 2px;
+            text-align: center;
+            border-right: 1px solid #ccc;
+        }
+
+        .prod-descricao {
+            text-align: left !important;
+        }
+
+        .produtos-header > div:last-child, .produtos-row > div:last-child {
+            border-right: none;
+        }
+
+        /* Totais */
+        .totais-block {
+            border: 1px solid #000;
+            padding: 5px;
+            text-align: right;
+            font-size: 8pt;
+            font-weight: bold;
+        }
+
+        /* Observações */
+        .observacoes-block {
+            border: 1px solid #000;
+            margin-top: 5px;
+            padding: 5px;
+        }
+
+        .observacoes-title {
+            font-size: 8pt;
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+
+        .observacoes-content {
+            font-size: 7pt;
+            min-height: 40px;
+        }
+
+        @page {
+            size: A4;
+            margin: 1cm;
+        }
+    </style>
+</head>
+<body>
+    <!-- Layout DANFE para exportação PDF -->
+    <div class="nfe-document">
+        <!-- Cabeçalho principal -->
+        <div class="nfe-header">
+            <div class="header-left">
+                <div class="recibo-box">
+                    <div class="recibo-text">RECEBEMOS OS PRODUTOS E/OU SERVIÇOS CONSTANTES DA NOTA FISCAL ELETRÔNICA INDICADA AO LADO. EMISSÃO: {{ service_order.invoice_date.strftime('%d/%m/%Y') if service_order.invoice_date else 'Data não definida' }} VALOR TOTAL: R$ {{ service_order.invoice_amount | safe_money }} DESTINATÁRIO: {{ service_order.client.name }}</div>
+                    <div class="recibo-signature">
+                        <div>DATA DE RECEBIMENTO</div>
+                        <div>IDENTIFICAÇÃO E ASSINATURA DO RECEBEDOR</div>
+                    </div>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="nfe-number">
+                    <div class="nfe-title">NF-e</div>
+                    <div class="nfe-number">Nº {{ service_order.invoice_number }}</div>
+                    <div class="nfe-serie">Série 001</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Identificação do emitente -->
+        <div class="emitente-block">
+            <div class="emitente-logo">
+                <div class="logo-box">
+                    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==" alt="SAMAPE" class="company-logo">
+                </div>
+            </div>
+            <div class="emitente-dados">
+                <div class="emitente-title">EMITENTE</div>
+                <div class="emitente-content">
+                    <strong>SAMAPE</strong><br>
+                    CNPJ: 12.345.678/0001-90<br>
+                    Inscrição Estadual: 123456789<br>
+                    Endereço: Rua das Máquinas, 123 - Centro<br>
+                    CEP: 12345-678 - Cidade/UF<br>
+                    Telefone: (11) 1234-5678
+                </div>
+            </div>
+        </div>
+        
+        <!-- Destinatário -->
+        <div class="destinatario-block">
+            <div class="destinatario-title">DESTINATÁRIO</div>
+            <div class="destinatario-info">
+                <div>
+                    <strong>{{ service_order.client.name }}</strong><br>
+                    {{ service_order.client.document | format_document }}<br>
+                    {{ service_order.client.address if service_order.client.address else 'Endereço não informado' }}<br>
+                    Telefone: {{ service_order.client.phone if service_order.client.phone else 'Não informado' }}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Fatura -->
+        <div class="fatura-block">
+            <div class="fatura-content">
+                <div class="fatura-title">FATURA</div>
+                <div class="fatura-valor">VALOR ORIGINAL: R$ {{ service_order.invoice_amount | safe_money }}</div>
+                <div class="fatura-valor">DESCONTOS: R$ 0,00</div>
+                <div class="fatura-valor-liquido">VALOR LÍQUIDO: R$ {{ service_order.invoice_amount | safe_money }}</div>
+            </div>
+        </div>
+        
+        <!-- Impostos -->
+        <div class="impostos-block">
+            <div class="imposto-item">
+                <div class="imposto-title">BASE DE CÁLCULO DO ICMS</div>
+                <div class="imposto-value">{{ service_order.invoice_amount | safe_money }}</div>
+            </div>
+            <div class="imposto-item">
+                <div class="imposto-title">VALOR DO ICMS</div>
+                <div class="imposto-value">0,00</div>
+            </div>
+            <div class="imposto-item">
+                <div class="imposto-title">VALOR TOTAL DOS PRODUTOS</div>
+                <div class="imposto-value">{{ service_order.invoice_amount | safe_money }}</div>
+            </div>
+            <div class="imposto-item">
+                <div class="imposto-title">VALOR TOTAL DA NOTA</div>
+                <div class="imposto-value">{{ service_order.invoice_amount | safe_money }}</div>
+            </div>
+        </div>
+        
+        <!-- Produtos/Serviços -->
+        <div class="produtos-block">
+            <div class="produtos-title">DADOS DOS PRODUTOS / SERVIÇOS</div>
+            <div class="produtos-header">
+                <div class="prod-codigo">CÓDIGO</div>
+                <div class="prod-descricao">DESCRIÇÃO</div>
+                <div class="prod-ncm">NCM/SH</div>
+                <div class="prod-cfop">CFOP</div>
+                <div class="prod-unidade">UN</div>
+                <div class="prod-quantidade">QTDE</div>
+                <div class="prod-valor-un">VL UNIT</div>
+                <div class="prod-valor-total">VL TOTAL</div>
+            </div>
+            <div class="produtos-row">
+                <div class="prod-codigo">001</div>
+                <div class="prod-descricao">{{ service_order.service_details or 'Serviços de manutenção' }}</div>
+                <div class="prod-ncm">-</div>
+                <div class="prod-cfop">5933</div>
+                <div class="prod-unidade">SV</div>
+                <div class="prod-quantidade">1</div>
+                <div class="prod-valor-un">{{ service_order.invoice_amount | safe_money }}</div>
+                <div class="prod-valor-total">{{ service_order.invoice_amount | safe_money }}</div>
+            </div>
+        </div>
+        
+        <!-- Totais -->
+        <div class="totais-block">
+            VALOR TOTAL DA NOTA: R$ {{ service_order.invoice_amount | safe_money }}
+        </div>
+        
+        <!-- Observações -->
+        <div class="observacoes-block">
+            <div class="observacoes-title">INFORMAÇÕES ADICIONAIS</div>
+            <div class="observacoes-content">
+                Ordem de Serviço: #{{ service_order.id }}<br>
+                Data de Fechamento: {{ service_order.closed_at.strftime('%d/%m/%Y às %H:%M') if service_order.closed_at else 'Não definida' }}<br>
+                Equipamento: {{ service_order.equipment.name }} - {{ service_order.equipment.model }}<br>
+                {% if service_order.notes %}
+                Observações: {{ service_order.notes }}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>

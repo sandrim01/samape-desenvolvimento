@@ -1,0 +1,31 @@
+<div class="card compact-card">
+    <div class="card-header bg-primary text-white">
+        <h5 class="card-title mb-0">
+            <i class="fas fa-boxes me-2"></i>Estoque de Peças
+        </h5>
+    </div>
+    <div class="card-body">
+        {% if low_stock_parts %}
+        <div class="stock-alerts">
+            {% for part in low_stock_parts %}
+            <div class="stock-alert-item">
+                <div class="stock-name">{{ part.name }}</div>
+                <div class="stock-qty {{ 'warning' if part.stock_quantity > 0 else 'danger' }}">
+                    {{ part.stock_quantity }}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <a href="{{ url_for('parts') }}" class="btn btn-sm btn-outline-primary mt-2 w-100">
+            <i class="fas fa-boxes me-1"></i>Gerenciar Peças
+        </a>
+        {% else %}
+        <div class="alert alert-success mt-1 mb-1 p-2">
+            <i class="fas fa-check-circle me-1"></i>Sem alertas de estoque
+        </div>
+        <a href="{{ url_for('parts') }}" class="btn btn-sm btn-outline-primary mt-2 w-100">
+            <i class="fas fa-boxes me-1"></i>Ver Peças
+        </a>
+        {% endif %}
+    </div>
+</div>

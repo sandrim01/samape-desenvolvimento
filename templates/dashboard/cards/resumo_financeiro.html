@@ -1,0 +1,22 @@
+<div class="card compact-card">
+    <div class="card-header bg-primary text-white">
+        <h5 class="card-title mb-0">
+            <i class="fas fa-chart-line me-2"></i>Resumo Financeiro
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="chart-container">
+            <canvas id="financialChart"></canvas>
+        </div>
+        <div class="row mt-2 text-center">
+            <div class="col-6">
+                <small class="text-success">Receitas</small>
+                <p class="mb-0">R$ {{ "%.2f"|format(metrics.monthly_income) }}</p>
+            </div>
+            <div class="col-6">
+                <small class="text-danger">Despesas</small>
+                <p class="mb-0">R$ {{ "%.2f"|format(metrics.monthly_expenses) }}</p>
+            </div>
+        </div>
+    </div>
+</div>

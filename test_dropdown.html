@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Dropdown Sidebar</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="static/css/style.css" rel="stylesheet">
+    <link href="static/css/menu-updates.css" rel="stylesheet">
+    <style>
+        body { 
+            background-color: #0d1117; 
+            color: white;
+        }
+        .sidebar {
+            background-color: #161b22;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .test-content {
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar de teste -->
+            <div class="col-3 sidebar">
+                <h5>Teste Dropdown Sidebar</h5>
+                
+                <!-- User info in sidebar -->
+                <div class="sidebar-user-info mb-4 dropdown">
+                    <div class="sidebar-profile-wrapper" role="button" data-bs-toggle="dropdown" aria-expanded="false" id="sidebarProfileDropdown">
+                        <img src="https://via.placeholder.com/70x70/2D8BF7/white?text=User" 
+                            alt="Perfil" class="sidebar-profile-image">
+                        <div class="sidebar-user-name">admin</div>
+                        <div class="sidebar-user-role">Admin</div>
+                    </div>
+                    
+                    <!-- Menu dropdown de perfil na sidebar -->
+                    <ul class="dropdown-menu sidebar-profile-dropdown" aria-labelledby="sidebarProfileDropdown">
+                        <li>
+                            <div class="user-info-header">
+                                <img src="https://via.placeholder.com/70x70/2D8BF7/white?text=User" 
+                                     alt="Perfil" class="profile-image">
+                                <div class="user-name">Alessandro Admin</div>
+                                <div class="user-email">admin@samape.com</div>
+                                <div class="user-role">admin</div>
+                            </div>
+                        </li>
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-id-card me-2"></i>Meu Perfil</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-cogs me-2"></i>Configurações</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-sign-out-alt me-2"></i>Sair</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Conteúdo de teste -->
+            <div class="col-9 test-content">
+                <h3>🧪 Teste do Dropdown da Sidebar</h3>
+                <p>Clique na imagem de perfil na sidebar para testar o dropdown.</p>
+                
+                <div class="alert alert-info">
+                    <h5>✅ Correções Aplicadas:</h5>
+                    <ul>
+                        <li>Adicionado classe <code>dropdown</code> no container principal</li>
+                        <li>Adicionado <code>id="sidebarProfileDropdown"</code> no elemento clicável</li>
+                        <li>Melhorado seletor de inicialização JavaScript</li>
+                        <li>Melhorado CSS com z-index e position</li>
+                        <li>Adicionado estilos hover para indicar interatividade</li>
+                    </ul>
+                </div>
+                
+                <div class="alert alert-warning">
+                    <h5>🔍 Como testar:</h5>
+                    <p>1. Clique na foto de perfil na sidebar</p>
+                    <p>2. O menu deve aparecer com as opções: Meu Perfil, Configurações, Sair</p>
+                    <p>3. A opção "Configurações" deve estar visível para usuários admin</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Inicialização dos dropdowns
+            const dropdowns = document.querySelectorAll('[data-bs-toggle="dropdown"]');
+            dropdowns.forEach(dropdown => {
+                try {
+                    new bootstrap.Dropdown(dropdown);
+                    console.log('Dropdown inicializado:', dropdown);
+                } catch (e) {
+                    console.error('Erro ao inicializar dropdown:', e);
+                }
+            });
+            
+            // Log específico para o dropdown da sidebar
+            const sidebarDropdown = document.getElementById('sidebarProfileDropdown');
+            if (sidebarDropdown) {
+                console.log('Dropdown da sidebar encontrado e inicializado');
+                
+                // Event listeners para debug
+                sidebarDropdown.addEventListener('click', function() {
+                    console.log('Dropdown da sidebar clicado');
+                });
+                
+                sidebarDropdown.addEventListener('show.bs.dropdown', function () {
+                    console.log('Dropdown da sidebar mostrando');
+                });
+                
+                sidebarDropdown.addEventListener('shown.bs.dropdown', function () {
+                    console.log('Dropdown da sidebar mostrado');
+                });
+            }
+        });
+    </script>
+</body>
+</html>

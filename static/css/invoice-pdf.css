@@ -1,0 +1,301 @@
+/* CSS específico para exportação PDF de notas fiscais */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    font-size: 8pt;
+    line-height: 1.2;
+    color: #000;
+    background: white;
+}
+
+.container-fluid, .d-flex, .btn, .card {
+    display: none !important;
+}
+
+.nfe-document {
+    display: block !important;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 10px;
+    page-break-after: avoid;
+}
+
+/* Cabeçalho */
+.nfe-header {
+    display: flex;
+    border: 1px solid #000;
+    margin-bottom: 5px;
+    height: 80px;
+}
+
+.header-left {
+    flex: 1;
+    border-right: 1px solid #000;
+    padding: 5px;
+}
+
+.header-right {
+    width: 200px;
+    padding: 5px;
+    text-align: center;
+}
+
+.recibo-box {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.recibo-text {
+    font-size: 7pt;
+    text-align: justify;
+    margin-bottom: 5px;
+    flex: 1;
+}
+
+.recibo-signature {
+    display: flex;
+    justify-content: space-between;
+    font-size: 6pt;
+    font-weight: bold;
+}
+
+.nfe-title {
+    font-size: 12pt;
+    font-weight: bold;
+    margin-bottom: 2px;
+}
+
+.nfe-number {
+    font-size: 10pt;
+    font-weight: bold;
+    margin-bottom: 2px;
+}
+
+.nfe-serie {
+    font-size: 8pt;
+}
+
+/* Blocos principais */
+.emitente-block, .destinatario-block, .fatura-block, .impostos-block, .produtos-block {
+    border: 1px solid #000;
+    margin-bottom: 5px;
+    overflow: hidden;
+}
+
+.emitente-block {
+    display: flex;
+    height: 100px;
+}
+
+.emitente-logo {
+    width: 100px;
+    border-right: 1px solid #000;
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.company-logo {
+    max-width: 80px;
+    max-height: 80px;
+}
+
+.emitente-dados {
+    flex: 1;
+    padding: 5px;
+}
+
+.emitente-title {
+    font-size: 8pt;
+    font-weight: bold;
+    background: #f0f0f0;
+    padding: 2px;
+    margin-bottom: 3px;
+}
+
+.emitente-content {
+    font-size: 7pt;
+}
+
+/* Destinatário */
+.destinatario-block {
+    padding: 5px;
+}
+
+.destinatario-title {
+    font-size: 8pt;
+    font-weight: bold;
+    background: #f0f0f0;
+    padding: 2px;
+    margin-bottom: 3px;
+}
+
+.destinatario-info {
+    display: flex;
+    gap: 20px;
+    font-size: 7pt;
+}
+
+/* Fatura */
+.fatura-block {
+    display: flex;
+    height: 60px;
+}
+
+.fatura-content {
+    flex: 1;
+    padding: 5px;
+    border-right: 1px solid #000;
+}
+
+.fatura-title {
+    font-size: 8pt;
+    font-weight: bold;
+    background: #f0f0f0;
+    padding: 2px;
+    margin-bottom: 3px;
+}
+
+.fatura-valor, .fatura-valor-liquido {
+    font-size: 7pt;
+    margin-bottom: 2px;
+}
+
+.fatura-valor-liquido {
+    font-weight: bold;
+}
+
+/* Impostos */
+.impostos-block {
+    display: flex;
+    height: 60px;
+}
+
+.imposto-item {
+    flex: 1;
+    border-right: 1px solid #000;
+    padding: 5px;
+    text-align: center;
+}
+
+.imposto-item:last-child {
+    border-right: none;
+}
+
+.imposto-title {
+    font-size: 6pt;
+    font-weight: bold;
+    margin-bottom: 3px;
+}
+
+.imposto-value {
+    font-size: 7pt;
+    font-weight: bold;
+}
+
+/* Produtos */
+.produtos-block {
+    padding: 5px;
+}
+
+.produtos-title {
+    font-size: 8pt;
+    font-weight: bold;
+    background: #f0f0f0;
+    padding: 2px;
+    margin-bottom: 3px;
+}
+
+.produtos-header {
+    display: flex;
+    border-bottom: 1px solid #000;
+    font-size: 6pt;
+    font-weight: bold;
+    padding: 2px 0;
+}
+
+.produtos-row {
+    display: flex;
+    border-bottom: 1px solid #ccc;
+    font-size: 7pt;
+    padding: 2px 0;
+}
+
+.prod-codigo { width: 80px; }
+.prod-descricao { flex: 1; }
+.prod-ncm { width: 80px; }
+.prod-cfop { width: 60px; }
+.prod-unidade { width: 40px; }
+.prod-quantidade { width: 60px; }
+.prod-valor-un { width: 80px; }
+.prod-valor-total { width: 80px; }
+
+.produtos-header > div, .produtos-row > div {
+    padding: 0 2px;
+    text-align: center;
+    border-right: 1px solid #ccc;
+}
+
+.prod-descricao {
+    text-align: left !important;
+}
+
+.produtos-header > div:last-child, .produtos-row > div:last-child {
+    border-right: none;
+}
+
+/* Totais */
+.totais-block {
+    border: 1px solid #000;
+    padding: 5px;
+    text-align: right;
+    font-size: 8pt;
+    font-weight: bold;
+}
+
+/* Observações */
+.observacoes-block {
+    border: 1px solid #000;
+    margin-top: 5px;
+    padding: 5px;
+}
+
+.observacoes-title {
+    font-size: 8pt;
+    font-weight: bold;
+    margin-bottom: 3px;
+}
+
+.observacoes-content {
+    font-size: 7pt;
+    min-height: 40px;
+}
+
+/* Página impressa */
+@page {
+    size: A4;
+    margin: 1cm;
+}
+
+@media print {
+    .container-fluid, .d-flex, .btn, .card {
+        display: none !important;
+    }
+    
+    .nfe-document {
+        display: block !important;
+    }
+    
+    body {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}

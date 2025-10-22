@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Editar Ponto{% endblock %}
+{% block content %}
+<!-- Mobile Page Header -->
+<div class="mobile-page-header">
+    <div class="mobile-header-content">
+        <h1 class="mobile-page-title">
+            <i class="fas fa-edit me-2"></i>Editar Registro de Ponto
+        </h1>
+        <div class="mobile-header-actions">
+            <a href="{{ url_for('ponto.admin_view') }}" class="mobile-action-btn">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="container mt-4">
+    <form method="post">
+        <div class="mb-3">
+            <label class="form-label">Funcionário</label>
+            <input type="text" class="form-control" value="{{ ponto.user.name }}" disabled>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Data/Hora</label>
+            <input type="text" class="form-control" value="{{ ponto.data_hora.strftime('%d/%m/%Y %H:%M') }}" disabled>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Foto</label><br>
+            <img src="data:image/png;base64,{{ ponto.foto_base64 }}" alt="Foto" width="120">
+        </div>
+        <div class="mb-3">
+            <label for="observacao" class="form-label">Observação</label>
+            <textarea class="form-control" id="observacao" name="observacao" rows="2">{{ ponto.observacao or '' }}</textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Salvar</button>
+        <a href="{{ url_for('ponto.bater_ponto') }}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

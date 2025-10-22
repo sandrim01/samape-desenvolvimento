@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+
+{% block title %}Novo Item de Estoque - SAMAPE{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Novo Item de Estoque</h1>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-plus me-1"></i> Cadastro de Item de Estoque
+    </div>
+    <div class="card-body">
+        <form method="post" novalidate>
+            {{ form.hidden_tag() }}
+            
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="name" class="form-label">Nome do Item *</label>
+                    {{ form.name(class="form-control", id="name") }}
+                    {% if form.name.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.name.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="type" class="form-label">Tipo *</label>
+                    {{ form.type(class="form-select", id="type") }}
+                    {% if form.type.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.type.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <label for="description" class="form-label">Descrição</label>
+                    {{ form.description(class="form-control", id="description", rows="3") }}
+                    {% if form.description.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.description.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label for="quantity" class="form-label">Quantidade *</label>
+                    {{ form.quantity(class="form-control", id="quantity", value="0") }}
+                    {% if form.quantity.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.quantity.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="col-md-4">
+                    <label for="unit" class="form-label">Unidade *</label>
+                    {{ form.unit(class="form-control", id="unit", placeholder="Ex: UN, KG, M") }}
+                    {% if form.unit.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.unit.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="col-md-4">
+                    <label for="unit_cost" class="form-label">Custo Unitário (R$)</label>
+                    {{ form.unit_cost(class="form-control", id="unit_cost", placeholder="0,00", type="text", step="any") }}
+                    {% if form.unit_cost.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.unit_cost.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="supplier_id" class="form-label">Fornecedor</label>
+                    {{ form.supplier_id(class="form-select", id="supplier_id") }}
+                    {% if form.supplier_id.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.supplier_id.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="minimum_quantity" class="form-label">Quantidade Mínima</label>
+                    {{ form.minimum_quantity(class="form-control", id="minimum_quantity", value="0") }}
+                    {% if form.minimum_quantity.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.minimum_quantity.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="expiry_date" class="form-label">Data de Vencimento</label>
+                    {{ form.expiry_date(class="form-control", id="expiry_date") }}
+                    {% if form.expiry_date.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.expiry_date.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="location" class="form-label">Localização</label>
+                    {{ form.location(class="form-control", id="location", placeholder="Ex: Almoxarifado A, Prateleira 1") }}
+                    {% if form.location.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.location.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="status" class="form-label">Status *</label>
+                    {{ form.status(class="form-select", id="status") }}
+                    {% if form.status.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.status.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Cadastrar Item
+                </button>
+                <a href="{{ url_for('stock_items') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Voltar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Máscara de moeda para custo unitário
+const unitCostField = document.getElementById('unit_cost');
+
+unitCostField.addEventListener('input', function(e) {
+    let value = e.target.value.replace(/\D/g, '');
+    if (value) {
+        value = (value / 100).toLocaleString('pt-BR', {
+            style: 'currency',
+            currency: 'BRL'
+        }).replace('R$', '').trim();
+        e.target.value = value;
+    }
+});
+
+// Converter para formato correto no foco perdido
+unitCostField.addEventListener('blur', function(e) {
+    if (e.target.value) {
+        let value = e.target.value;
+        // Converter de formato brasileiro para inglês
+        value = value.replace(/\./g, ''); // Remove separadores de milhares
+        value = value.replace(',', '.'); // Troca vírgula por ponto
+        e.target.value = value;
+        // Converter de volta para exibição
+        setTimeout(() => {
+            if (e.target.value) {
+                const numValue = parseFloat(e.target.value);
+                if (!isNaN(numValue)) {
+                    e.target.value = numValue.toLocaleString('pt-BR', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    });
+                }
+            }
+        }, 100);
+    }
+});
+
+// Máscara de data para data de vencimento
+document.getElementById('expiry_date').addEventListener('input', function(e) {
+    let value = e.target.value.replace(/\D/g, '');
+    value = value.replace(/(\d{2})(\d)/, '$1/$2');
+    value = value.replace(/(\d{2})\/(\d{2})(\d)/, '$1/$2/$3');
+    e.target.value = value;
+});
+
+// Converter valores para formato correto antes do envio
+document.querySelector('form').addEventListener('submit', function(e) {
+    if (unitCostField.value) {
+        // Converter de formato brasileiro para formato inglês
+        let value = unitCostField.value;
+        value = value.replace(/\./g, ''); // Remove separadores de milhares
+        value = value.replace(',', '.'); // Troca vírgula por ponto
+        unitCostField.value = value;
+    }
+});
+</script>
+{% endblock %}

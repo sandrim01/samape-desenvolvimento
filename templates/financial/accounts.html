@@ -1,0 +1,306 @@
+{% extends "base.html" %}
+
+{% block title %}Contas a Pagar/Receber - SAMAPE{% endblock %}
+
+{% block content %}
+<!-- Mobile Page Header -->
+<div class="mobile-page-header">
+    <div class="mobile-header-content">
+        <h1 class="mobile-page-title">
+            <i class="fas fa-calendar-check me-2"></i>Contas a Pagar e Receber
+        </h1>
+        <div class="mobile-header-actions">
+            <!-- Desktop Actions -->
+            <div class="d-none d-md-flex">
+                <a href="{{ url_for('new_financial_entry') }}" class="btn btn-primary me-2">
+                    <i class="fas fa-plus me-1"></i> Nova Conta
+                </a>
+                <a href="{{ url_for('financial') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i> Voltar ao Financeiro
+                </a>
+            </div>
+            
+            <!-- Mobile Actions -->
+            <div class="d-md-none">
+                <a href="{{ url_for('new_financial_entry') }}" class="mobile-action-btn">
+                    <i class="fas fa-plus"></i>
+                </a>
+                <a href="{{ url_for('financial') }}" class="mobile-action-btn">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Alertas de Status -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h6 class="mb-0">
+                    <i class="fas fa-exclamation-triangle me-1"></i>
+                    Contas Vencidas
+                </h6>
+            </div>
+            <div class="card-body">
+                <h3 class="text-danger">{{ overdue_entries|length }}</h3>
+                <p class="mb-0">Total: <strong>{{ format_currency(total_overdue) }}</strong></p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-warning">
+            <div class="card-header bg-warning text-dark">
+                <h6 class="mb-0">
+                    <i class="fas fa-clock me-1"></i>
+                    Vencem em 7 dias
+                </h6>
+            </div>
+            <div class="card-body">
+                <h3 class="text-warning">{{ upcoming_entries|length }}</h3>
+                <p class="mb-0">Total: <strong>{{ format_currency(total_upcoming) }}</strong></p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-info">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0">
+                    <i class="fas fa-hourglass-half me-1"></i>
+                    Contas Pendentes
+                </h6>
+            </div>
+            <div class="card-body">
+                <h3 class="text-info">{{ pending_entries|length }}</h3>
+                <p class="mb-0">Total: <strong>{{ format_currency(total_pending) }}</strong></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Contas Vencidas -->
+{% if overdue_entries %}
+<div class="card mb-4">
+    <div class="card-header bg-danger text-white">
+        <i class="fas fa-exclamation-triangle me-1"></i> Contas Vencidas
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Descrição</th>
+                        <th>Categoria</th>
+                        <th>Valor</th>
+                        <th>Vencimento</th>
+                        <th>Dias Vencido</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in overdue_entries %}
+                    <tr>
+                        <td>
+                            {{ entry.description }}
+                            {% if entry.notes %}
+                            <small class="text-muted d-block">{{ entry.notes }}</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary">
+                                {{ entry.category.value if entry.category else 'Outros' }}
+                            </span>
+                        </td>
+                        <td class="{% if entry.type.name == 'entrada' %}text-success{% else %}text-danger{% endif %}">
+                            {{ format_currency(entry.amount) }}
+                        </td>
+                        <td>
+                            {% if entry.due_date %}
+                                {{ entry.due_date.strftime('%d/%m/%Y') }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if entry.due_date %}
+                                {% set days_overdue = (today - entry.due_date.date()).days %}
+                                <span class="text-danger">{{ days_overdue }} dias</span>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            <form method="post" action="{{ url_for('mark_as_paid', entry_id=entry.id) }}" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-success" 
+                                        onclick="return confirm('Confirma o pagamento desta conta?')">
+                                    <i class="fas fa-check me-1"></i> Marcar como Pago
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Contas que Vencem em Breve -->
+{% if upcoming_entries %}
+<div class="card mb-4">
+    <div class="card-header bg-warning text-dark">
+        <i class="fas fa-clock me-1"></i> Vencem nos Próximos 7 Dias
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Descrição</th>
+                        <th>Categoria</th>
+                        <th>Valor</th>
+                        <th>Vencimento</th>
+                        <th>Dias Restantes</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in upcoming_entries %}
+                    <tr>
+                        <td>
+                            {{ entry.description }}
+                            {% if entry.notes %}
+                            <small class="text-muted d-block">{{ entry.notes }}</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary">
+                                {{ entry.category.value if entry.category else 'Outros' }}
+                            </span>
+                        </td>
+                        <td class="{% if entry.type.name == 'entrada' %}text-success{% else %}text-danger{% endif %}">
+                            {{ format_currency(entry.amount) }}
+                        </td>
+                        <td>
+                            {% if entry.due_date %}
+                                {{ entry.due_date.strftime('%d/%m/%Y') }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if entry.due_date %}
+                                {% set days_left = (entry.due_date.date() - today).days %}
+                                {% if days_left == 0 %}
+                                    <span class="text-danger">Vence hoje!</span>
+                                {% else %}
+                                    <span class="text-warning">{{ days_left }} dias</span>
+                                {% endif %}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            <form method="post" action="{{ url_for('mark_as_paid', entry_id=entry.id) }}" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-success" 
+                                        onclick="return confirm('Confirma o pagamento desta conta?')">
+                                    <i class="fas fa-check me-1"></i> Marcar como Pago
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Todas as Contas Pendentes -->
+{% if pending_entries %}
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-hourglass-half me-1"></i> Todas as Contas Pendentes
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Descrição</th>
+                        <th>Categoria</th>
+                        <th>Tipo</th>
+                        <th>Valor</th>
+                        <th>Vencimento</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in pending_entries %}
+                    <tr>
+                        <td>
+                            {{ entry.description }}
+                            {% if entry.notes %}
+                            <small class="text-muted d-block">{{ entry.notes }}</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary">
+                                {{ entry.category.value if entry.category else 'Outros' }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge {% if entry.type.name == 'entrada' %}bg-success{% else %}bg-danger{% endif %}">
+                                {{ entry.type.value }}
+                            </span>
+                        </td>
+                        <td class="{% if entry.type.name == 'entrada' %}text-success{% else %}text-danger{% endif %}">
+                            {{ format_currency(entry.amount) }}
+                        </td>
+                        <td>
+                            {% if entry.due_date %}
+                                {% set days_diff = (entry.due_date.date() - today).days %}
+                                <span class="{% if days_diff < 0 %}text-danger{% elif days_diff <= 3 %}text-warning{% endif %}">
+                                    {{ entry.due_date.strftime('%d/%m/%Y') }}
+                                    {% if days_diff < 0 %}
+                                        <small class="d-block">({{ -days_diff }} dias vencido)</small>
+                                    {% elif days_diff <= 3 %}
+                                        <small class="d-block">(vence em {{ days_diff }} dias)</small>
+                                    {% endif %}
+                                </span>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            <form method="post" action="{{ url_for('mark_as_paid', entry_id=entry.id) }}" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-success" 
+                                        onclick="return confirm('Confirma o pagamento desta conta?')">
+                                    <i class="fas fa-check me-1"></i> Marcar como Pago
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="card">
+    <div class="card-body text-center">
+        <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+        <h4>Parabéns!</h4>
+        <p class="text-muted">Não há contas pendentes no momento.</p>
+        <a href="{{ url_for('new_financial_entry') }}" class="btn btn-primary">
+            <i class="fas fa-plus me-1"></i> Adicionar Nova Conta
+        </a>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}
