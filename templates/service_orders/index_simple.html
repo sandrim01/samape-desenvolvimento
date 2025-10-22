@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Ordens de Serviço - SAMAPE{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Ordens de Serviço</h1>
+    
+    <!-- Teste básico de variáveis -->
+    <p>Total de ordens: {{ service_orders|length if service_orders else 0 }}</p>
+    <p>Total de clientes: {{ clients|length if clients else 0 }}</p>
+    <p>Total de funcionários: {{ employees|length if employees else 0 }}</p>
+    
+    {% if service_orders %}
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Cliente</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in service_orders %}
+                <tr>
+                    <td>#{{ order.id }}</td>
+                    <td>{{ order.client.name if order.client else 'N/A' }}</td>
+                    <td>{{ order.status }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p>Nenhuma ordem de serviço encontrada.</p>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+console.log('Template OS simples carregado');
+</script>
+{% endblock %}

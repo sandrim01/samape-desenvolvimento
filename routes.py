@@ -218,7 +218,7 @@ def register_routes(app):
         employees = User.query.filter_by(active=True).order_by(User.name).all()
         
         return render_template(
-            'service_orders/test.html',
+            'service_orders/index_simple.html',
             service_orders=service_orders,
             clients=clients,
             employees=employees,
