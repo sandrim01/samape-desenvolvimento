@@ -7,13 +7,14 @@
 /* ===== CORREÇÕES GERAIS ===== */
 
 /* Garantir que body e html tenham configuração correta */
-body {
+/* APENAS para páginas autenticadas - NÃO para login */
+body:not(.login-page) {
     background-color: #1e1e1e !important;
     color: #ffffff !important;
     font-family: 'Roboto', system-ui, -apple-system, sans-serif !important;
 }
 
-html[data-bs-theme="light"] body {
+html[data-bs-theme="light"] body:not(.login-page) {
     background-color: #f8f9fa !important;
     color: #212529 !important;
 }

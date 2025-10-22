@@ -1,0 +1,211 @@
+/* 
+ * CSS específico para a página de login
+ * Garante que os estilos do login não sejam sobrescritos
+ */
+
+/* ===== LOGIN PAGE FIXES ===== */
+
+/* Container de login */
+.login-container {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-height: 100vh !important;
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%) !important;
+    padding: 2rem !important;
+}
+
+.login-container::before {
+    content: '' !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><defs><radialGradient id="a" cx="50%" cy="50%"><stop offset="0%" stop-color="%23ffffff" stop-opacity="0.1"/><stop offset="100%" stop-color="%23ffffff" stop-opacity="0"/></radialGradient></defs><rect width="100%" height="100%" fill="url(%23a)"/></svg>') !important;
+    z-index: -1 !important;
+}
+
+/* Card de login */
+.login-card {
+    background: rgba(255, 255, 255, 0.95) !important;
+    border: none !important;
+    border-radius: 20px !important;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3) !important;
+    backdrop-filter: blur(10px) !important;
+    max-width: 450px !important;
+    width: 100% !important;
+    overflow: hidden !important;
+}
+
+.login-card .card-header {
+    background: transparent !important;
+    border: none !important;
+    text-align: center !important;
+    padding: 2rem 2rem 1rem !important;
+}
+
+.login-card .card-body {
+    padding: 0 2rem 2rem !important;
+}
+
+/* Logo de login */
+.login-logo img {
+    max-width: 180px !important;
+    height: auto !important;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1)) !important;
+}
+
+/* Título de login */
+.login-title {
+    color: #2c3e50 !important;
+    font-weight: 600 !important;
+    margin-bottom: 1.5rem !important;
+    text-align: center !important;
+}
+
+/* Formulário de login */
+.login-card .form-label {
+    color: #495057 !important;
+    font-weight: 500 !important;
+    margin-bottom: 0.5rem !important;
+}
+
+.login-card .form-control {
+    border: 2px solid #e9ecef !important;
+    border-radius: 10px !important;
+    padding: 0.75rem 1rem !important;
+    font-size: 1rem !important;
+    transition: all 0.3s ease !important;
+}
+
+.login-card .form-control:focus {
+    border-color: #2D8BF7 !important;
+    box-shadow: 0 0 0 0.2rem rgba(45, 139, 247, 0.25) !important;
+}
+
+/* Checkbox de lembrar */
+.login-card .form-check-input {
+    border: 2px solid #e9ecef !important;
+    border-radius: 4px !important;
+}
+
+.login-card .form-check-input:checked {
+    background-color: #2D8BF7 !important;
+    border-color: #2D8BF7 !important;
+}
+
+.login-card .form-check-label {
+    color: #495057 !important;
+}
+
+/* Botão de login */
+.login-card .btn-primary {
+    background: linear-gradient(45deg, #2D8BF7, #4A90E2) !important;
+    border: none !important;
+    border-radius: 10px !important;
+    padding: 0.875rem 2rem !important;
+    font-size: 1.1rem !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 4px 15px rgba(45, 139, 247, 0.3) !important;
+}
+
+.login-card .btn-primary:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(45, 139, 247, 0.4) !important;
+}
+
+.login-card .btn-primary:active {
+    transform: translateY(0) !important;
+}
+
+/* Alertas na página de login */
+.login-card .alert {
+    border-radius: 10px !important;
+    border: none !important;
+}
+
+.login-card .alert-danger {
+    background-color: rgba(220, 53, 69, 0.1) !important;
+    color: #dc3545 !important;
+}
+
+.login-card .alert-success {
+    background-color: rgba(25, 135, 84, 0.1) !important;
+    color: #198754 !important;
+}
+
+.login-card .alert-info {
+    background-color: rgba(13, 202, 240, 0.1) !important;
+    color: #0dcaf0 !important;
+}
+
+/* Texto de copyright */
+.login-container .text-white {
+    color: rgba(255, 255, 255, 0.9) !important;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+}
+
+.login-container .text-muted {
+    color: rgba(255, 255, 255, 0.7) !important;
+}
+
+/* ===== RESPONSIVIDADE ===== */
+
+@media (max-width: 576px) {
+    .login-container {
+        padding: 1rem !important;
+    }
+    
+    .login-card {
+        margin: 0 !important;
+        max-width: 100% !important;
+    }
+    
+    .login-card .card-header {
+        padding: 1.5rem 1.5rem 0.5rem !important;
+    }
+    
+    .login-card .card-body {
+        padding: 0 1.5rem 1.5rem !important;
+    }
+    
+    .login-logo img {
+        max-width: 150px !important;
+    }
+}
+
+/* ===== TEMA ESCURO PARA LOGIN ===== */
+
+html[data-bs-theme="dark"] .login-card {
+    background: rgba(33, 37, 41, 0.95) !important;
+    color: #ffffff !important;
+}
+
+html[data-bs-theme="dark"] .login-title {
+    color: #ffffff !important;
+}
+
+html[data-bs-theme="dark"] .login-card .form-label {
+    color: #ffffff !important;
+}
+
+html[data-bs-theme="dark"] .login-card .form-control {
+    background-color: #2d3748 !important;
+    border-color: #4a5568 !important;
+    color: #ffffff !important;
+}
+
+html[data-bs-theme="dark"] .login-card .form-control:focus {
+    background-color: #2d3748 !important;
+    border-color: #2D8BF7 !important;
+    color: #ffffff !important;
+}
+
+html[data-bs-theme="dark"] .login-card .form-check-label {
+    color: #ffffff !important;
+}
