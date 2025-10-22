@@ -51,8 +51,8 @@
     border-color: rgba(0, 0, 0, 0.1);
 }
 
-/* Estilos específicos para a sidebar com dropdown */
-.sidebar-user-info.dropdown {
+/* Estilos para a sidebar user info (modal e dropdown) */
+.sidebar-user-info {
     position: relative;
     display: flex;
     flex-direction: column;
@@ -61,7 +61,7 @@
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.sidebar-user-info.dropdown .sidebar-profile-image {
+.sidebar-user-info .sidebar-profile-image {
     width: 70px;
     height: 70px;
     border-radius: 50%;
@@ -74,7 +74,7 @@
     transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.sidebar-user-info.dropdown .sidebar-profile-image:hover {
+.sidebar-user-info .sidebar-profile-image:hover {
     transform: scale(1.05);
     box-shadow: 0 0 15px rgba(45, 139, 247, 0.6);
 }

@@ -1,0 +1,338 @@
+/* 
+ * CSS para Modal de Configurações do Usuário
+ * Versão Desktop com design moderno e responsivo
+ */
+
+/* Modal Principal */
+.user-profile-modal {
+    background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+    border: 1px solid #374151;
+    border-radius: 16px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+/* Header do Modal */
+.user-profile-modal-header {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    border-bottom: 1px solid #374151;
+    padding: 1.5rem 2rem;
+    position: relative;
+}
+
+.user-profile-modal-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" patternUnits="userSpaceOnUse" width="100" height="100"><circle cx="50" cy="50" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+    opacity: 0.3;
+}
+
+.modal-profile-image {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    border: 3px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    object-fit: cover;
+    position: relative;
+    z-index: 1;
+}
+
+.modal-title {
+    color: white;
+    font-weight: 600;
+    font-size: 1.25rem;
+    position: relative;
+    z-index: 1;
+}
+
+.modal-subtitle {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.875rem;
+    position: relative;
+    z-index: 1;
+}
+
+.modal-user-role {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 4px;
+    position: relative;
+    z-index: 1;
+    backdrop-filter: blur(10px);
+}
+
+.btn-close-white {
+    position: relative;
+    z-index: 1;
+}
+
+/* Body do Modal */
+.user-profile-modal-body {
+    padding: 2rem;
+    background: #1f2937;
+}
+
+.modal-section-title {
+    color: #e5e7eb;
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+}
+
+.modal-section-title i {
+    color: #60a5fa;
+}
+
+/* Cards de Configuração */
+.config-card {
+    display: flex;
+    align-items: center;
+    padding: 1.25rem;
+    background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
+    border: 1px solid #4b5563;
+    border-radius: 12px;
+    text-decoration: none;
+    color: white;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    min-height: 100px;
+}
+
+.config-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, transparent 0%, rgba(96, 165, 250, 0.1) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.config-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+    border-color: #60a5fa;
+    color: white;
+    text-decoration: none;
+}
+
+.config-card:hover::before {
+    opacity: 1;
+}
+
+.config-icon {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    font-size: 1.25rem;
+    color: white;
+    box-shadow: 0 4px 12px rgba(96, 165, 250, 0.3);
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+}
+
+.profile-config .config-icon {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.system-config .config-icon {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.config-content {
+    flex: 1;
+    position: relative;
+    z-index: 1;
+}
+
+.config-content h6 {
+    margin-bottom: 0.25rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: white;
+}
+
+.config-content p {
+    margin: 0;
+    color: #9ca3af;
+    font-size: 0.8rem;
+    line-height: 1.4;
+}
+
+.config-arrow {
+    color: #60a5fa;
+    font-size: 1.1rem;
+    position: relative;
+    z-index: 1;
+    transition: transform 0.3s ease;
+}
+
+.config-card:hover .config-arrow {
+    transform: translateX(4px);
+}
+
+/* Divider */
+.modal-divider {
+    border-color: #374151;
+    margin: 1.5rem 0;
+}
+
+/* Botão de Sair */
+.btn-outline-danger {
+    border: 1px solid #ef4444;
+    color: #ef4444;
+    background: transparent;
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-danger:hover {
+    background: #ef4444;
+    border-color: #ef4444;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .user-profile-modal-header {
+        padding: 1.25rem 1.5rem;
+    }
+    
+    .user-profile-modal-body {
+        padding: 1.5rem;
+    }
+    
+    .modal-profile-image {
+        width: 56px;
+        height: 56px;
+    }
+    
+    .config-card {
+        padding: 1rem;
+        min-height: 80px;
+    }
+    
+    .config-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+        margin-right: 0.75rem;
+    }
+}
+
+/* Tema Claro */
+[data-bs-theme="light"] .user-profile-modal {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border-color: #e5e7eb;
+}
+
+[data-bs-theme="light"] .user-profile-modal-body {
+    background: #ffffff;
+}
+
+[data-bs-theme="light"] .modal-section-title {
+    color: #374151;
+}
+
+[data-bs-theme="light"] .config-card {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border-color: #e5e7eb;
+    color: #374151;
+}
+
+[data-bs-theme="light"] .config-card:hover {
+    color: #374151;
+    border-color: #60a5fa;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+[data-bs-theme="light"] .config-content h6 {
+    color: #111827;
+}
+
+[data-bs-theme="light"] .config-content p {
+    color: #6b7280;
+}
+
+[data-bs-theme="light"] .modal-divider {
+    border-color: #e5e7eb;
+}
+
+/* Animações */
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.modal.show .user-profile-modal {
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+/* Melhorias para accessibility */
+.config-card:focus {
+    outline: 2px solid #60a5fa;
+    outline-offset: 2px;
+}
+
+.config-card:focus:not(:focus-visible) {
+    outline: none;
+}
+
+/* Estados loading (opcional) */
+.config-card.loading {
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.config-card.loading .config-arrow::after {
+    content: '';
+    width: 12px;
+    height: 12px;
+    border: 2px solid transparent;
+    border-top-color: #60a5fa;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-left: 8px;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
