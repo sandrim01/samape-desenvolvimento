@@ -104,7 +104,7 @@
                         <span class="badge bg-primary">{{ service_orders|length }} encontrada(s)</span>
                     {% endif %}
                 </h5>
-                <a href="{{ url_for('add_service_order') }}" class="btn btn-primary btn-sm">
+                <a href="{{ url_for('new_service_order') }}" class="btn btn-primary btn-sm">
                     Nova Ordem de Serviço
                 </a>
             </div>
@@ -192,7 +192,7 @@
                     Comece criando sua primeira ordem de serviço.
                     {% endif %}
                 </p>
-                <a href="{{ url_for('add_service_order') }}" class="btn btn-primary">
+                <a href="{{ url_for('new_service_order') }}" class="btn btn-primary">
                     Nova Ordem de Serviço
                 </a>
             </div>
