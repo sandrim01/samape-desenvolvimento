@@ -8,6 +8,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="static/css/style.css" rel="stylesheet">
     <link href="static/css/menu-updates.css" rel="stylesheet">
+    <link href="static/css/sidebar-dropdown-fix.css" rel="stylesheet">
     <style>
         body { 
             background-color: #0d1117; 
@@ -16,10 +17,16 @@
         .sidebar {
             background-color: #161b22;
             min-height: 100vh;
-            padding: 20px;
+            padding: 0;
+            padding-top: 20px;
         }
         .test-content {
             padding: 20px;
+        }
+        /* Override para teste */
+        [data-bs-theme="dark"] {
+            --bs-body-bg: #0d1117;
+            --bs-body-color: #ffffff;
         }
     </style>
 </head>

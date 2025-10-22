@@ -1,0 +1,85 @@
+/* 
+ * Arquivo de correção específica para o dropdown da sidebar
+ * Este arquivo resolve conflitos entre estilos e garante funcionamento correto
+ */
+
+/* Reset de estilos que podem conflitar */
+.sidebar-user-info.dropdown {
+    position: relative !important;
+    text-align: center !important;
+}
+
+/* Garantir que o wrapper funcione corretamente */
+.sidebar-user-info.dropdown .sidebar-profile-wrapper {
+    cursor: pointer !important;
+    user-select: none;
+}
+
+/* Garantir z-index correto para o dropdown */
+.sidebar-user-info.dropdown .dropdown-menu {
+    z-index: 1050 !important;
+}
+
+/* Correção para temas */
+[data-bs-theme="dark"] .sidebar-user-info.dropdown .sidebar-profile-dropdown {
+    background-color: #1f2937 !important;
+    border-color: #374151 !important;
+}
+
+[data-bs-theme="light"] .sidebar-user-info.dropdown .sidebar-profile-dropdown {
+    background-color: #ffffff !important;
+    border-color: #e5e7eb !important;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+}
+
+[data-bs-theme="light"] .sidebar-user-info.dropdown .sidebar-profile-dropdown .dropdown-item {
+    color: #374151 !important;
+}
+
+[data-bs-theme="light"] .sidebar-user-info.dropdown .sidebar-profile-dropdown .dropdown-item:hover {
+    background-color: #f3f4f6 !important;
+}
+
+[data-bs-theme="light"] .sidebar-user-info.dropdown .sidebar-profile-dropdown .user-info-header .user-name {
+    color: #111827 !important;
+}
+
+[data-bs-theme="light"] .sidebar-user-info.dropdown .sidebar-profile-dropdown .user-info-header .user-email {
+    color: #6b7280 !important;
+}
+
+/* Animações suaves */
+.sidebar-user-info.dropdown .sidebar-profile-dropdown {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(-50%) translateY(-10px);
+    transition: all 0.2s ease;
+}
+
+.sidebar-user-info.dropdown .sidebar-profile-dropdown.show {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: translateX(-50%) translateY(0) !important;
+}
+
+/* Correção para dispositivos touch */
+@media (hover: none) {
+    .sidebar-user-info.dropdown .sidebar-profile-wrapper:hover {
+        background-color: transparent;
+    }
+    
+    .sidebar-user-info.dropdown .sidebar-profile-wrapper:active {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+}
+
+/* Garantir que o dropdown não saia da tela */
+@media (max-width: 320px) {
+    .sidebar-user-info.dropdown .sidebar-profile-dropdown {
+        width: 100% !important;
+        left: 0 !important;
+        right: 0 !important;
+        transform: none !important;
+        margin: 10px !important;
+    }
+}
