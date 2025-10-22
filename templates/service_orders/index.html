@@ -1,6 +1,6 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 
-{% block title %}Ordens de Serviço - SAMAPE{% endblock %}
+{% block title %}Ordens de Servi�o - SAMAPE{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -15,7 +15,7 @@
 {% block content %}
 <!-- Header Mobile Padronizado -->
 <div class="mobile-page-header d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="mobile-page-title h2">Ordens de Serviço</h1>
+    <h1 class="mobile-page-title h2">Ordens de Servi�o</h1>
     <div class="mobile-page-actions btn-toolbar mb-2 mb-md-0">
         <a href="{{ url_for('new_service_order') }}" class="mobile-action-btn-expanded btn btn-primary">
             <i class="fas fa-plus"></i> Nova OS
@@ -58,7 +58,7 @@
             
             <div class="mobile-filter-row">
                 <div class="mobile-filter-col">
-                    <label for="responsible" class="form-label">Responsável</label>
+                    <label for="responsible" class="form-label">Respons�vel</label>
                     <select class="form-select" id="responsible" name="responsible">
                         <option value="">Todos</option>
                         {% for employee in employees %}
@@ -77,7 +77,7 @@
             
             <div class="mobile-filter-row">
                 <div class="mobile-filter-col">
-                    <label for="date_to" class="form-label">Até</label>
+                    <label for="date_to" class="form-label">At�</label>
                     <input type="date" class="form-control" id="date_to" name="date_to" value="{{ date_to }}">
                 </div>
                 
@@ -96,26 +96,26 @@
     </div>
 </div>
 
-<!-- Lista de Ordens de Serviço -->
+<!-- Lista de Ordens de Servi�o -->
 <div class="card">
     <div class="card-header">
-        <i class="fas fa-clipboard-list me-1"></i> Lista de Ordens de Serviço
+        <i class="fas fa-clipboard-list me-1"></i> Lista de Ordens de Servi�o
     </div>
     <div class="card-body">
         {% if service_orders %}
         
-        <!-- Desktop View (Tabela) - Só aparece em telas maiores -->
+        <!-- Desktop View (Tabela) - S� aparece em telas maiores -->
         <div class="table-responsive d-none d-md-block">
             <table class="table table-striped table-hover">
                 <thead>
                     <tr>
-                        <th>Nº OS</th>
+                        <th>N� OS</th>
                         <th>Cliente</th>
                         <th>Equipamento</th>
                         <th>Status</th>
-                        <th>Responsável</th>
+                        <th>Respons�vel</th>
                         <th>Data</th>
-                        <th>Ações</th>
+                        <th>A��es</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -153,7 +153,7 @@
             </table>
         </div>
         
-        <!-- Mobile View (Cards Padronizados) - Só aparece em telas menores -->
+        <!-- Mobile View (Cards Padronizados) - S� aparece em telas menores -->
         <div class="mobile-cards-container d-md-none">
             {% for order in service_orders %}
             <div class="mobile-standard-card">
@@ -188,7 +188,7 @@
                     {% if order.responsible %}
                     <div class="mobile-card-row">
                         <i class="mobile-card-icon fas fa-user-tie"></i>
-                        <span class="mobile-card-label">Responsável</span>
+                        <span class="mobile-card-label">Respons�vel</span>
                         <span class="mobile-card-value">{{ order.responsible.name }}</span>
                     </div>
                     {% endif %}
@@ -204,13 +204,13 @@
                     {% if order.description %}
                     <div class="mobile-card-row">
                         <i class="mobile-card-icon fas fa-clipboard"></i>
-                        <span class="mobile-card-label">Descrição</span>
+                        <span class="mobile-card-label">Descri��o</span>
                         <span class="mobile-card-value">{{ order.description[:50] }}{% if order.description|length > 50 %}...{% endif %}</span>
                     </div>
                     {% endif %}
                 </div>
                 
-                <!-- Ações do Card -->
+                <!-- A��es do Card -->
                 <div class="mobile-card-actions">
                     <a href="{{ url_for('view_service_order', id=order.id) }}" 
                        class="mobile-action-btn btn-view" 
@@ -247,8 +247,8 @@
         {% else %}
         <div class="text-center py-4">
             <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
-            <h5 class="text-muted">Nenhuma ordem de serviço encontrada</h5>
-            <p class="text-muted">Ajuste os filtros ou cadastre uma nova ordem de serviço.</p>
+            <h5 class="text-muted">Nenhuma ordem de servi�o encontrada</h5>
+            <p class="text-muted">Ajuste os filtros ou cadastre uma nova ordem de servi�o.</p>
         </div>
         {% endif %}
     </div>
@@ -259,7 +259,7 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="closeOrderModalLabel">Fechar Ordem de Serviço</h5>
+                <h5 class="modal-title" id="closeOrderModalLabel">Fechar Ordem de Servi�o</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
             </div>
             <form id="closeOrderForm" method="post">
@@ -267,7 +267,7 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <p class="alert alert-info">
-                            <i class="fas fa-info-circle"></i> O número da nota fiscal será gerado automaticamente.
+                            <i class="fas fa-info-circle"></i> O n�mero da nota fiscal ser� gerado automaticamente.
                         </p>
                     </div>
                     
@@ -277,8 +277,8 @@
                     </div>
                     
                     <div class="mb-3">
-                        <label for="service_details" class="form-label">Detalhes do Serviço *</label>
-                        <textarea class="form-control" id="service_details" name="service_details" rows="4" required>Serviço realizado conforme solicitado.</textarea>
+                        <label for="service_details" class="form-label">Detalhes do Servi�o *</label>
+                        <textarea class="form-control" id="service_details" name="service_details" rows="4" required>Servi�o realizado conforme solicitado.</textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -302,41 +302,26 @@ $(document).ready(function() {
         $('#searchForm').submit();
     });
     
-    // Função para fechar ordem de serviço
+    // Fun��o para fechar ordem de servi�o
     window.closeOrder = function(orderId) {
         $('#closeOrderForm').attr('action', `/service_orders/${orderId}/close`);
         $('#closeOrderModal').modal('show');
     };
     
-    // Função para excluir ordem de serviço
+    // Fun��o para excluir ordem de servi�o
     window.deleteOrder = function(orderId) {
-        if (confirm('Tem certeza que deseja excluir esta ordem de serviço?')) {
+        if (confirm('Tem certeza que deseja excluir esta ordem de servi�o?')) {
             window.location.href = `/service_orders/${orderId}/delete`;
         }
     };
+    
+    // Auto-submit form when filters change
+    $('#status, #client, #responsible, #date_from, #date_to').change(function() {
+        $('#searchForm').submit();
+    });
 });
 </script>
 {% endblock %}
-                        <option value="">Todos</option>
-                        {% for employee in employees %}
-                        <option value="{{ employee.id }}" {% if responsible_filter == employee.id|string %}selected{% endif %}>
-                            {{ employee.name }}
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
-                
-                <div class="mobile-filter-col">
-                    <label for="date_from" class="form-label">De</label>
-                    <input type="date" class="form-control" id="date_from" name="date_from" value="{{ date_from }}">
-                </div>
-            </div>
-            
-            <div class="mobile-filter-row">
-                <div class="mobile-filter-col">
-                    <label for="date_to" class="form-label">Até</label>
-                    <input type="date" class="form-control" id="date_to" name="date_to" value="{{ date_to }}">
-                </div>
                 
                 <div class="mobile-filter-col" style="flex: 0 0 auto;">
                     <button type="submit" class="btn btn-primary">
@@ -353,26 +338,26 @@ $(document).ready(function() {
     </div>
 </div>
 
-<!-- Lista de Ordens de Serviço -->
+<!-- Lista de Ordens de Servi�o -->
 <div class="card">
     <div class="card-header">
-        <i class="fas fa-clipboard-list me-1"></i> Lista de Ordens de Serviço
+        <i class="fas fa-clipboard-list me-1"></i> Lista de Ordens de Servi�o
     </div>
     <div class="card-body">
         {% if service_orders %}
         
-        <!-- Desktop View (Tabela) - Só aparece em telas maiores -->
+        <!-- Desktop View (Tabela) - S� aparece em telas maiores -->
         <div class="table-responsive d-none d-md-block">
             <table class="table table-striped table-hover">
                 <thead>
                     <tr>
-                        <th>Nº OS</th>
+                        <th>N� OS</th>
                         <th>Cliente</th>
                         <th>Equipamento</th>
                         <th>Status</th>
-                        <th>Responsável</th>
+                        <th>Respons�vel</th>
                         <th>Data</th>
-                        <th>Ações</th>
+                        <th>A��es</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -410,7 +395,7 @@ $(document).ready(function() {
             </table>
         </div>
         
-        <!-- Mobile View (Cards Padronizados) - Só aparece em telas menores -->
+        <!-- Mobile View (Cards Padronizados) - S� aparece em telas menores -->
         <div class="mobile-cards-container d-md-none">
             {% for order in service_orders %}
             <div class="mobile-standard-card">
@@ -445,7 +430,7 @@ $(document).ready(function() {
                     {% if order.responsible %}
                     <div class="mobile-card-row">
                         <i class="mobile-card-icon fas fa-user-tie"></i>
-                        <span class="mobile-card-label">Responsável</span>
+                        <span class="mobile-card-label">Respons�vel</span>
                         <span class="mobile-card-value">{{ order.responsible.name }}</span>
                     </div>
                     {% endif %}
@@ -461,13 +446,13 @@ $(document).ready(function() {
                     {% if order.description %}
                     <div class="mobile-card-row">
                         <i class="mobile-card-icon fas fa-clipboard"></i>
-                        <span class="mobile-card-label">Descrição</span>
+                        <span class="mobile-card-label">Descri��o</span>
                         <span class="mobile-card-value">{{ order.description[:50] }}{% if order.description|length > 50 %}...{% endif %}</span>
                     </div>
                     {% endif %}
                 </div>
                 
-                <!-- Ações do Card -->
+                <!-- A��es do Card -->
                 <div class="mobile-card-actions">
                     <button type="button" 
                             class="mobile-action-btn btn-view" 
@@ -505,366 +490,11 @@ $(document).ready(function() {
         {% else %}
         <div class="text-center py-4">
             <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
-            <h5 class="text-muted">Nenhuma ordem de serviço encontrada</h5>
-            <p class="text-muted">Ajuste os filtros ou cadastre uma nova ordem de serviço.</p>
+            <h5 class="text-muted">Nenhuma ordem de servi�o encontrada</h5>
+            <p class="text-muted">Ajuste os filtros ou cadastre uma nova ordem de servi�o.</p>
         </div>
         {% endif %}
     </div>
 </div>
 
 {% endblock %}
-
-{% block scripts %}
-<script>
-$(document).ready(function() {
-    // Auto-submit form when filters change
-    $('#status, #client, #responsible, #date_from, #date_to').change(function() {
-        $('#searchForm').submit();
-    });
-    
-    // Função para visualizar ordem de serviço
-    window.viewOrder = function(orderId) {
-        $('#viewOrderModal').modal('show');
-        // Carregar dados via AJAX aqui se necessário
-    };
-    
-    // Função para fechar ordem de serviço
-    window.closeOrder = function(orderId) {
-        $('#closeOrderForm').attr('action', `/service_orders/${orderId}/close`);
-        $('#closeOrderModal').modal('show');
-    };
-    
-    // Função para excluir ordem de serviço
-    window.deleteOrder = function(orderId) {
-        if (confirm('Tem certeza que deseja excluir esta ordem de serviço?')) {
-            // Implementar exclusão via AJAX ou redirecionamento
-            window.location.href = `/service_orders/${orderId}/delete`;
-        }
-    };
-});
-</script>
-{% endblock %}
-        
-        // Usar o modal de fallback HTML puro, que funciona sem depender de Bootstrap
-        document.getElementById('fallbackModal').style.display = 'block';
-        document.getElementById('fallbackTitle').textContent = 'Detalhes da OS #' + orderId;
-        document.getElementById('fallbackContent').innerHTML = `
-            <div style="text-align: center;">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Carregando...</span>
-                </div>
-                <p>Carregando informações da OS #${orderId}...</p>
-            </div>
-        `;
-        
-        // Carregar os dados via AJAX utilizando XMLHttpRequest para máxima compatibilidade
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', '/os_dados/' + orderId, true);
-        
-        xhr.onload = function() {
-            if (xhr.status >= 200 && xhr.status < 300) {
-                var data;
-                try {
-                    data = JSON.parse(xhr.responseText);
-                    console.log("Dados recebidos:", data);
-                    
-                    // Atualizar o conteúdo do modal alternativo
-                    var htmlContent = `
-                        <div style="margin-bottom: 20px;">
-                            <div style="display: flex; flex-wrap: wrap; gap: 20px;">
-                                <div style="flex: 1; min-width: 250px;">
-                                    <h4 style="font-size: 16px; margin-bottom: 10px;">Informações Gerais</h4>
-                                    <p><strong>Status:</strong> <span style="padding: 5px 10px; border-radius: 4px; background-color: #007bff; color: white;">${data.status_label}</span></p>
-                                    <p><strong>Cliente:</strong> ${data.client_name}</p>
-                                    <p><strong>Responsável:</strong> ${data.responsible_name}</p>
-                                </div>
-                                <div style="flex: 1; min-width: 250px;">
-                                    <h4 style="font-size: 16px; margin-bottom: 10px;">Datas</h4>
-                                    <p><strong>Abertura:</strong> ${data.created_at}</p>
-                                    <p><strong>Fechamento:</strong> ${data.closed_at}</p>
-                                </div>
-                            </div>
-                            
-                            <div style="margin-top: 15px;">
-                                <h4 style="font-size: 16px; margin-bottom: 10px;">Descrição</h4>
-                                <p>${data.description}</p>
-                            </div>
-                            
-                            <div style="margin-top: 15px;">
-                                <h4 style="font-size: 16px; margin-bottom: 10px;">Informações Financeiras</h4>
-                                <p><strong>Total:</strong> R$ ${data.total_value}</p>
-                                <p><strong>Valor Original:</strong> R$ ${data.original_amount}</p>
-                                <p><strong>Desconto:</strong> R$ ${data.discount_amount}</p>
-                            </div>
-                            
-                            <div style="margin-top: 20px; display: flex; gap: 10px;">
-                                <a href="${data.view_url}" style="padding: 8px 12px; background-color: #007bff; color: white; text-decoration: none; border-radius: 4px;">Ver Completo</a>
-                                <a href="${data.edit_url}" style="padding: 8px 12px; background-color: #6c757d; color: white; text-decoration: none; border-radius: 4px;">Editar</a>
-                            </div>
-                        </div>
-                    `;
-                    
-                    document.getElementById('fallbackContent').innerHTML = htmlContent;
-                    
-                } catch (e) {
-                    console.error("Erro ao fazer parse da resposta JSON:", e);
-                    document.getElementById('fallbackContent').innerHTML = `
-                        <div style="color: #721c24; background-color: #f8d7da; padding: 20px; border-radius: 5px; margin-bottom: 15px;">
-                            <p><strong>Erro ao processar os dados da OS.</strong></p>
-                            <p>Ocorreu um erro inesperado.</p>
-                        </div>
-                        <div style="text-align: center;">
-                            <a href="/os/${orderId}" style="padding: 8px 12px; background-color: #007bff; color: white; text-decoration: none; border-radius: 4px;">Ver na Visualização Básica</a>
-                        </div>
-                    `;
-                }
-            } else {
-                console.error("Erro ao carregar dados. Status:", xhr.status);
-                document.getElementById('fallbackContent').innerHTML = `
-                    <div style="color: #721c24; background-color: #f8d7da; padding: 20px; border-radius: 5px; margin-bottom: 15px;">
-                        <p><strong>Erro ao carregar os dados da OS #${orderId}</strong></p>
-                        <p>Status: ${xhr.status}</p>
-                    </div>
-                    <div style="text-align: center;">
-                        <a href="/os/${orderId}" style="padding: 8px 12px; background-color: #007bff; color: white; text-decoration: none; border-radius: 4px;">Ver na Visualização Básica</a>
-                    </div>
-                `;
-            }
-        };
-        
-        xhr.onerror = function() {
-            console.error("Erro de rede ao tentar obter os dados da OS");
-            document.getElementById('fallbackContent').innerHTML = `
-                <div style="color: #721c24; background-color: #f8d7da; padding: 20px; border-radius: 5px; margin-bottom: 15px;">
-                    <p><strong>Erro de conexão</strong></p>
-                    <p>Não foi possível conectar ao servidor para obter os dados da OS.</p>
-                </div>
-                <div style="text-align: center;">
-                    <a href="/os/${orderId}" style="padding: 8px 12px; background-color: #007bff; color: white; text-decoration: none; border-radius: 4px;">Ver na Visualização Básica</a>
-                </div>
-            `;
-        };
-        
-        xhr.send();
-    }
-    
-    // Filtrar cards mobile via tabs
-    $('.mobile-tab').click(function() {
-        // Se já estiver usando URL parameters, redirecionar
-        const filterValue = $(this).data('filter');
-        if (filterValue !== 'all') {
-            window.location.href = "{{ url_for('service_orders') }}?status=" + filterValue;
-            return;
-        } else {
-            window.location.href = "{{ url_for('service_orders') }}";
-            return;
-        }
-    });
-    
-    // Feedback tátil em cards mobile
-    $('.mobile-order-card').click(function(e) {
-        // Ignora clique em botões ou links
-        if (!$(e.target).closest('a, button').length) {
-            // Simula um feedback tátil no card
-            $(this).css('transform', 'scale(0.98)');
-            setTimeout(() => {
-                $(this).css('transform', '');
-            }, 150);
-            
-            // Pega o id da primeira tag <a> dentro do card (a de visualização)
-            const viewUrl = $(this).find('a:first').attr('href');
-            if (viewUrl) {
-                window.location.href = viewUrl;
-            }
-        }
-    });
-    
-    // Mostrar notificação ao fazer ações
-    $('.btn-danger').click(function() {
-        if (typeof showSnack === 'function') {
-            showSnack('Excluindo ordem de serviço...');
-        }
-    });
-    
-    // Configurar o modal de fechamento de OS quando o botão for clicado no modal de visualização
-    $(document).on('click', '.btn-close-os', function(e) {
-        e.preventDefault();
-        
-        // Fechar o modal de visualização
-        $('#viewOrderModal').modal('hide');
-        
-        // Recuperar o ID da OS
-        const orderId = $(this).data('id');
-        
-        // Configurar o formulário
-        const form = $('#closeOrderForm');
-        form.attr('action', `/os/${orderId}/fechar`);
-        
-        // Atualizar o título do modal
-        $('#closeOrderModalLabel').text(`Fechar Ordem de Serviço #${orderId}`);
-        
-        // Buscar os dados da OS via AJAX para preencher o modal
-        $.get(`/os_dados/${orderId}`, function(data) {
-            // Preencher o formulário com os dados da OS
-            $('#invoice_amount').val(data.total_value || data.original_amount || '');
-            $('#service_details').val('Serviço realizado conforme solicitado.');
-            
-            // Mostrar o modal
-            $('#closeOrderModal').modal('show');
-        }).fail(function(error) {
-            console.error('Erro na requisição:', error);
-        });
-        
-        // Mostrar o modal
-        $('#closeOrderModal').modal('show');
-    });
-});
-</script>
-
-<!-- Modal para fechar OS -->
-<div class="modal fade" id="closeOrderModal" tabindex="-1" aria-labelledby="closeOrderModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="closeOrderModalLabel">Fechar Ordem de Serviço</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form id="closeOrderForm" method="post">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <div class="modal-body">
-                    <!-- O número da NF-e agora é gerado automaticamente -->
-                    <div class="mb-3">
-                        <p class="alert alert-info">
-                            <i class="fas fa-info-circle"></i> O número da nota fiscal será gerado automaticamente.
-                        </p>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="invoice_amount" class="form-label">Valor Total (R$) *</label>
-                        <input type="number" class="form-control" id="invoice_amount" name="invoice_amount" step="0.01" required>
-                    </div>
-                    
-                    <!-- Seção de cálculo de valor por KM -->
-                    <div class="mb-3 border p-3 rounded bg-light">
-                        <div class="form-check mb-2">
-                            <input class="form-check-input" type="checkbox" id="include_km_calculation" name="include_km_calculation" onchange="toggleKmCalculation()">
-                            <label class="form-check-label" for="include_km_calculation">
-                                <i class="fas fa-road me-1"></i> Incluir cálculo de valor por KM
-                            </label>
-                        </div>
-                        
-                        <div id="km_calculation_fields" style="display: none;">
-                            <div class="row">
-                                <div class="col-md-6 mb-2">
-                                    <label for="distance_km" class="form-label">Distância percorrida (KM)</label>
-                                    <input type="number" class="form-control" id="distance_km" name="distance_km" step="0.01" onchange="calculateKmTotal()">
-                                </div>
-                                <div class="col-md-6 mb-2">
-                                    <label for="price_per_km" class="form-label">Valor por KM (R$)</label>
-                                    <input type="number" class="form-control" id="price_per_km" name="price_per_km" step="0.01" onchange="calculateKmTotal()">
-                                </div>
-                            </div>
-                            <div class="alert alert-info mb-0">
-                                <i class="fas fa-calculator me-1"></i> 
-                                Valor calculado: <strong id="km_total">R$ 0,00</strong>
-                                <button type="button" class="btn btn-sm btn-outline-primary ms-2" id="add_km_value">
-                                    <i class="fas fa-plus-circle"></i> Adicionar ao total
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="service_details" class="form-label">Detalhes do Serviço Executado *</label>
-                        <textarea class="form-control" id="service_details" name="service_details" rows="5" required></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-success">
-                        <i class="fas fa-check-circle me-1"></i> Fechar OS
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<script>
-// Função para mostrar/esconder os campos de cálculo de KM
-function toggleKmCalculation() {
-    const kmCalcFields = document.getElementById('km_calculation_fields');
-    const includeKmCalc = document.getElementById('include_km_calculation');
-    
-    if (kmCalcFields && includeKmCalc) {
-        kmCalcFields.style.display = includeKmCalc.checked ? 'block' : 'none';
-        
-        // Se desmarcar, limpar os valores
-        if (!includeKmCalc.checked) {
-            document.getElementById('distance_km').value = '';
-            document.getElementById('price_per_km').value = '';
-            document.getElementById('km_total').textContent = 'R$ 0,00';
-        }
-    }
-}
-
-// Função para calcular o total do valor por KM
-function calculateKmTotal() {
-    const distanceKm = parseFloat(document.getElementById('distance_km').value) || 0;
-    const pricePerKm = parseFloat(document.getElementById('price_per_km').value) || 0;
-    
-    const total = distanceKm * pricePerKm;
-    
-    // Formatar valor para moeda brasileira
-    const formattedTotal = total.toLocaleString('pt-BR', {
-        style: 'currency',
-        currency: 'BRL'
-    });
-    
-    document.getElementById('km_total').textContent = formattedTotal;
-}
-
-// Função para adicionar o valor calculado ao total da OS
-function addKmValueToTotal() {
-    const distanceKm = parseFloat(document.getElementById('distance_km').value) || 0;
-    const pricePerKm = parseFloat(document.getElementById('price_per_km').value) || 0;
-    
-    if (distanceKm <= 0 || pricePerKm <= 0) {
-        alert('Informe valores válidos para distância e preço por KM.');
-        return;
-    }
-    
-    const kmValue = distanceKm * pricePerKm;
-    
-    // Obter o valor atual do campo de valor total
-    const invoiceAmountField = document.getElementById('invoice_amount');
-    const currentTotal = parseFloat(invoiceAmountField.value) || 0;
-    
-    // Atualizar o valor total
-    const newTotal = currentTotal + kmValue;
-    invoiceAmountField.value = newTotal.toFixed(2);
-    
-    // Adicionar informação nos detalhes do serviço
-    const serviceDetailsField = document.getElementById('service_details');
-    const kmInfo = `\n\nValor de deslocamento: ${distanceKm.toFixed(2)} KM x R$ ${pricePerKm.toFixed(2)} = R$ ${kmValue.toFixed(2)}`;
-    
-    if (serviceDetailsField.value) {
-        serviceDetailsField.value += kmInfo;
-    } else {
-        serviceDetailsField.value = `Detalhes do serviço executado:${kmInfo}`;
-    }
-    
-    // Notificar o usuário
-    alert(`Valor de R$ ${kmValue.toFixed(2)} adicionado ao total da OS.`);
-}
-
-// Configurar o botão para adicionar valor calculado ao total quando o documento estiver pronto
-$(document).ready(function() {
-    $('#add_km_value').click(function() {
-        addKmValueToTotal();
-    });
-});
-</script>
-{% endblock %}
-
-
