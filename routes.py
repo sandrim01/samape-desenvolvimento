@@ -181,13 +181,20 @@ def register_routes(app):
     @app.route('/os')
     @login_required
     def service_orders():
+        from sqlalchemy.orm import joinedload
+        
         status_filter = request.args.get('status', '')
         client_filter = request.args.get('client', '')
         responsible_filter = request.args.get('responsible', '')
         date_from = request.args.get('date_from', '')
         date_to = request.args.get('date_to', '')
         
-        query = ServiceOrder.query
+        # Otimização: usar joinedload para evitar consultas N+1
+        query = ServiceOrder.query.options(
+            joinedload(ServiceOrder.client),
+            joinedload(ServiceOrder.responsible),
+            joinedload(ServiceOrder.equipment)
+        )
         
         # Apply filters
         if status_filter:

@@ -1,0 +1,324 @@
+/* SAMAPE - CSS CONSOLIDADO OTIMIZADO PARA PERFORMANCE */
+/* Versão: 1.0 - Redução de 18 arquivos para 1 */
+
+/* === VARIÁVEIS CSS === */
+:root {
+    /* Cores base - tema escuro */
+    --bg-dark: #1e1e1e;
+    --bg-card: #242424;
+    --bg-darker: #171717;
+    
+    /* Cores de texto */
+    --text-white: #ffffff;
+    --text-light: #f0f0f0;
+    --text-muted: #a0a0a0;
+    
+    /* Cores de destaque */
+    --pink: #f85d8e;
+    --green: #37d09e;
+    --blue: #4285f4;
+    --orange: #ff9353;
+    
+    /* Borders e utilitários */
+    --border-light: #333333;
+    --border-radius: 8px;
+    --transition-fast: 0.2s ease;
+}
+
+/* === RESET E BASE === */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--text-light);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.5;
+    margin: 0;
+    padding: 0;
+}
+
+/* === LAYOUT PRINCIPAL === */
+.sidebar {
+    background-color: var(--bg-darker);
+    border-right: 1px solid var(--border-light);
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 250px;
+    z-index: 1000;
+    overflow-y: auto;
+}
+
+.main-content {
+    margin-left: 250px;
+    padding: 20px;
+    min-height: 100vh;
+}
+
+/* === NAVBAR E NAVEGAÇÃO === */
+.navbar-dark {
+    background-color: var(--bg-darker) !important;
+}
+
+.nav-link {
+    color: var(--text-light) !important;
+    transition: var(--transition-fast);
+}
+
+.nav-link:hover {
+    color: var(--pink) !important;
+    background-color: rgba(248, 93, 142, 0.1);
+}
+
+/* === CARDS === */
+.card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-light);
+    border-radius: var(--border-radius);
+    color: var(--text-light);
+}
+
+.card-header {
+    background-color: var(--bg-darker);
+    border-bottom: 1px solid var(--border-light);
+}
+
+/* === FORMULÁRIOS === */
+.form-control, .form-select {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-light);
+    color: var(--text-light);
+}
+
+.form-control:focus, .form-select:focus {
+    background-color: var(--bg-card);
+    border-color: var(--pink);
+    box-shadow: 0 0 0 0.2rem rgba(248, 93, 142, 0.25);
+    color: var(--text-light);
+}
+
+.form-label {
+    color: var(--text-light);
+    font-weight: 500;
+}
+
+/* === BOTÕES === */
+.btn-primary {
+    background-color: var(--pink);
+    border-color: var(--pink);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #d34572;
+    border-color: #d34572;
+}
+
+.btn-success {
+    background-color: var(--green);
+    border-color: var(--green);
+}
+
+.btn-warning {
+    background-color: var(--orange);
+    border-color: var(--orange);
+}
+
+.btn-info {
+    background-color: var(--blue);
+    border-color: var(--blue);
+}
+
+/* === TABELAS === */
+.table-dark {
+    --bs-table-bg: var(--bg-card);
+    --bs-table-striped-bg: var(--bg-darker);
+    --bs-table-border-color: var(--border-light);
+}
+
+.table-dark th,
+.table-dark td {
+    border-color: var(--border-light);
+}
+
+/* === MODAIS === */
+.modal-content {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-light);
+}
+
+.modal-header {
+    border-bottom: 1px solid var(--border-light);
+}
+
+.modal-footer {
+    border-top: 1px solid var(--border-light);
+}
+
+/* === BADGES === */
+.badge {
+    font-size: 0.75em;
+    font-weight: 600;
+}
+
+/* === RESPONSIVIDADE MOBILE === */
+@media (max-width: 768px) {
+    .sidebar {
+        transform: translateX(-100%);
+        transition: transform var(--transition-fast);
+    }
+    
+    .sidebar.show {
+        transform: translateX(0);
+    }
+    
+    .main-content {
+        margin-left: 0;
+        padding: 15px;
+    }
+    
+    /* Cards móveis para tabelas */
+    .mobile-card-table .table {
+        display: none;
+    }
+    
+    .mobile-card-row {
+        background-color: var(--bg-card);
+        border: 1px solid var(--border-light);
+        border-radius: var(--border-radius);
+        margin-bottom: 15px;
+        padding: 15px;
+    }
+    
+    .row-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid var(--border-light);
+    }
+    
+    .row-header .title {
+        font-weight: 600;
+        color: var(--pink);
+    }
+    
+    .row-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+    }
+    
+    .item-label {
+        font-weight: 500;
+        color: var(--text-muted);
+        flex: 0 0 40%;
+    }
+    
+    .item-value {
+        flex: 1;
+        text-align: right;
+    }
+    
+    .row-actions {
+        margin-top: 15px;
+        padding-top: 10px;
+        border-top: 1px solid var(--border-light);
+        text-align: right;
+    }
+}
+
+/* === DROPDOWN FIXES === */
+.dropdown-menu {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-light);
+}
+
+.dropdown-item {
+    color: var(--text-light);
+}
+
+.dropdown-item:hover {
+    background-color: var(--bg-darker);
+    color: var(--pink);
+}
+
+/* === LOADING STATES === */
+.loading-initial {
+    opacity: 0.7;
+}
+
+.loaded {
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+/* === UTILITÁRIOS === */
+.text-pink { color: var(--pink) !important; }
+.text-green { color: var(--green) !important; }
+.text-blue { color: var(--blue) !important; }
+.text-orange { color: var(--orange) !important; }
+
+.bg-pink { background-color: var(--pink) !important; }
+.bg-green { background-color: var(--green) !important; }
+
+/* === COMPONENTES ESPECÍFICOS === */
+.dashboard-metrics .metric-card {
+    background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-darker) 100%);
+    border: 1px solid var(--border-light);
+    border-radius: var(--border-radius);
+    padding: 20px;
+    text-align: center;
+    transition: transform var(--transition-fast);
+}
+
+.dashboard-metrics .metric-card:hover {
+    transform: translateY(-2px);
+}
+
+/* === PERFIL SIDEBAR === */
+.sidebar-profile-section {
+    padding: 15px;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.profile-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid var(--pink);
+}
+
+/* === PERFORMANCE OPTIMIZATIONS === */
+.table img,
+.card img {
+    max-width: 100%;
+    height: auto;
+    loading: lazy;
+}
+
+/* Reduzir reflow em animações */
+.btn, .card, .modal-content {
+    will-change: transform;
+}
+
+/* === PRINT STYLES === */
+@media print {
+    .sidebar,
+    .btn,
+    .dropdown {
+        display: none !important;
+    }
+    
+    .main-content {
+        margin-left: 0 !important;
+    }
+    
+    .table {
+        font-size: 12px;
+    }
+}

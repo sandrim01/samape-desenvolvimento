@@ -10,8 +10,13 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from database import db
 from jinja_filters import nl2br, format_document, format_currency, status_color, absolute_value, safe_float, safe_money
 
-# Configure logging
-logging.basicConfig(level=logging.DEBUG)
+# Configure logging - optimized for production
+log_level = logging.WARNING if os.getenv('RAILWAY_ENVIRONMENT') == 'production' or os.getenv('FLASK_ENV') == 'production' else logging.INFO
+logging.basicConfig(
+    level=log_level,
+    format='%(asctime)s %(levelname)s: %(message)s',
+    handlers=[logging.StreamHandler()]
+)
 
 # Initialize extensions
 login_manager = LoginManager()
@@ -22,11 +27,14 @@ app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "development_key")
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
-# Configure database
+# Configure database with optimized pool settings
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "postgresql://postgres:qUngJAyBvLWQdkmSkZEjjEoMoDVzOBnx@trolley.proxy.rlwy.net:22285/railway")
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
-    "pool_recycle": 300,
+    "pool_recycle": 1800,  # 30 minutes instead of 5 minutes
     "pool_pre_ping": True,
+    "pool_size": 10,       # Increase pool size
+    "max_overflow": 20,    # Allow more overflow connections
+    "pool_timeout": 30,    # Connection timeout
 }
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
