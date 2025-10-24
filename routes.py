@@ -319,10 +319,21 @@ def register_routes(app):
             joinedload(ServiceOrder.financial_entries)
         ).get_or_404(id)
         
+        # Preparar dados dos equipamentos (relação many-to-many)
+        equipment_list = []
+        if service_order.equipment:
+            for eq in service_order.equipment:
+                equipment_list.append({
+                    'model': eq.model or 'N/A',
+                    'serial_number': eq.serial_number or 'N/A',
+                    'brand': eq.brand or 'N/A',
+                    'year': eq.year or 'N/A'
+                })
+        
         # Preparar dados para o modal
         order_data = {
             'id': service_order.id,
-            'description': service_order.description,
+            'description': service_order.description or 'Sem descrição',
             'status': service_order.status.value if service_order.status else 'N/A',
             'status_label': {
                 'aberta': 'Aberta',
@@ -334,12 +345,7 @@ def register_routes(app):
                 'phone': service_order.client.phone if service_order.client else 'N/A',
                 'email': service_order.client.email if service_order.client else 'N/A',
             },
-            'equipment': {
-                'model': service_order.equipment.model if service_order.equipment else 'N/A',
-                'serial_number': service_order.equipment.serial_number if service_order.equipment else 'N/A',
-                'brand': service_order.equipment.brand if service_order.equipment else 'N/A',
-                'year': service_order.equipment.year if service_order.equipment else 'N/A'
-            },
+            'equipment_list': equipment_list,
             'responsible': {
                 'name': service_order.responsible.name if service_order.responsible else 'Não atribuído'
             },

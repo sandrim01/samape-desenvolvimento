@@ -236,18 +236,45 @@
 {% endblock %}
 
 {% block scripts %}
-<script>
+<!-- Carregamento obrigatório do jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script class="requires-jquery">
 let currentOrderId = null;
 
-$(document).ready(function() {
-    // Auto-submit form when filters change
-    $('#status, #client, #responsible, #date_from, #date_to').change(function() {
-        $('#searchForm').submit();
+// Aguardar o carregamento do jQuery antes de executar
+function initializeModal() {
+    if (typeof $ === 'undefined') {
+        setTimeout(initializeModal, 100);
+        return;
+    }
+    
+    $(document).ready(function() {
+        // Auto-submit form when filters change
+        $('#status, #client, #responsive, #date_from, #date_to').change(function() {
+            $('#searchForm').submit();
+        });
+        
+        console.log('jQuery carregado e modal inicializado');
     });
-});
+}
+
+// Inicializar quando o DOM estiver pronto
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeModal);
+} else {
+    initializeModal();
+}
 
 // Função para visualizar ordem de serviço em modal
 function viewServiceOrder(orderId) {
+    console.log('viewServiceOrder chamado com ID:', orderId);
+    
+    // Verificar se jQuery está disponível
+    if (typeof $ === 'undefined') {
+        console.error('jQuery não está carregado');
+        return;
+    }
     currentOrderId = orderId;
     
     // Abrir modal
@@ -264,20 +291,33 @@ function viewServiceOrder(orderId) {
     `);
     
     // Buscar dados da OS via AJAX
+    console.log('Fazendo requisição AJAX para:', '/os/' + orderId + '/modal');
     $.ajax({
         url: '/os/' + orderId + '/modal',
         method: 'GET',
+        dataType: 'json',
+        timeout: 10000,
         success: function(data) {
+            console.log('Dados recebidos da API:', data);
             renderOrderModal(data);
             // Configurar botões do modal
             $('#editOrderBtn').show();
             $('#fullViewBtn').attr('href', '/os/' + orderId).show();
         },
         error: function(xhr, status, error) {
+            console.error('Erro na requisição AJAX:', {
+                status: xhr.status,
+                statusText: xhr.statusText,
+                responseText: xhr.responseText,
+                error: error
+            });
             $('#modalBodyContent').html(`
                 <div class="alert alert-danger" role="alert">
                     <i class="fas fa-exclamation-triangle me-2"></i>
-                    <strong>Erro ao carregar a ordem de serviço:</strong> ${error}
+                    <strong>Erro ao carregar a ordem de serviço:</strong><br>
+                    Status: ${xhr.status}<br>
+                    Erro: ${error}<br>
+                    Resposta: ${xhr.responseText || 'Nenhuma resposta'}
                 </div>
             `);
             $('#editOrderBtn').hide();
@@ -288,6 +328,13 @@ function viewServiceOrder(orderId) {
 
 // Função para renderizar os dados da OS no modal
 function renderOrderModal(order) {
+    console.log('renderOrderModal chamado com dados:', order);
+    
+    if (!order) {
+        console.error('Dados da ordem não fornecidos');
+        return;
+    }
+    
     const statusClass = {
         'aberta': 'warning',
         'em_andamento': 'info', 
@@ -326,17 +373,23 @@ function renderOrderModal(order) {
                 </div>
             </div>
             
-            <!-- Equipamento -->
+            <!-- Equipamentos -->
             <div class="col-md-6">
                 <div class="card mb-3">
                     <div class="card-header">
-                        <h6 class="mb-0"><i class="fas fa-cogs me-2"></i>Equipamento</h6>
+                        <h6 class="mb-0"><i class="fas fa-cogs me-2"></i>Equipamento(s)</h6>
                     </div>
                     <div class="card-body">
-                        <p><strong>Modelo:</strong> ${order.equipment.model}</p>
-                        <p><strong>Marca:</strong> ${order.equipment.brand}</p>
-                        <p><strong>Nº Série:</strong> ${order.equipment.serial_number}</p>
-                        <p><strong>Ano:</strong> ${order.equipment.year}</p>
+                        ${order.equipment_list && order.equipment_list.length > 0 ? 
+                            order.equipment_list.map((equipment, index) => `
+                                ${index > 0 ? '<hr class="my-2">' : ''}
+                                <p><strong>Modelo:</strong> ${equipment.model}</p>
+                                <p><strong>Marca:</strong> ${equipment.brand}</p>
+                                <p><strong>Nº Série:</strong> ${equipment.serial_number}</p>
+                                <p class="mb-0"><strong>Ano:</strong> ${equipment.year}</p>
+                            `).join('') 
+                            : '<p class="text-muted mb-0">Nenhum equipamento associado</p>'
+                        }
                     </div>
                 </div>
             </div>
