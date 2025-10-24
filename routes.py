@@ -367,43 +367,63 @@ def register_routes(app):
     @app.route('/os/<int:id>/edit-modal')
     @login_required
     def get_service_order_edit_modal(id):
-        from sqlalchemy.orm import joinedload
+        print(f"DEBUG EDIT-MODAL: Carregando dados para editar OS {id}")
         
-        service_order = ServiceOrder.query.options(
-            joinedload(ServiceOrder.client),
-            joinedload(ServiceOrder.responsible),
-            joinedload(ServiceOrder.equipment)
-        ).get_or_404(id)
+        try:
+            from sqlalchemy.orm import joinedload
+            
+            service_order = ServiceOrder.query.options(
+                joinedload(ServiceOrder.client),
+                joinedload(ServiceOrder.responsible),
+                joinedload(ServiceOrder.equipment)
+            ).get_or_404(id)
+            
+            print(f"DEBUG EDIT-MODAL: OS encontrada: {service_order.id}, Status: {service_order.status}")
+        except Exception as e:
+            print(f"DEBUG EDIT-MODAL: Erro ao carregar OS {id}: {str(e)}")
+            return jsonify({'error': f'Erro ao carregar OS: {str(e)}'}), 400
         
-        # Verificar se a OS pode ser editada
-        if service_order.status == ServiceOrderStatus.fechada:
-            return jsonify({
-                'error': 'Não é possível editar uma OS fechada.'
-            }), 400
-        
-        # Buscar dados necessários para o formulário
-        clients = Client.query.order_by(Client.name).all()
-        users = User.query.filter_by(active=True).order_by(User.name).all()
-        equipment_all = Equipment.query.order_by(Equipment.model).all()
-        
-        # Preparar dados para o modal
-        edit_data = {
-            'id': service_order.id,
-            'client_id': service_order.client_id,
-            'responsible_id': service_order.responsible_id if service_order.responsible_id else 0,
-            'description': service_order.description or '',
-            'estimated_value': float(service_order.estimated_value) if service_order.estimated_value else 0,
-            'status': service_order.status.value if service_order.status else 'aberta',
-            'km_inicial': float(service_order.km_inicial) if service_order.km_inicial else 0,
-            'km_final': float(service_order.km_final) if service_order.km_final else 0,
-            'service_details': service_order.service_details or '',
-            'equipment_ids': [eq.id for eq in service_order.equipment],
-            'clients': [{'id': c.id, 'name': c.name} for c in clients],
-            'users': [{'id': u.id, 'name': u.name} for u in users],
-            'equipment': [{'id': e.id, 'model': e.model, 'brand': e.brand} for e in equipment_all]
-        }
-        
-        return jsonify(edit_data)
+        try:
+            # Verificar se a OS pode ser editada
+            if service_order.status == ServiceOrderStatus.fechada:
+                print(f"DEBUG EDIT-MODAL: OS {id} está fechada")
+                return jsonify({
+                    'error': 'Não é possível editar uma OS fechada.'
+                }), 400
+            
+            print(f"DEBUG EDIT-MODAL: Carregando dados auxiliares...")
+            # Buscar dados necessários para o formulário
+            clients = Client.query.order_by(Client.name).all()
+            users = User.query.filter_by(active=True).order_by(User.name).all()
+            equipment_all = Equipment.query.order_by(Equipment.model).all()
+            
+            print(f"DEBUG EDIT-MODAL: Dados carregados - Clientes: {len(clients)}, Usuários: {len(users)}, Equipamentos: {len(equipment_all)}")
+            
+            # Preparar dados para o modal
+            edit_data = {
+                'id': service_order.id,
+                'client_id': service_order.client_id,
+                'responsible_id': service_order.responsible_id if service_order.responsible_id else 0,
+                'description': service_order.description or '',
+                'estimated_value': float(service_order.estimated_value) if service_order.estimated_value else 0,
+                'status': service_order.status.value if service_order.status else 'aberta',
+                'km_inicial': float(service_order.km_inicial) if service_order.km_inicial else 0,
+                'km_final': float(service_order.km_final) if service_order.km_final else 0,
+                'service_details': service_order.service_details or '',
+                'equipment_ids': [eq.id for eq in service_order.equipment],
+                'clients': [{'id': c.id, 'name': c.name} for c in clients],
+                'users': [{'id': u.id, 'name': u.name} for u in users],
+                'equipment': [{'id': e.id, 'model': e.model, 'brand': e.brand} for e in equipment_all]
+            }
+            
+            print(f"DEBUG EDIT-MODAL: Dados preparados com sucesso para OS {id}")
+            return jsonify(edit_data)
+            
+        except Exception as e:
+            print(f"DEBUG EDIT-MODAL: Erro interno: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            return jsonify({'error': f'Erro interno: {str(e)}'}), 500
 
     @app.route('/os/<int:id>/editar', methods=['GET', 'POST'])
     @login_required
