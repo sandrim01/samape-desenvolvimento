@@ -784,7 +784,23 @@ function saveServiceOrder() {
 // Função para excluir ordem de serviço
 function deleteServiceOrder(orderId) {
     if (confirm('Tem certeza que deseja excluir esta ordem de serviço?')) {
-        window.location.href = '/service_orders/' + orderId + '/delete';
+        // Criar formulário temporário para fazer POST request
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/ordens-servico/' + orderId + '/excluir';
+        
+        // Adicionar CSRF token se disponível
+        const csrfToken = document.querySelector('meta[name="csrf-token"]');
+        if (csrfToken) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'csrf_token';
+            input.value = csrfToken.getAttribute('content');
+            form.appendChild(input);
+        }
+        
+        document.body.appendChild(form);
+        form.submit();
     }
 }
 </script>
