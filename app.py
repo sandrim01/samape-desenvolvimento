@@ -67,11 +67,19 @@ login_manager.login_message_category = "warning"
 # Import models 
 import models
 
-# CSRF context processor desabilitado temporariamente
-# @app.context_processor
-# def inject_csrf_token():
-#     from flask_wtf.csrf import generate_csrf
-#     return dict(csrf_token=generate_csrf)
+# Context processor para CSRF (funciona mesmo com CSRF desabilitado)
+@app.context_processor
+def inject_csrf_token():
+    try:
+        if app.config.get("WTF_CSRF_ENABLED", True):
+            from flask_wtf.csrf import generate_csrf
+            return dict(csrf_token=generate_csrf)
+        else:
+            # Se CSRF estiver desabilitado, retornar token vazio
+            return dict(csrf_token=lambda: "")
+    except Exception:
+        # Em caso de erro, retornar token vazio
+        return dict(csrf_token=lambda: "")
 
 # Setup user loader for Flask-Login
 @login_manager.user_loader
