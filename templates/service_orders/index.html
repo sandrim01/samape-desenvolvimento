@@ -201,10 +201,44 @@
     </div>
 </div>
 
+<!-- Modal para Visualizar Ordem de Serviço -->
+<div class="modal fade" id="viewServiceOrderModal" tabindex="-1" aria-labelledby="viewServiceOrderModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewServiceOrderModalLabel">
+                    <i class="fas fa-eye me-2"></i>Visualizar Ordem de Serviço
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body" id="modalBodyContent">
+                <div class="text-center py-3">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Carregando...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Fechar
+                </button>
+                <button type="button" class="btn btn-primary" id="editOrderBtn" onclick="editCurrentOrder()">
+                    <i class="fas fa-edit me-1"></i>Editar
+                </button>
+                <a href="#" class="btn btn-success" id="fullViewBtn" target="_blank">
+                    <i class="fas fa-external-link-alt me-1"></i>Visualização Completa
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
 
 {% block scripts %}
 <script>
+let currentOrderId = null;
+
 $(document).ready(function() {
     // Auto-submit form when filters change
     $('#status, #client, #responsible, #date_from, #date_to').change(function() {
@@ -212,9 +246,159 @@ $(document).ready(function() {
     });
 });
 
-// Função para visualizar ordem de serviço
+// Função para visualizar ordem de serviço em modal
 function viewServiceOrder(orderId) {
-    alert('Visualizar OS #' + orderId);
+    currentOrderId = orderId;
+    
+    // Abrir modal
+    const modal = new bootstrap.Modal(document.getElementById('viewServiceOrderModal'));
+    modal.show();
+    
+    // Resetar conteúdo do modal
+    $('#modalBodyContent').html(`
+        <div class="text-center py-3">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Carregando...</span>
+            </div>
+        </div>
+    `);
+    
+    // Buscar dados da OS via AJAX
+    $.ajax({
+        url: '/os/' + orderId + '/modal',
+        method: 'GET',
+        success: function(data) {
+            renderOrderModal(data);
+            // Configurar botões do modal
+            $('#editOrderBtn').show();
+            $('#fullViewBtn').attr('href', '/os/' + orderId).show();
+        },
+        error: function(xhr, status, error) {
+            $('#modalBodyContent').html(`
+                <div class="alert alert-danger" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Erro ao carregar a ordem de serviço:</strong> ${error}
+                </div>
+            `);
+            $('#editOrderBtn').hide();
+            $('#fullViewBtn').hide();
+        }
+    });
+}
+
+// Função para renderizar os dados da OS no modal
+function renderOrderModal(order) {
+    const statusClass = {
+        'aberta': 'warning',
+        'em_andamento': 'info', 
+        'fechada': 'success'
+    }[order.status] || 'secondary';
+    
+    const modalContent = `
+        <div class="row">
+            <!-- Informações Básicas -->
+            <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Informações Básicas</h6>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>OS #:</strong> ${order.id}</p>
+                        <p><strong>Status:</strong> <span class="badge bg-${statusClass}">${order.status_label}</span></p>
+                        <p><strong>Criada em:</strong> ${order.created_at}</p>
+                        <p><strong>Atualizada em:</strong> ${order.updated_at}</p>
+                        <p><strong>Responsável:</strong> ${order.responsible.name}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Cliente -->
+            <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="fas fa-user me-2"></i>Cliente</h6>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Nome:</strong> ${order.client.name}</p>
+                        <p><strong>Telefone:</strong> ${order.client.phone}</p>
+                        <p><strong>E-mail:</strong> ${order.client.email}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Equipamento -->
+            <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="fas fa-cogs me-2"></i>Equipamento</h6>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Modelo:</strong> ${order.equipment.model}</p>
+                        <p><strong>Marca:</strong> ${order.equipment.brand}</p>
+                        <p><strong>Nº Série:</strong> ${order.equipment.serial_number}</p>
+                        <p><strong>Ano:</strong> ${order.equipment.year}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Valores e Kilometragem -->
+            <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="fas fa-dollar-sign me-2"></i>Valores</h6>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Valor Estimado:</strong> ${order.estimated_value}</p>
+                        <p><strong>Valor Total:</strong> ${order.total_value}</p>
+                        <p><strong>KM Entrada:</strong> ${order.kilometers_in}</p>
+                        <p><strong>KM Saída:</strong> ${order.kilometers_out}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Descrição do Serviço -->
+            <div class="col-12">
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="fas fa-clipboard-list me-2"></i>Descrição do Serviço</h6>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-0">${order.description || 'Nenhuma descrição informada'}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Observações -->
+            ${order.notes !== 'Nenhuma observação' ? `
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="fas fa-sticky-note me-2"></i>Observações</h6>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-0">${order.notes}</p>
+                    </div>
+                </div>
+            </div>
+            ` : ''}
+        </div>
+        
+        ${order.financial_entries_count > 0 ? `
+        <div class="alert alert-info mt-3" role="alert">
+            <i class="fas fa-info-circle me-2"></i>
+            Esta OS possui ${order.financial_entries_count} entrada(s) financeira(s) associada(s).
+        </div>
+        ` : ''}
+    `;
+    
+    $('#modalBodyContent').html(modalContent);
+}
+
+// Função para editar a OS atual
+function editCurrentOrder() {
+    if (currentOrderId) {
+        window.location.href = '/os/' + currentOrderId + '/editar';
+    }
 }
 
 // Função para excluir ordem de serviço

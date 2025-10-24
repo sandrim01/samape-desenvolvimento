@@ -307,6 +307,54 @@ def register_routes(app):
         close_form = CloseServiceOrderForm()
         return render_template('service_orders/view.html', order=service_order, close_form=close_form)
 
+    @app.route('/os/<int:id>/modal')
+    @login_required
+    def get_service_order_modal_data(id):
+        from sqlalchemy.orm import joinedload
+        
+        service_order = ServiceOrder.query.options(
+            joinedload(ServiceOrder.client),
+            joinedload(ServiceOrder.responsible),
+            joinedload(ServiceOrder.equipment),
+            joinedload(ServiceOrder.financial_entries)
+        ).get_or_404(id)
+        
+        # Preparar dados para o modal
+        order_data = {
+            'id': service_order.id,
+            'description': service_order.description,
+            'status': service_order.status.value if service_order.status else 'N/A',
+            'status_label': {
+                'aberta': 'Aberta',
+                'em_andamento': 'Em Andamento',
+                'fechada': 'Fechada'
+            }.get(service_order.status.value if service_order.status else '', 'N/A'),
+            'client': {
+                'name': service_order.client.name if service_order.client else 'N/A',
+                'phone': service_order.client.phone if service_order.client else 'N/A',
+                'email': service_order.client.email if service_order.client else 'N/A',
+            },
+            'equipment': {
+                'model': service_order.equipment.model if service_order.equipment else 'N/A',
+                'serial_number': service_order.equipment.serial_number if service_order.equipment else 'N/A',
+                'brand': service_order.equipment.brand if service_order.equipment else 'N/A',
+                'year': service_order.equipment.year if service_order.equipment else 'N/A'
+            },
+            'responsible': {
+                'name': service_order.responsible.name if service_order.responsible else 'Não atribuído'
+            },
+            'created_at': service_order.created_at.strftime('%d/%m/%Y %H:%M') if service_order.created_at else 'N/A',
+            'updated_at': service_order.updated_at.strftime('%d/%m/%Y %H:%M') if service_order.updated_at else 'N/A',
+            'estimated_value': f"R$ {service_order.estimated_value:.2f}" if service_order.estimated_value else 'Não informado',
+            'total_value': f"R$ {service_order.total_value:.2f}" if service_order.total_value else 'Não informado',
+            'kilometers_in': service_order.kilometers_in if service_order.kilometers_in else 'N/A',
+            'kilometers_out': service_order.kilometers_out if service_order.kilometers_out else 'N/A',
+            'notes': service_order.notes if service_order.notes else 'Nenhuma observação',
+            'financial_entries_count': len(service_order.financial_entries) if service_order.financial_entries else 0
+        }
+        
+        return jsonify(order_data)
+
     @app.route('/os/<int:id>/editar', methods=['GET', 'POST'])
     @login_required
     def edit_service_order(id):
