@@ -543,34 +543,59 @@ function saveServiceOrder() {
         }
     }
     
-    $.ajax({
+    // Verificar conectividade
+    console.log('Verificando conectividade...');
+    console.log('URL de destino:', '/os/' + currentOrderId + '/update-ajax');
+    console.log('Método:', 'POST');
+    console.log('Navegador online:', navigator.onLine);
+    
+    // Se for FormData, usar configurações específicas
+    const ajaxConfig = {
         url: '/os/' + currentOrderId + '/update-ajax',
         method: 'POST',
         data: requestData,
         timeout: 30000, // 30 segundos
-        headers: requestHeaders,
         beforeSend: function(xhr) {
             console.log('Enviando requisição AJAX...');
             console.log('XHR readyState:', xhr.readyState);
         },
-        success: function(response) {
-            console.log('Resposta da atualização:', response);
+    };
+    
+    // Adicionar headers apenas se não for FormData (deixar browser definir Content-Type para FormData)
+    if (requestData.constructor.name === 'String') {
+        ajaxConfig.headers = requestHeaders;
+        ajaxConfig.contentType = 'application/json';
+    } else {
+        // Para FormData, adicionar apenas headers customizados
+        if (requestHeaders['X-CSRFToken']) {
+            ajaxConfig.headers = { 'X-CSRFToken': requestHeaders['X-CSRFToken'] };
+        }
+        ajaxConfig.processData = false;
+        ajaxConfig.contentType = false;
+    }
+    
+    console.log('Configuração AJAX final:', ajaxConfig);
+    
+    // Adicionar handlers de sucesso e erro à configuração
+    ajaxConfig.success = function(response) {
+        console.log('Resposta da atualização:', response);
+        
+        if (response.success) {
+            // Fechar modal
+            $('#editServiceOrderModal').modal('hide');
             
-            if (response.success) {
-                // Fechar modal
-                $('#editServiceOrderModal').modal('hide');
-                
-                // Mostrar mensagem de sucesso
-                alert(response.message || 'Ordem de serviço atualizada com sucesso!');
-                
-                // Recarregar página para mostrar alterações
-                window.location.reload();
-            } else {
-                console.error('Erro na resposta:', response);
-                alert('Erro: ' + (response.error || 'Erro desconhecido'));
-            }
-        },
-        error: function(xhr, status, error) {
+            // Mostrar mensagem de sucesso
+            alert(response.message || 'Ordem de serviço atualizada com sucesso!');
+            
+            // Recarregar página para mostrar alterações
+            window.location.reload();
+        } else {
+            console.error('Erro na resposta:', response);
+            alert('Erro: ' + (response.error || 'Erro desconhecido'));
+        }
+    };
+    
+    ajaxConfig.error = function(xhr, status, error) {
             console.error('Erro detalhado ao salvar:', {
                 status: xhr.status,
                 statusText: xhr.statusText,
@@ -619,11 +644,22 @@ function saveServiceOrder() {
                 }
             }
             
-            alert(errorMessage);
-        },
-        complete: function() {
-            // Reabilitar botão
-            $('#saveOrderBtn').prop('disabled', false).html('<i class="fas fa-save me-1"></i>Salvar Alterações');
-        }
-    });
+            // Mostrar erro detalhado para debug
+            console.error('=== ERRO COMPLETO ===');
+            console.error('Status:', xhr.status);
+            console.error('Status Text:', xhr.statusText);
+            console.error('Response Text:', xhr.responseText);
+            console.error('Ready State:', xhr.readyState);
+            console.error('Response Headers:', xhr.getAllResponseHeaders());
+            
+            alert('ERRO: ' + errorMessage + '\n\nVerifique o console para mais detalhes (F12)');
+    };
+    
+    ajaxConfig.complete = function() {
+        // Reabilitar botão
+        $('#saveOrderBtn').prop('disabled', false).html('<i class="fas fa-save me-1"></i>Salvar Alterações');
+    };
+    
+    // Executar a requisição AJAX
+    $.ajax(ajaxConfig);
 }
