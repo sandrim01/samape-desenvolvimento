@@ -57,6 +57,8 @@ login_manager.init_app(app)
 csrf.init_app(app)
 csrf.exempt('/clientes/<int:id>/excluir')
 csrf.exempt('/admin/clientes/<int:id>/excluir-direto')
+# Isentar endpoint de update AJAX da OS
+csrf.exempt('/os/<int:id>/update-ajax')
 
 # Configure login manager
 login_manager.login_view = "login"
