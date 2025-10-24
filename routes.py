@@ -32,6 +32,25 @@ from utils import (
     identify_and_format_document
 )
 
+# Cache simples para melhorar performance
+def get_cached_data(app, cache_key, timeout_seconds, data_function):
+    """
+    Sistema de cache simples para melhorar performance das consultas
+    """
+    import time
+    if not hasattr(app, '_cache'):
+        app._cache = {}
+        
+    now = time.time()
+    
+    if (cache_key not in app._cache or 
+        now - app._cache[cache_key]['time'] > timeout_seconds):
+        data = data_function()
+        app._cache[cache_key] = {'data': data, 'time': now}
+        return data
+    else:
+        return app._cache[cache_key]['data']
+
 def register_routes(app):
     # Define o admin_or_manager_required como alias para manager_required
     admin_or_manager_required = manager_required
@@ -120,21 +139,37 @@ def register_routes(app):
     @app.route('/dashboard')
     @login_required
     def dashboard():
-        # Get service order statistics
-        so_stats = get_service_order_stats()
+        from sqlalchemy.orm import joinedload
+        import time
         
-        # Get financial summary
-        financial_summary = get_monthly_summary()
+        # Função para carregar dados do dashboard
+        def load_dashboard_data():
+            so_stats = get_service_order_stats()
+            financial_summary = get_monthly_summary()
+            
+            recent_orders = ServiceOrder.query.options(
+                joinedload(ServiceOrder.client),
+                joinedload(ServiceOrder.responsible)
+            ).order_by(ServiceOrder.created_at.desc()).limit(5).all()
+            
+            recent_logs = ActionLog.query.order_by(
+                ActionLog.timestamp.desc()
+            ).limit(6).all()  # Reduzido para 6 para melhor performance
+            
+            return {
+                'so_stats': so_stats,
+                'financial_summary': financial_summary,
+                'recent_orders': recent_orders,
+                'recent_logs': recent_logs
+            }
         
-        # Get recent service orders
-        recent_orders = ServiceOrder.query.order_by(
-            ServiceOrder.created_at.desc()
-        ).limit(5).all()
+        # Cache do dashboard por 3 minutos
+        dashboard_data = get_cached_data(app, 'dashboard_data', 180, load_dashboard_data)
         
-        # Get recent activity logs
-        recent_logs = ActionLog.query.order_by(
-            ActionLog.timestamp.desc()
-        ).limit(10).all()
+        so_stats = dashboard_data['so_stats']
+        financial_summary = dashboard_data['financial_summary']
+        recent_orders = dashboard_data['recent_orders']
+        recent_logs = dashboard_data['recent_logs']
         
         # Add current timestamp to prevent caching
         from datetime import datetime
@@ -189,6 +224,8 @@ def register_routes(app):
         responsible_filter = request.args.get('responsible', '')
         date_from = request.args.get('date_from', '')
         date_to = request.args.get('date_to', '')
+        page = request.args.get('page', 1, type=int)
+        per_page = 20  # Paginação para melhor performance
         
         # Otimização: usar joinedload para evitar consultas N+1
         query = ServiceOrder.query.options(
@@ -221,20 +258,32 @@ def register_routes(app):
             except ValueError:
                 pass
         
-        service_orders = query.order_by(ServiceOrder.created_at.desc()).all()
-        clients = Client.query.order_by(Client.name).all()
-        employees = User.query.filter_by(active=True).order_by(User.name).all()
+        # Paginação para melhor performance
+        service_orders_paginated = query.order_by(ServiceOrder.created_at.desc()).paginate(
+            page=page, per_page=per_page, error_out=False
+        )
+        
+        # Cache de listas que não mudam frequentemente (5 minutos)
+        clients = get_cached_data(
+            app, 'clients_list', 300,
+            lambda: Client.query.order_by(Client.name).all()
+        )
+        employees = get_cached_data(
+            app, 'employees_list', 300,
+            lambda: User.query.filter_by(active=True).order_by(User.name).all()
+        )
         
         return render_template(
             'service_orders/index.html',
-            service_orders=service_orders,
+            service_orders=service_orders_paginated,
             clients=clients,
             employees=employees,
             status_filter=status_filter,
             client_filter=client_filter,
             responsible_filter=responsible_filter,
             date_from=date_from,
-            date_to=date_to
+            date_to=date_to,
+            pagination=service_orders_paginated
         )
 
     @app.route('/os/nova', methods=['GET', 'POST'])
@@ -242,12 +291,20 @@ def register_routes(app):
     def new_service_order():
         form = ServiceOrderForm()
         
-        # Load clients for dropdown
-        form.client_id.choices = [(c.id, c.name) for c in Client.query.order_by(Client.name).all()]
+        # Load clients for dropdown usando cache
+        clients = get_cached_data(
+            app, 'clients_list', 300,
+            lambda: Client.query.order_by(Client.name).all()
+        )
+        form.client_id.choices = [(c.id, c.name) for c in clients]
         
-        # Load employees for dropdown
+        # Load employees for dropdown usando cache
+        employees = get_cached_data(
+            app, 'employees_list', 300,
+            lambda: User.query.filter_by(active=True).order_by(User.name).all()
+        )
         form.responsible_id.choices = [(0, 'A ser definido')] + [
-            (u.id, u.name) for u in User.query.filter_by(active=True).order_by(User.name).all()
+            (u.id, u.name) for u in employees
         ]
         
         if form.validate_on_submit():
@@ -987,11 +1044,22 @@ def register_routes(app):
 
     @app.route('/clientes/<int:id>')
     @login_required
-    @login_required
     def view_client(id):
+        from sqlalchemy.orm import joinedload
+        
         client = Client.query.get_or_404(id)
         equipment = Equipment.query.filter_by(client_id=id).all()
-        service_orders = ServiceOrder.query.filter_by(client_id=id).order_by(ServiceOrder.created_at.desc()).all()
+        
+        # Limitar ordens de serviço para melhor performance
+        page = request.args.get('page', 1, type=int)
+        per_page = 15
+        
+        service_orders = ServiceOrder.query.options(
+            joinedload(ServiceOrder.responsible),
+            joinedload(ServiceOrder.equipment)
+        ).filter_by(client_id=id).order_by(
+            ServiceOrder.created_at.desc()
+        ).limit(per_page).all()
         
         return render_template(
             'clients/view.html',
