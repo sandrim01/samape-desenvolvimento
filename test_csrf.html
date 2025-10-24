@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teste CSRF Token</title>
+    <meta name="csrf-token" content="teste123">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Teste CSRF Token</h1>
+    <button id="testBtn">Testar CSRF Token</button>
+    <div id="results"></div>
+
+    <script>
+    $(document).ready(function() {
+        $('#testBtn').click(function() {
+            // Testar obtenção do token CSRF
+            const csrfToken1 = $('meta[name=csrf-token]').attr('content');
+            const csrfToken2 = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+            
+            $('#results').html(`
+                <h3>Resultados:</h3>
+                <p><strong>jQuery method:</strong> ${csrfToken1 || 'null'}</p>
+                <p><strong>Vanilla JS method:</strong> ${csrfToken2 || 'null'}</p>
+                <p><strong>Meta tag exists (jQuery):</strong> ${!!$('meta[name=csrf-token]').length}</p>
+                <p><strong>Meta tag exists (Vanilla):</strong> ${!!document.querySelector('meta[name="csrf-token"]')}</p>
+            `);
+        });
+    });
+    </script>
+</body>
+</html>

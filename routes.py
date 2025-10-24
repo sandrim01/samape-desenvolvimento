@@ -491,6 +491,18 @@ def register_routes(app):
         print(f"DEBUG: Headers: {dict(request.headers)}")
         print(f"DEBUG: Raw data: {request.data}")
         
+        # Debug CSRF
+        csrf_token_header = request.headers.get('X-CSRFToken')
+        print(f"DEBUG: CSRF Token no header: {csrf_token_header}")
+        
+        # Verificar se há token nos dados também
+        try:
+            data_preview = request.get_json()
+            csrf_token_data = data_preview.get('csrf_token') if data_preview else None
+            print(f"DEBUG: CSRF Token nos dados: {csrf_token_data}")
+        except Exception as e:
+            print(f"DEBUG: Erro ao ler dados JSON para CSRF: {e}")
+        
         service_order = ServiceOrder.query.get_or_404(id)
         print(f"DEBUG: OS encontrada: {service_order.id}")
         

@@ -497,21 +497,38 @@ function saveServiceOrder() {
     // Obter token CSRF
     const csrfToken = $('meta[name=csrf-token]').attr('content') || document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
     console.log('CSRF Token encontrado:', !!csrfToken);
+    console.log('CSRF Token value:', csrfToken);
+    console.log('Meta tag exists:', !!$('meta[name=csrf-token]').length);
+    console.log('FormData sendo enviado:', JSON.stringify(formData, null, 2));
+    
+    // Tentar diferentes abordagens para o CSRF
+    let requestData;
+    let requestHeaders = {};
+    
+    if (csrfToken) {
+        // Abordagem 1: Adicionar token aos dados JSON
+        formData.csrf_token = csrfToken;
+        requestData = JSON.stringify(formData);
+        requestHeaders['Content-Type'] = 'application/json';
+        requestHeaders['X-CSRFToken'] = csrfToken;
+    } else {
+        console.warn('CSRF Token não encontrado!');
+        requestData = JSON.stringify(formData);
+        requestHeaders['Content-Type'] = 'application/json';
+    }
+    
+    console.log('Request headers:', requestHeaders);
+    console.log('Request data:', requestData);
     
     $.ajax({
         url: '/os/' + currentOrderId + '/update-ajax',
         method: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify(formData),
+        data: requestData,
         timeout: 30000, // 30 segundos
-        headers: csrfToken ? {
-            'X-CSRFToken': csrfToken
-        } : {},
+        headers: requestHeaders,
         beforeSend: function(xhr) {
             console.log('Enviando requisição AJAX...');
-            if (csrfToken) {
-                xhr.setRequestHeader('X-CSRFToken', csrfToken);
-            }
+            console.log('XHR readyState:', xhr.readyState);
         },
         success: function(response) {
             console.log('Resposta da atualização:', response);
