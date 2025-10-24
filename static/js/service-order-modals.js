@@ -501,32 +501,27 @@ function saveServiceOrder() {
     console.log('Meta tag exists:', !!$('meta[name=csrf-token]').length);
     console.log('FormData sendo enviado:', JSON.stringify(formData, null, 2));
     
-    // Preparar dados como FormData para melhor compatibilidade com CSRF
+    // Preparar dados como JSON com token CSRF no header (mais confiável)
     let requestData;
     let requestHeaders = {};
     
     if (csrfToken) {
-        console.log('Preparando dados como FormData com CSRF token');
+        console.log('Preparando dados como JSON com CSRF token no header');
         
-        // Criar FormData
-        const formDataObj = new FormData();
-        formDataObj.append('csrf_token', csrfToken);
+        // Adicionar CSRF token aos dados JSON
+        const dataWithCSRF = {
+            ...formData,
+            csrf_token: csrfToken
+        };
         
-        // Adicionar todos os campos do formData
-        for (const [key, value] of Object.entries(formData)) {
-            if (Array.isArray(value)) {
-                // Para arrays (como equipment_ids), adicionar cada item
-                value.forEach(item => formDataObj.append(key + '[]', item));
-            } else if (value !== null && value !== undefined) {
-                formDataObj.append(key, value);
-            }
-        }
-        
-        requestData = formDataObj;
-        // Não definir Content-Type, deixar o browser definir para FormData
+        requestData = JSON.stringify(dataWithCSRF);
+        requestHeaders['Content-Type'] = 'application/json';
         requestHeaders['X-CSRFToken'] = csrfToken;
+        
+        console.log('CSRF Token adicionado:', csrfToken);
+        console.log('Headers com CSRF:', requestHeaders);
     } else {
-        console.warn('CSRF Token não encontrado! Usando JSON');
+        console.warn('CSRF Token não encontrado!');
         requestData = JSON.stringify(formData);
         requestHeaders['Content-Type'] = 'application/json';
     }
@@ -549,30 +544,22 @@ function saveServiceOrder() {
     console.log('Método:', 'POST');
     console.log('Navegador online:', navigator.onLine);
     
-    // Se for FormData, usar configurações específicas
+    // Configuração AJAX simplificada
     const ajaxConfig = {
         url: '/os/' + currentOrderId + '/update-ajax',
         method: 'POST',
         data: requestData,
+        headers: requestHeaders,
+        contentType: 'application/json',
         timeout: 30000, // 30 segundos
         beforeSend: function(xhr) {
             console.log('Enviando requisição AJAX...');
+            console.log('URL:', '/os/' + currentOrderId + '/update-ajax');
+            console.log('Headers sendo enviados:', requestHeaders);
+            console.log('Data sendo enviada:', requestData);
             console.log('XHR readyState:', xhr.readyState);
         },
     };
-    
-    // Adicionar headers apenas se não for FormData (deixar browser definir Content-Type para FormData)
-    if (requestData.constructor.name === 'String') {
-        ajaxConfig.headers = requestHeaders;
-        ajaxConfig.contentType = 'application/json';
-    } else {
-        // Para FormData, adicionar apenas headers customizados
-        if (requestHeaders['X-CSRFToken']) {
-            ajaxConfig.headers = { 'X-CSRFToken': requestHeaders['X-CSRFToken'] };
-        }
-        ajaxConfig.processData = false;
-        ajaxConfig.contentType = false;
-    }
     
     console.log('Configuração AJAX final:', ajaxConfig);
     
