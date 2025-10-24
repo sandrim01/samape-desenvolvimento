@@ -4,6 +4,7 @@ from datetime import datetime
 from functools import wraps
 from flask import render_template, redirect, url_for, flash, request, jsonify, session, abort, Response, make_response
 from flask_login import login_user, logout_user, login_required, current_user
+from flask_wtf.csrf import exempt
 
 from werkzeug.security import generate_password_hash
 from sqlalchemy import func, desc, or_
@@ -505,6 +506,7 @@ def register_routes(app):
         
     @app.route('/os/<int:id>/update-ajax', methods=['POST'])
     @login_required
+    @exempt
     def update_service_order_ajax(id):
         print(f"\n=== DEBUG UPDATE-AJAX: OS {id} ===")
         print(f"Content-Type: {request.content_type}")

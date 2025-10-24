@@ -494,37 +494,19 @@ function saveServiceOrder() {
     // Enviar dados via AJAX
     console.log('Enviando dados via AJAX para:', '/os/' + currentOrderId + '/update-ajax');
     
-    // Obter token CSRF
-    const csrfToken = $('meta[name=csrf-token]').attr('content') || document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-    console.log('CSRF Token encontrado:', !!csrfToken);
-    console.log('CSRF Token value:', csrfToken);
-    console.log('Meta tag exists:', !!$('meta[name=csrf-token]').length);
+    // Log dos dados finais
     console.log('FormData sendo enviado:', JSON.stringify(formData, null, 2));
     
-    // Preparar dados como JSON com token CSRF no header (mais confiável)
-    let requestData;
-    let requestHeaders = {};
+    // Simplificar: apenas JSON sem CSRF (endpoint está isento)
+    console.log('Preparando dados como JSON simples (sem CSRF)');
     
-    if (csrfToken) {
-        console.log('Preparando dados como JSON com CSRF token no header');
-        
-        // Adicionar CSRF token aos dados JSON
-        const dataWithCSRF = {
-            ...formData,
-            csrf_token: csrfToken
-        };
-        
-        requestData = JSON.stringify(dataWithCSRF);
-        requestHeaders['Content-Type'] = 'application/json';
-        requestHeaders['X-CSRFToken'] = csrfToken;
-        
-        console.log('CSRF Token adicionado:', csrfToken);
-        console.log('Headers com CSRF:', requestHeaders);
-    } else {
-        console.warn('CSRF Token não encontrado!');
-        requestData = JSON.stringify(formData);
-        requestHeaders['Content-Type'] = 'application/json';
-    }
+    const requestData = JSON.stringify(formData);
+    const requestHeaders = {
+        'Content-Type': 'application/json'
+    };
+    
+    console.log('Dados sendo enviados:', formData);
+    console.log('JSON string:', requestData);
     
     console.log('Request headers:', requestHeaders);
     console.log('Request data type:', requestData.constructor.name);
