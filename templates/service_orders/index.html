@@ -781,8 +781,9 @@ function saveServiceOrder() {
     });
 }
 
-// Função para excluir ordem de serviço
+// Função para excluir ordem de serviço (VERSÃO CORRIGIDA v2)
 function deleteServiceOrder(orderId) {
+    console.log('NOVA FUNÇÃO DE EXCLUSÃO - URL CORRETA:', '/ordens-servico/' + orderId + '/excluir');
     if (confirm('Tem certeza que deseja excluir esta ordem de serviço?')) {
         // Criar formulário temporário para fazer POST request
         const form = document.createElement('form');
