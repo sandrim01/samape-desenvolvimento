@@ -352,10 +352,12 @@ def register_routes(app):
             'created_at': service_order.created_at.strftime('%d/%m/%Y %H:%M') if service_order.created_at else 'N/A',
             'updated_at': service_order.updated_at.strftime('%d/%m/%Y %H:%M') if service_order.updated_at else 'N/A',
             'estimated_value': f"R$ {service_order.estimated_value:.2f}" if service_order.estimated_value else 'Não informado',
-            'total_value': f"R$ {service_order.total_value:.2f}" if service_order.total_value else 'Não informado',
-            'kilometers_in': service_order.kilometers_in if service_order.kilometers_in else 'N/A',
-            'kilometers_out': service_order.kilometers_out if service_order.kilometers_out else 'N/A',
-            'notes': service_order.notes if service_order.notes else 'Nenhuma observação',
+            'invoice_amount': f"R$ {service_order.invoice_amount:.2f}" if service_order.invoice_amount else 'Não informado',
+            'km_inicial': service_order.km_inicial if service_order.km_inicial else 'N/A',
+            'km_final': service_order.km_final if service_order.km_final else 'N/A',
+            'km_total': service_order.km_total if service_order.km_total else 'N/A',
+            'service_details': service_order.service_details if service_order.service_details else 'Nenhum detalhe informado',
+            'invoice_number': service_order.invoice_number if service_order.invoice_number else 'Não informado',
             'financial_entries_count': len(service_order.financial_entries) if service_order.financial_entries else 0
         }
         

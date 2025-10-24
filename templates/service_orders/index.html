@@ -398,13 +398,16 @@ function renderOrderModal(order) {
             <div class="col-md-6">
                 <div class="card mb-3">
                     <div class="card-header">
-                        <h6 class="mb-0"><i class="fas fa-dollar-sign me-2"></i>Valores</h6>
+                        <h6 class="mb-0"><i class="fas fa-dollar-sign me-2"></i>Valores e Kilometragem</h6>
                     </div>
                     <div class="card-body">
                         <p><strong>Valor Estimado:</strong> ${order.estimated_value}</p>
-                        <p><strong>Valor Total:</strong> ${order.total_value}</p>
-                        <p><strong>KM Entrada:</strong> ${order.kilometers_in}</p>
-                        <p><strong>KM Saída:</strong> ${order.kilometers_out}</p>
+                        <p><strong>Valor da Nota:</strong> ${order.invoice_amount}</p>
+                        <p><strong>KM Inicial:</strong> ${order.km_inicial}</p>
+                        <p><strong>KM Final:</strong> ${order.km_final}</p>
+                        ${order.km_total && order.km_total !== 'N/A' ? 
+                            `<p><strong>KM Total:</strong> ${order.km_total}</p>` : ''
+                        }
                     </div>
                 </div>
             </div>
@@ -421,15 +424,30 @@ function renderOrderModal(order) {
                 </div>
             </div>
             
-            <!-- Observações -->
-            ${order.notes !== 'Nenhuma observação' ? `
+            <!-- Detalhes do Serviço -->
+            ${order.service_details && order.service_details !== 'Nenhum detalhe informado' ? `
             <div class="col-12">
                 <div class="card">
                     <div class="card-header">
-                        <h6 class="mb-0"><i class="fas fa-sticky-note me-2"></i>Observações</h6>
+                        <h6 class="mb-0"><i class="fas fa-sticky-note me-2"></i>Detalhes do Serviço</h6>
                     </div>
                     <div class="card-body">
-                        <p class="mb-0">${order.notes}</p>
+                        <p class="mb-0">${order.service_details}</p>
+                    </div>
+                </div>
+            </div>
+            ` : ''}
+            
+            <!-- Informações da Nota Fiscal (se houver) -->
+            ${order.invoice_number && order.invoice_number !== 'Não informado' ? `
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="fas fa-file-invoice me-2"></i>Nota Fiscal</h6>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-0"><strong>Número da Nota:</strong> ${order.invoice_number}</p>
+                        <p class="mb-0"><strong>Valor:</strong> ${order.invoice_amount}</p>
                     </div>
                 </div>
             </div>
