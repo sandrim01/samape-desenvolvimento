@@ -100,8 +100,8 @@
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">
                     Ordens de Serviço
-                    {% if service_orders %}
-                        <span class="badge bg-primary">{{ service_orders|length }} encontrada(s)</span>
+                    {% if service_orders and service_orders.items %}
+                        <span class="badge bg-primary">{{ service_orders.total }} encontrada(s)</span>
                     {% endif %}
                 </h5>
                 <a href="{{ url_for('new_service_order') }}" class="btn btn-primary btn-sm">
@@ -109,7 +109,7 @@
                 </a>
             </div>
             
-            {% if service_orders %}
+            {% if service_orders and service_orders.items %}
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover mb-0">
@@ -126,7 +126,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for order in service_orders %}
+                            {% for order in service_orders.items %}
                             <tr>
                                 <td class="fw-bold text-primary">#{{ order.id }}</td>
                                 <td>{{ order.client.name }}</td>
@@ -179,6 +179,70 @@
                     </table>
                 </div>
             </div>
+            
+            <!-- Paginação -->
+            {% if service_orders.pages > 1 %}
+            <div class="card-footer">
+                <nav aria-label="Navegação de páginas">
+                    <ul class="pagination pagination-sm justify-content-center mb-0">
+                        <!-- Página anterior -->
+                        {% if service_orders.has_prev %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('service_orders', page=service_orders.prev_num, **request.args) }}">
+                                <i class="fas fa-chevron-left"></i> Anterior
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link"><i class="fas fa-chevron-left"></i> Anterior</span>
+                        </li>
+                        {% endif %}
+
+                        <!-- Números das páginas -->
+                        {% for page_num in service_orders.iter_pages() %}
+                            {% if page_num %}
+                                {% if page_num != service_orders.page %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('service_orders', page=page_num, **request.args) }}">{{ page_num }}</a>
+                                </li>
+                                {% else %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ page_num }}</span>
+                                </li>
+                                {% endif %}
+                            {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        <!-- Próxima página -->
+                        {% if service_orders.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('service_orders', page=service_orders.next_num, **request.args) }}">
+                                Próxima <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">Próxima <i class="fas fa-chevron-right"></i></span>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                
+                <!-- Info da paginação -->
+                <div class="text-center mt-2">
+                    <small class="text-muted">
+                        Mostrando {{ service_orders.per_page * (service_orders.page - 1) + 1 }} a 
+                        {{ service_orders.per_page * service_orders.page if service_orders.page < service_orders.pages else service_orders.total }} 
+                        de {{ service_orders.total }} registro(s)
+                    </small>
+                </div>
+            </div>
+            {% endif %}
+            
             {% else %}
             <div class="card-body text-center py-5">
                 <div class="text-muted mb-3">
