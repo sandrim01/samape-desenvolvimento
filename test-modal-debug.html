@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Debug - Modals OS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="container mt-4">
+        <h1>Teste de Debug - Sistema de Modals para OS</h1>
+        
+        <div class="alert alert-info">
+            <h5>Instruções de Teste:</h5>
+            <p>1. Abra o Console do Navegador (F12)</p>
+            <p>2. Execute: <code>testServiceOrderModals()</code></p>
+            <p>3. Clique no botão "Testar Modal de Edição"</p>
+            <p>4. Preencha os campos e clique em "Salvar"</p>
+            <p>5. Observe os logs no console</p>
+        </div>
+        
+        <button type="button" class="btn btn-primary" onclick="openEditModal(123)">
+            Testar Modal de Edição (OS #123)
+        </button>
+        
+        <button type="button" class="btn btn-info ms-2" onclick="console.log(testServiceOrderModals())">
+            Executar Teste de Diagnóstico
+        </button>
+    </div>
+
+    <!-- Modal de Edição da OS -->
+    <div class="modal fade" id="editServiceOrderModal" tabindex="-1" aria-labelledby="editServiceOrderModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editServiceOrderModalLabel">
+                        <i class="fas fa-edit me-2"></i>Editar Ordem de Serviço
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body" id="editModalBodyContent">
+                    <!-- Formulário de teste -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="edit_client_id" class="form-label">Cliente *</label>
+                                <select class="form-select" id="edit_client_id" required>
+                                    <option value="">Selecione um cliente</option>
+                                    <option value="1">Cliente Teste 1</option>
+                                    <option value="2">Cliente Teste 2</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="edit_responsible_id" class="form-label">Responsável</label>
+                                <select class="form-select" id="edit_responsible_id">
+                                    <option value="0">A ser definido</option>
+                                    <option value="1">Usuário Teste 1</option>
+                                    <option value="2">Usuário Teste 2</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="col-12">
+                            <div class="mb-3">
+                                <label for="edit_description" class="form-label">Descrição *</label>
+                                <textarea class="form-control" id="edit_description" rows="3" required>Descrição de teste</textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="edit_estimated_value" class="form-label">Valor Estimado</label>
+                                <input type="number" class="form-control" id="edit_estimated_value" step="0.01" value="150.00">
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="edit_km_inicial" class="form-label">KM Inicial</label>
+                                <input type="number" class="form-control" id="edit_km_inicial" step="0.01" value="1000">
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="edit_km_final" class="form-label">KM Final</label>
+                                <input type="number" class="form-control" id="edit_km_final" step="0.01" value="1100">
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="edit_status" class="form-label">Status</label>
+                                <select class="form-select" id="edit_status">
+                                    <option value="aberta">Aberta</option>
+                                    <option value="em_andamento">Em Andamento</option>
+                                    <option value="fechada">Fechada</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="col-12">
+                            <div class="mb-3">
+                                <label for="edit_service_details" class="form-label">Detalhes do Serviço</label>
+                                <textarea class="form-control" id="edit_service_details" rows="3">Detalhes de teste do serviço</textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="col-12">
+                            <div class="mb-3">
+                                <label class="form-label">Equipamentos</label>
+                                <div class="equipment-checkboxes">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="1" id="equipment_1" checked>
+                                        <label class="form-check-label" for="equipment_1">
+                                            Equipamento Teste 1 - Marca A
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="2" id="equipment_2">
+                                        <label class="form-check-label" for="equipment_2">
+                                            Equipamento Teste 2 - Marca B
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" id="saveOrderBtn" class="btn btn-primary" onclick="saveServiceOrder()">
+                        <i class="fas fa-save me-1"></i>Salvar Alterações
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="static/js/service-order-modals.js"></script>
+    
+    <script>
+        // Simular dados para teste
+        console.log('Página de teste carregada. Execute testServiceOrderModals() no console.');
+        
+        // Override da função AJAX para teste
+        const originalAjax = $.ajax;
+        $.ajax = function(settings) {
+            console.log('=== SIMULAÇÃO DE REQUISIÇÃO AJAX ===');
+            console.log('URL:', settings.url);
+            console.log('Método:', settings.method);
+            console.log('Content-Type:', settings.contentType);
+            console.log('Dados enviados:', settings.data);
+            
+            // Simular resposta de sucesso após 1 segundo
+            setTimeout(() => {
+                if (settings.success) {
+                    console.log('=== SIMULAÇÃO DE RESPOSTA AJAX SUCESSO ===');
+                    settings.success({
+                        success: true,
+                        message: 'Teste simulado: OS atualizada com sucesso!'
+                    });
+                }
+                if (settings.complete) {
+                    settings.complete();
+                }
+            }, 1000);
+            
+            return {
+                abort: () => console.log('AJAX abortado')
+            };
+        };
+    </script>
+</body>
+</html>

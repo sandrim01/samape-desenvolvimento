@@ -5,6 +5,28 @@
 
 let currentOrderId = null;
 
+// Função de teste para verificar se tudo está funcionando
+function testServiceOrderModals() {
+    console.log('=== TESTE DE DIAGNÓSTICO DOS MODALS ===');
+    console.log('jQuery carregado:', typeof $ !== 'undefined');
+    console.log('Bootstrap carregado:', typeof bootstrap !== 'undefined');
+    console.log('Modal de visualização existe:', !!document.getElementById('viewServiceOrderModal'));
+    console.log('Modal de edição existe:', !!document.getElementById('editServiceOrderModal'));
+    console.log('Current Order ID:', currentOrderId);
+    
+    if (typeof $ !== 'undefined') {
+        console.log('Versão do jQuery:', $.fn.jquery);
+    }
+    
+    return {
+        jquery: typeof $ !== 'undefined',
+        bootstrap: typeof bootstrap !== 'undefined',
+        viewModal: !!document.getElementById('viewServiceOrderModal'),
+        editModal: !!document.getElementById('editServiceOrderModal'),
+        currentOrderId: currentOrderId
+    };
+}
+
 // Aguardar o carregamento do jQuery antes de executar
 function initializeServiceOrderModals() {
     if (typeof $ === 'undefined') {
@@ -225,6 +247,16 @@ function openEditModal(orderId) {
         return;
     }
     
+    if (typeof bootstrap === 'undefined') {
+        console.error('Bootstrap não está carregado');
+        return;
+    }
+    
+    if (!document.getElementById('editServiceOrderModal')) {
+        console.error('Modal de edição não encontrado no DOM');
+        return;
+    }
+    
     currentOrderId = orderId;
     
     // Fechar modal de visualização se estiver aberto
@@ -394,6 +426,14 @@ function saveServiceOrder() {
     
     if (!currentOrderId) {
         console.error('ID da ordem não definido');
+        alert('Erro: ID da ordem não foi definido. Tente abrir a edição novamente.');
+        return;
+    }
+    
+    // Verificar se os elementos do formulário existem
+    if (!$('#edit_client_id').length) {
+        console.error('Formulário de edição não encontrado');
+        alert('Erro: Formulário de edição não foi carregado corretamente. Tente novamente.');
         return;
     }
     
@@ -452,11 +492,16 @@ function saveServiceOrder() {
     $('#saveOrderBtn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i>Salvando...');
     
     // Enviar dados via AJAX
+    console.log('Enviando dados via AJAX para:', '/os/' + currentOrderId + '/update-ajax');
     $.ajax({
         url: '/os/' + currentOrderId + '/update-ajax',
         method: 'POST',
         contentType: 'application/json',
         data: JSON.stringify(formData),
+        timeout: 30000, // 30 segundos
+        beforeSend: function(xhr) {
+            console.log('Enviando requisição AJAX...');
+        },
         success: function(response) {
             console.log('Resposta da atualização:', response);
             
@@ -470,20 +515,45 @@ function saveServiceOrder() {
                 // Recarregar página para mostrar alterações
                 window.location.reload();
             } else {
+                console.error('Erro na resposta:', response);
                 alert('Erro: ' + (response.error || 'Erro desconhecido'));
             }
         },
         error: function(xhr, status, error) {
-            console.error('Erro ao salvar:', {
+            console.error('Erro detalhado ao salvar:', {
                 status: xhr.status,
                 statusText: xhr.statusText,
                 responseText: xhr.responseText,
-                error: error
+                responseJSON: xhr.responseJSON,
+                error: error,
+                readyState: xhr.readyState
             });
             
             let errorMessage = 'Erro ao salvar alterações.';
+            
+            if (xhr.status === 0) {
+                errorMessage = 'Erro de conexão. Verifique sua internet.';
+            } else if (xhr.status === 400) {
+                errorMessage = 'Dados inválidos enviados.';
+            } else if (xhr.status === 403) {
+                errorMessage = 'Acesso negado. Faça login novamente.';
+            } else if (xhr.status === 404) {
+                errorMessage = 'Ordem de serviço não encontrada.';
+            } else if (xhr.status === 500) {
+                errorMessage = 'Erro interno do servidor.';
+            }
+            
             if (xhr.responseJSON && xhr.responseJSON.error) {
                 errorMessage = xhr.responseJSON.error;
+            } else if (xhr.responseText) {
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    if (response.error) {
+                        errorMessage = response.error;
+                    }
+                } catch (e) {
+                    console.error('Erro ao parsear resposta:', e);
+                }
             }
             
             alert(errorMessage);

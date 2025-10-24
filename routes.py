@@ -486,6 +486,10 @@ def register_routes(app):
     @login_required
     def update_service_order_ajax(id):
         print(f"DEBUG: Iniciando atualização da OS {id}")
+        print(f"DEBUG: Content-Type: {request.content_type}")
+        print(f"DEBUG: Headers: {dict(request.headers)}")
+        print(f"DEBUG: Raw data: {request.data}")
+        
         service_order = ServiceOrder.query.get_or_404(id)
         print(f"DEBUG: OS encontrada: {service_order.id}")
         
