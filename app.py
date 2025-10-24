@@ -10,6 +10,11 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from database import db
 from jinja_filters import nl2br, format_document, format_currency, status_color, absolute_value, safe_float, safe_money
 
+# Flask-Compress não disponível - usando otimizações nativas
+
+# Import performance middleware
+from performance_middleware import track_performance
+
 # Configure logging - optimized for production performance
 is_production = os.getenv('RAILWAY_ENVIRONMENT') == 'production' or os.getenv('FLASK_ENV') == 'production'
 log_level = logging.ERROR if is_production else logging.WARNING  # Mais restritivo em produção
@@ -43,13 +48,18 @@ app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 # Configure database with optimized pool settings for performance
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "postgresql://postgres:qUngJAyBvLWQdkmSkZEjjEoMoDVzOBnx@trolley.proxy.rlwy.net:22285/railway")
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
-    "pool_recycle": 1800,  # 30 minutes
+    "pool_recycle": 900,   # 15 minutes (mais agressivo)
     "pool_pre_ping": True,
-    "pool_size": 15,       # Aumentado de 10 para 15
-    "max_overflow": 30,    # Aumentado de 20 para 30
-    "pool_timeout": 20,    # Reduzido de 30 para 20 (timeout mais rápido)
-    "echo": False,         # Desabilitar logs SQL em produção
-    "future": True,        # Usar SQLAlchemy 2.0 style
+    "pool_size": 20,       # Aumentado para 20
+    "max_overflow": 40,    # Aumentado para 40
+    "pool_timeout": 10,    # Reduzido para 10s (muito mais rápido)
+    "echo": False,         # Desabilitar logs SQL
+    "future": True,        # SQLAlchemy 2.0 style
+    "connect_args": {
+        "connect_timeout": 10,
+        "application_name": "samape_app",
+        "options": "-c default_transaction_isolation=read_committed"
+    }
 }
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
@@ -159,6 +169,12 @@ with app.app_context():
     # Create initial admin user if needed
     if hasattr(app, 'create_initial_admin'):
         app.create_initial_admin()
+    
+    # Otimizações nativas de performance (sem dependências extras)
+    app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 31536000  # Cache de 1 ano para arquivos estáticos
+    
+    # Apply performance tracking middleware
+    track_performance()(app)
 
 # Executa o servidor Flask localmente
 if __name__ == "__main__":

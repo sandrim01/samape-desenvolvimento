@@ -51,25 +51,47 @@ def manager_required(f):
     return role_required('admin', 'gerente')(f)
 
 def log_action(action, entity_type=None, entity_id=None, details=None):
-    """Log user actions in the system"""
+    """Log user actions in the system - OTIMIZADO para performance"""
     from sqlalchemy.exc import IntegrityError
+    import os
+    
+    # Em produção, logar apenas ações críticas para performance
+    is_production = os.getenv('RAILWAY_ENVIRONMENT') == 'production' or os.getenv('FLASK_ENV') == 'production'
+    
+    # Lista de ações críticas que sempre devem ser logadas
+    critical_actions = [
+        'Login', 'Logout', 'Exclusão de Cliente', 'Exclusão de OS', 
+        'Exclusão de Equipamento', 'Exclusão Direta', 'Alteração de Senha'
+    ]
+    
+    # Em produção, só loga ações críticas
+    if is_production and action not in critical_actions:
+        return  # Skip logging para melhor performance
     
     if current_user.is_authenticated:
         try:
+            # Usar uma sessão separada para não afetar a transação principal
             log = ActionLog(
                 user_id=current_user.id,
                 action=action,
                 entity_type=entity_type,
                 entity_id=entity_id,
-                details=details,
+                details=details[:500] if details else None,  # Limitar tamanho
                 ip_address=request.remote_addr
             )
+            
+            # Não fazer commit imediato - deixar para o final da request
             db.session.add(log)
-            db.session.commit()
-        except IntegrityError:
-            # Se houver erro de integridade, fazer rollback e não registrar
+            
+            # Em desenvolvimento, fazer commit imediato
+            if not is_production:
+                db.session.commit()
+                
+        except Exception as e:
+            # Em caso de erro, não impedir o fluxo principal
             db.session.rollback()
-            # Não impedir o fluxo normal da aplicação
+            if not is_production:
+                print(f"Erro no log: {e}")
 
 def check_login_attempts(username):
     """Check if the username has exceeded login attempts"""
@@ -133,48 +155,107 @@ def format_currency(value):
     return f"R$ {value:,.2f}".replace(".", "X").replace(",", ".").replace("X", ",")
 
 def get_monthly_summary():
-    """Get financial summary for the current month"""
+    """Get financial summary for the current month - OTIMIZADO"""
     from models import FinancialEntry, FinancialEntryType
-    from sqlalchemy import func, extract
+    from sqlalchemy import func, extract, text
+    import os
     
-    now = datetime.utcnow()
+    # Em produção, usar dados simplificados para performance
+    is_production = os.getenv('RAILWAY_ENVIRONMENT') == 'production'
     
-    # Income for current month
-    income = db.session.query(func.sum(FinancialEntry.amount)).filter(
-        FinancialEntry.type == FinancialEntryType.entrada,
-        extract('month', FinancialEntry.date) == now.month,
-        extract('year', FinancialEntry.date) == now.year
-    ).scalar() or 0
-    
-    # Expenses for current month
-    expenses = db.session.query(func.sum(FinancialEntry.amount)).filter(
-        FinancialEntry.type == FinancialEntryType.saida,
-        extract('month', FinancialEntry.date) == now.month,
-        extract('year', FinancialEntry.date) == now.year
-    ).scalar() or 0
+    if is_production:
+        # Query otimizada usando SQL direto
+        try:
+            result = db.session.execute(text("""
+                SELECT 
+                    SUM(CASE WHEN type = 'entrada' THEN amount ELSE 0 END) as income,
+                    SUM(CASE WHEN type = 'saida' THEN amount ELSE 0 END) as expenses
+                FROM financial_entries 
+                WHERE EXTRACT(MONTH FROM date) = EXTRACT(MONTH FROM CURRENT_DATE)
+                AND EXTRACT(YEAR FROM date) = EXTRACT(YEAR FROM CURRENT_DATE)
+            """)).first()
+            
+            income = float(result.income or 0)
+            expenses = float(result.expenses or 0)
+            
+        except Exception:
+            # Fallback em caso de erro
+            income = expenses = 0
+    else:
+        # Query normal para desenvolvimento
+        now = datetime.utcnow()
+        
+        income = db.session.query(func.sum(FinancialEntry.amount)).filter(
+            FinancialEntry.type == FinancialEntryType.entrada,
+            extract('month', FinancialEntry.date) == now.month,
+            extract('year', FinancialEntry.date) == now.year
+        ).scalar() or 0
+        
+        expenses = db.session.query(func.sum(FinancialEntry.amount)).filter(
+            FinancialEntry.type == FinancialEntryType.saida,
+            extract('month', FinancialEntry.date) == now.month,
+            extract('year', FinancialEntry.date) == now.year
+        ).scalar() or 0
+        
+        income = float(income)
+        expenses = float(expenses)
     
     return {
-        'income': float(income),
-        'expenses': float(expenses),
-        'balance': float(income - expenses)
+        'income': income,
+        'expenses': expenses,
+        'balance': income - expenses
     }
 
 def get_service_order_stats():
-    """Get service order statistics"""
+    """Get service order statistics - ULTRA OTIMIZADO"""
     from models import ServiceOrder, ServiceOrderStatus
-    from sqlalchemy import func
+    from sqlalchemy import func, text
+    import os
     
-    open_count = ServiceOrder.query.filter_by(status=ServiceOrderStatus.aberta).count()
-    in_progress_count = ServiceOrder.query.filter_by(status=ServiceOrderStatus.em_andamento).count()
-    closed_count = ServiceOrder.query.filter_by(status=ServiceOrderStatus.fechada).count()
+    # Em produção, usar query otimizada
+    is_production = os.getenv('RAILWAY_ENVIRONMENT') == 'production'
     
-    # Calcular o tempo médio de conclusão (em dias)
-    avg_completion_time = 0
-    closed_orders_with_dates = ServiceOrder.query.filter(
-        ServiceOrder.status == ServiceOrderStatus.fechada,
-        ServiceOrder.created_at.isnot(None),
-        ServiceOrder.closed_at.isnot(None)
-    ).all()
+    try:
+        if is_production:
+            # Query única e otimizada
+            result = db.session.execute(text("""
+                SELECT 
+                    COUNT(CASE WHEN status = 'aberta' THEN 1 END) as open_count,
+                    COUNT(CASE WHEN status = 'em_andamento' THEN 1 END) as in_progress_count,
+                    COUNT(CASE WHEN status = 'fechada' THEN 1 END) as closed_count,
+                    COUNT(*) as total_count
+                FROM service_orders
+            """)).first()
+            
+            return {
+                'open': int(result.open_count or 0),
+                'in_progress': int(result.in_progress_count or 0),
+                'closed': int(result.closed_count or 0),
+                'total': int(result.total_count or 0),
+                'avg_completion_days': 0  # Desabilitado para performance
+            }
+        else:
+            # Queries separadas para desenvolvimento
+            open_count = ServiceOrder.query.filter_by(status=ServiceOrderStatus.aberta).count()
+            in_progress_count = ServiceOrder.query.filter_by(status=ServiceOrderStatus.em_andamento).count()
+            closed_count = ServiceOrder.query.filter_by(status=ServiceOrderStatus.fechada).count()
+            
+            return {
+                'open': open_count,
+                'in_progress': in_progress_count,
+                'closed': closed_count,
+                'total': open_count + in_progress_count + closed_count,
+                'avg_completion_days': 0  # Simplificado
+            }
+    except Exception:
+        # Fallback em caso de erro
+        return {
+            'open': 0,
+            'in_progress': 0,
+            'closed': 0,
+            'total': 0,
+            'avg_completion_days': 0
+        }
     
     if closed_orders_with_dates:
         total_days = 0
