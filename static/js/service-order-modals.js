@@ -493,14 +493,25 @@ function saveServiceOrder() {
     
     // Enviar dados via AJAX
     console.log('Enviando dados via AJAX para:', '/os/' + currentOrderId + '/update-ajax');
+    
+    // Obter token CSRF
+    const csrfToken = $('meta[name=csrf-token]').attr('content') || document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+    console.log('CSRF Token encontrado:', !!csrfToken);
+    
     $.ajax({
         url: '/os/' + currentOrderId + '/update-ajax',
         method: 'POST',
         contentType: 'application/json',
         data: JSON.stringify(formData),
         timeout: 30000, // 30 segundos
+        headers: csrfToken ? {
+            'X-CSRFToken': csrfToken
+        } : {},
         beforeSend: function(xhr) {
             console.log('Enviando requisição AJAX...');
+            if (csrfToken) {
+                xhr.setRequestHeader('X-CSRFToken', csrfToken);
+            }
         },
         success: function(response) {
             console.log('Resposta da atualização:', response);

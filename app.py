@@ -53,11 +53,10 @@ app.config["WTF_CSRF_SSL_STRICT"] = False  # Para ambiente de desenvolvimento
 db.init_app(app)
 login_manager.init_app(app)
 
-# Adicionar exceÃ§Ã£o CSRF para as rotas de exclusÃ£o de cliente e AJAX
+# Adicionar exceÃ§Ã£o CSRF para as rotas de exclusÃ£o de cliente
 csrf.init_app(app)
 csrf.exempt('/clientes/<int:id>/excluir')
 csrf.exempt('/admin/clientes/<int:id>/excluir-direto')
-csrf.exempt('/os/<int:id>/update-ajax')
 
 # Configure login manager
 login_manager.login_view = "login"
