@@ -66,6 +66,12 @@ login_manager.login_message_category = "warning"
 # Import models 
 import models
 
+# Disponibilizar token CSRF nos templates
+@app.context_processor
+def inject_csrf_token():
+    from flask_wtf.csrf import generate_csrf
+    return dict(csrf_token=generate_csrf)
+
 # Setup user loader for Flask-Login
 @login_manager.user_loader
 def load_user(user_id):
@@ -89,6 +95,35 @@ app.jinja_env.globals['hasattr'] = hasattr
 
 # Create application context first
 with app.app_context():
+    # Rota de teste para CSRF
+    @app.route('/test-csrf')
+    def test_csrf():
+        from flask_wtf.csrf import generate_csrf
+        token = generate_csrf()
+        return f"""
+        <html>
+        <head>
+            <meta name="csrf-token" content="{token}">
+            <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        </head>
+        <body>
+            <h1>Teste CSRF Token</h1>
+            <p><strong>Token gerado pelo Flask:</strong> {token}</p>
+            <button onclick="testToken()">Testar Acesso via JavaScript</button>
+            <div id="result"></div>
+            
+            <script>
+            function testToken() {{
+                const token = $('meta[name=csrf-token]').attr('content');
+                document.getElementById('result').innerHTML = 
+                    '<p><strong>Token lido pelo JS:</strong> ' + (token || 'VAZIO') + '</p>';
+                console.log('Token CSRF:', token);
+            }}
+            </script>
+        </body>
+        </html>
+        """
+    
     # Import and register routes after app context is available
     from routes import register_routes
     register_routes(app)

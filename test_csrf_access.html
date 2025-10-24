@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>Test CSRF Token Access</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Teste de Acesso ao Token CSRF</h1>
+    <button onclick="testCSRFAccess()">Testar Acesso ao Token</button>
+    <div id="results"></div>
+
+    <script>
+    function testCSRFAccess() {
+        console.log('=== TESTE DE ACESSO CSRF ===');
+        
+        // Método 1: jQuery attr
+        const method1 = $('meta[name=csrf-token]').attr('content');
+        console.log('Método 1 (jQuery attr):', method1);
+        
+        // Método 2: Vanilla JS getAttribute
+        const method2 = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        console.log('Método 2 (querySelector + getAttribute):', method2);
+        
+        // Método 3: Verificar se meta tag existe
+        const metaTag = document.querySelector('meta[name="csrf-token"]');
+        console.log('Meta tag existe:', !!metaTag);
+        if (metaTag) {
+            console.log('Meta tag HTML:', metaTag.outerHTML);
+        }
+        
+        // Método 4: jQuery length check
+        const jqueryLength = $('meta[name=csrf-token]').length;
+        console.log('jQuery meta tag count:', jqueryLength);
+        
+        // Método 5: Verificar todos os meta tags
+        const allMetas = document.querySelectorAll('meta');
+        console.log('Todos os meta tags encontrados:');
+        allMetas.forEach(meta => {
+            console.log('  ', meta.outerHTML);
+        });
+        
+        // Método 6: Teste com diferentes seletores
+        const test1 = document.querySelector('meta[name=csrf-token]');
+        const test2 = document.querySelector('meta[name="csrf-token"]');
+        const test3 = document.querySelector("meta[name='csrf-token']");
+        
+        console.log('Selector test 1 (sem aspas):', !!test1);
+        console.log('Selector test 2 (aspas duplas):', !!test2);
+        console.log('Selector test 3 (aspas simples):', !!test3);
+        
+        // Resultado visual
+        document.getElementById('results').innerHTML = `
+            <h3>Resultados:</h3>
+            <p><strong>Método 1 (jQuery):</strong> ${method1 || 'VAZIO/NULL'}</p>
+            <p><strong>Método 2 (Vanilla JS):</strong> ${method2 || 'VAZIO/NULL'}</p>
+            <p><strong>Meta tag existe:</strong> ${!!metaTag}</p>
+            <p><strong>jQuery count:</strong> ${jqueryLength}</p>
+            ${metaTag ? `<p><strong>Meta tag HTML:</strong> ${metaTag.outerHTML}</p>` : ''}
+        `;
+    }
+    
+    // Executar automaticamente quando carregar
+    $(document).ready(function() {
+        testCSRFAccess();
+    });
+    </script>
+</body>
+</html>
