@@ -506,22 +506,39 @@ def register_routes(app):
     @app.route('/os/<int:id>/update-ajax', methods=['POST'])
     @login_required
     def update_service_order_ajax(id):
-        print(f"DEBUG: Iniciando atualização da OS {id}")
-        print(f"DEBUG: Content-Type: {request.content_type}")
-        print(f"DEBUG: Headers: {dict(request.headers)}")
-        print(f"DEBUG: Raw data: {request.data}")
+        print(f"\n=== DEBUG UPDATE-AJAX: OS {id} ===")
+        print(f"Content-Type: {request.content_type}")
+        print(f"Content-Length: {request.content_length}")
+        print(f"Method: {request.method}")
+        print(f"User: {current_user.name if current_user.is_authenticated else 'Não autenticado'}")
         
-        # Debug CSRF
-        csrf_token_header = request.headers.get('X-CSRFToken')
-        print(f"DEBUG: CSRF Token no header: {csrf_token_header}")
+        # Headers completos
+        print("=== HEADERS ===")
+        for header_name, header_value in request.headers:
+            print(f"  {header_name}: {header_value}")
         
-        # Verificar se há token nos dados também
+        # Raw data
+        print(f"=== RAW DATA ===")
+        raw_data = request.data
+        print(f"Raw data length: {len(raw_data)}")
+        print(f"Raw data (primeiros 500 chars): {raw_data[:500]}")
+        
+        # Form data se existir
+        if request.form:
+            print("=== FORM DATA ===")
+            for key, value in request.form.items():
+                print(f"  {key}: {value}")
+        
+        # JSON data se existir
         try:
-            data_preview = request.get_json()
-            csrf_token_data = data_preview.get('csrf_token') if data_preview else None
-            print(f"DEBUG: CSRF Token nos dados: {csrf_token_data}")
+            json_data = request.get_json(silent=True)
+            if json_data:
+                print("=== JSON DATA ===")
+                print(f"JSON keys: {list(json_data.keys()) if isinstance(json_data, dict) else 'Not a dict'}")
+            else:
+                print("=== NO JSON DATA ===")
         except Exception as e:
-            print(f"DEBUG: Erro ao ler dados JSON para CSRF: {e}")
+            print(f"=== JSON PARSE ERROR: {e} ===")
         
         service_order = ServiceOrder.query.get_or_404(id)
         print(f"DEBUG: OS encontrada: {service_order.id}")

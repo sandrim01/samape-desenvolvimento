@@ -596,25 +596,27 @@ function saveServiceOrder() {
     };
     
     ajaxConfig.error = function(xhr, status, error) {
-            console.error('Erro detalhado ao salvar:', {
-                status: xhr.status,
-                statusText: xhr.statusText,
-                responseText: xhr.responseText,
-                responseJSON: xhr.responseJSON,
-                error: error,
-                readyState: xhr.readyState
-            });
+            console.error('=== ERRO AJAX DETALHADO ===');
+            console.error('Status:', xhr.status);
+            console.error('Status Text:', xhr.statusText);
+            console.error('Ready State:', xhr.readyState);
+            console.error('Error:', error);
+            console.error('Response Text RAW:', xhr.responseText);
+            console.error('Response Headers:', xhr.getAllResponseHeaders());
             
-            // Log específico para erro 400
-            if (xhr.status === 400) {
-                console.error('ERRO 400 - Detalhes:');
-                console.error('Response Text:', xhr.responseText);
+            // Tentar obter mais detalhes da resposta
+            if (xhr.responseText) {
+                console.error('Tamanho da resposta:', xhr.responseText.length);
+                console.error('Primeiros 500 chars:', xhr.responseText.substring(0, 500));
+                
                 try {
                     const errorResponse = JSON.parse(xhr.responseText);
-                    console.error('Response JSON:', errorResponse);
+                    console.error('Response JSON parsed:', errorResponse);
                 } catch (e) {
-                    console.error('Response não é JSON válido');
+                    console.error('Response não é JSON válido:', e.message);
                 }
+            } else {
+                console.error('Response Text está vazio!');
             }
             
             let errorMessage = 'Erro ao salvar alterações.';
