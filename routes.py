@@ -633,10 +633,9 @@ def register_routes(app):
             
             # Log da ação
             log_action(
-                user_id=current_user.id,
                 action='update',
-                table_name='service_order',
-                record_id=service_order.id,
+                entity_type='service_order',
+                entity_id=service_order.id,
                 details=f'OS #{service_order.id} atualizada via modal'
             )
             
