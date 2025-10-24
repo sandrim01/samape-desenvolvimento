@@ -363,6 +363,47 @@ def register_routes(app):
         
         return jsonify(order_data)
 
+    @app.route('/os/<int:id>/edit-modal')
+    @login_required
+    def get_service_order_edit_modal(id):
+        from sqlalchemy.orm import joinedload
+        
+        service_order = ServiceOrder.query.options(
+            joinedload(ServiceOrder.client),
+            joinedload(ServiceOrder.responsible),
+            joinedload(ServiceOrder.equipment)
+        ).get_or_404(id)
+        
+        # Verificar se a OS pode ser editada
+        if service_order.status == ServiceOrderStatus.fechada:
+            return jsonify({
+                'error': 'Não é possível editar uma OS fechada.'
+            }), 400
+        
+        # Buscar dados necessários para o formulário
+        clients = Client.query.order_by(Client.name).all()
+        users = User.query.filter_by(active=True).order_by(User.name).all()
+        equipment_all = Equipment.query.order_by(Equipment.model).all()
+        
+        # Preparar dados para o modal
+        edit_data = {
+            'id': service_order.id,
+            'client_id': service_order.client_id,
+            'responsible_id': service_order.responsible_id if service_order.responsible_id else 0,
+            'description': service_order.description or '',
+            'estimated_value': float(service_order.estimated_value) if service_order.estimated_value else 0,
+            'status': service_order.status.value if service_order.status else 'aberta',
+            'km_inicial': float(service_order.km_inicial) if service_order.km_inicial else 0,
+            'km_final': float(service_order.km_final) if service_order.km_final else 0,
+            'service_details': service_order.service_details or '',
+            'equipment_ids': [eq.id for eq in service_order.equipment],
+            'clients': [{'id': c.id, 'name': c.name} for c in clients],
+            'users': [{'id': u.id, 'name': u.name} for u in users],
+            'equipment': [{'id': e.id, 'model': e.model, 'brand': e.brand} for e in equipment_all]
+        }
+        
+        return jsonify(edit_data)
+
     @app.route('/os/<int:id>/editar', methods=['GET', 'POST'])
     @login_required
     def edit_service_order(id):
@@ -440,6 +481,63 @@ def register_routes(app):
             form=form,
             service_order=service_order
         )
+        
+    @app.route('/os/<int:id>/update-ajax', methods=['POST'])
+    @login_required
+    def update_service_order_ajax(id):
+        service_order = ServiceOrder.query.get_or_404(id)
+        
+        # Verificar se a OS pode ser editada
+        if service_order.status == ServiceOrderStatus.fechada:
+            return jsonify({
+                'error': 'Não é possível editar uma OS fechada.'
+            }), 400
+        
+        try:
+            data = request.get_json()
+            
+            # Atualizar campos básicos
+            service_order.client_id = data.get('client_id')
+            service_order.responsible_id = data.get('responsible_id') if data.get('responsible_id') != 0 else None
+            service_order.description = data.get('description', '')
+            service_order.estimated_value = data.get('estimated_value') if data.get('estimated_value') else None
+            service_order.status = ServiceOrderStatus[data.get('status', 'aberta')]
+            service_order.km_inicial = data.get('km_inicial') if data.get('km_inicial') else None
+            service_order.km_final = data.get('km_final') if data.get('km_final') else None
+            service_order.service_details = data.get('service_details', '')
+            
+            # Atualizar cálculo de km_total
+            service_order.update_km_total()
+            
+            # Atualizar equipamentos
+            service_order.equipment = []
+            equipment_ids = data.get('equipment_ids', [])
+            if equipment_ids:
+                equipment_list = Equipment.query.filter(Equipment.id.in_(equipment_ids)).all()
+                service_order.equipment = equipment_list
+            
+            db.session.commit()
+            
+            # Log da ação
+            log_action(
+                user_id=current_user.id,
+                action='update',
+                table_name='service_order',
+                record_id=service_order.id,
+                details=f'OS #{service_order.id} atualizada via modal'
+            )
+            
+            return jsonify({
+                'success': True,
+                'message': 'Ordem de serviço atualizada com sucesso!'
+            })
+            
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({
+                'error': f'Erro ao atualizar OS: {str(e)}'
+            }), 500
+
     @app.route('/ordens-servico/<int:id>/excluir', methods=['POST'])
     @login_required  
     @admin_required
