@@ -1,0 +1,384 @@
+/* Dashboard Moderno e Bonito - Mantendo Paleta SAMAPE */
+
+/* ==== VARIÁVEIS PRINCIPAIS ==== */
+:root {
+    /* Usando as cores já definidas no app */
+    --dashboard-bg: var(--bg-dark, #1e1e1e);
+    --dashboard-card-bg: var(--bg-card, #242424);
+    --dashboard-card-darker: var(--bg-darker, #171717);
+    
+    /* Cores de destaque do SAMAPE */
+    --dashboard-pink: var(--pink, #f85d8e);
+    --dashboard-green: var(--green, #37d09e);
+    --dashboard-orange: var(--orange, #ff9353);
+    --dashboard-blue: var(--blue, #4285f4);
+    --dashboard-purple: var(--purple, #9c27b0);
+    --dashboard-cyan: var(--cyan, #00bcd4);
+    --dashboard-amber: var(--amber, #ffc107);
+    
+    /* Gradientes usando as cores do SAMAPE */
+    --gradient-pink: linear-gradient(135deg, #f85d8e 0%, #d34572 100%);
+    --gradient-green: linear-gradient(135deg, #37d09e 0%, #2ba876 100%);
+    --gradient-blue: linear-gradient(135deg, #4285f4 0%, #3367d6 100%);
+    --gradient-orange: linear-gradient(135deg, #ff9353 0%, #e6773a 100%);
+    --gradient-purple: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%);
+    --gradient-cyan: linear-gradient(135deg, #00bcd4 0%, #0097a7 100%);
+    
+    /* Sombras elegantes */
+    --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.15);
+    --shadow-medium: 0 8px 32px rgba(0, 0, 0, 0.2);
+    --shadow-strong: 0 12px 40px rgba(0, 0, 0, 0.3);
+    --shadow-glow: 0 0 20px rgba(248, 93, 142, 0.3);
+}
+
+/* ==== LAYOUT GERAL DO DASHBOARD ==== */
+.dashboard-modern {
+    background: var(--dashboard-bg);
+    min-height: 100vh;
+    padding: 1.5rem;
+}
+
+.dashboard-header {
+    margin-bottom: 2rem;
+    padding: 1.5rem 0;
+}
+
+.dashboard-title {
+    background: var(--gradient-pink);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.dashboard-subtitle {
+    color: var(--text-muted, #a0a0a0);
+    font-size: 1.1rem;
+    font-weight: 300;
+}
+
+/* ==== GRID RESPONSIVO MODERNO ==== */
+.dashboard-grid-modern {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+@media (min-width: 768px) {
+    .dashboard-grid-modern {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1200px) {
+    .dashboard-grid-modern {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (min-width: 1600px) {
+    .dashboard-grid-modern {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+/* ==== CARDS MODERNOS ==== */
+.card-modern {
+    background: var(--dashboard-card-bg);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: var(--shadow-soft);
+}
+
+.card-modern:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-medium);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Efeito de brilho no hover */
+.card-modern::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.05) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.card-modern:hover::before {
+    opacity: 1;
+}
+
+/* ==== CABEÇALHOS DOS CARDS ==== */
+.card-modern-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.card-modern-icon {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    color: white;
+    margin-right: 1rem;
+    box-shadow: var(--shadow-soft);
+}
+
+.card-modern-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-light, #f0f0f0);
+    margin: 0;
+}
+
+/* ==== MÉTRICAS PRINCIPAIS ==== */
+.card-modern-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0.5rem 0;
+    background: linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.card-modern-label {
+    font-size: 0.9rem;
+    color: var(--text-muted, #a0a0a0);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 500;
+}
+
+/* ==== BADGES E INDICADORES ==== */
+.badge-modern {
+    padding: 0.4rem 0.8rem;
+    border-radius: 2rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: var(--shadow-soft);
+}
+
+.badge-success-modern {
+    background: var(--gradient-green);
+    color: white;
+}
+
+.badge-warning-modern {
+    background: var(--gradient-orange);
+    color: white;
+}
+
+.badge-danger-modern {
+    background: var(--gradient-pink);
+    color: white;
+}
+
+.badge-info-modern {
+    background: var(--gradient-blue);
+    color: white;
+}
+
+/* ==== CORES ESPECÍFICAS POR TIPO DE CARD ==== */
+.card-orders .card-modern-icon {
+    background: var(--gradient-blue);
+}
+
+.card-financial .card-modern-icon {
+    background: var(--gradient-green);
+}
+
+.card-fleet .card-modern-icon {
+    background: var(--gradient-orange);
+}
+
+.card-clients .card-modern-icon {
+    background: var(--gradient-purple);
+}
+
+.card-stock .card-modern-icon {
+    background: var(--gradient-cyan);
+}
+
+.card-maintenance .card-modern-icon {
+    background: var(--gradient-pink);
+}
+
+/* ==== LISTAS MODERNAS ==== */
+.list-modern {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.list-modern-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    transition: background-color 0.2s ease;
+}
+
+.list-modern-item:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 0.5rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+}
+
+.list-modern-item:last-child {
+    border-bottom: none;
+}
+
+/* ==== PROGRESS BARS MODERNAS ==== */
+.progress-modern {
+    height: 0.5rem;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 1rem;
+    overflow: hidden;
+    margin: 0.5rem 0;
+}
+
+.progress-modern-bar {
+    height: 100%;
+    border-radius: 1rem;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.progress-modern-bar.success {
+    background: var(--gradient-green);
+}
+
+.progress-modern-bar.warning {
+    background: var(--gradient-orange);
+}
+
+.progress-modern-bar.danger {
+    background: var(--gradient-pink);
+}
+
+.progress-modern-bar.info {
+    background: var(--gradient-blue);
+}
+
+/* ==== BOTÕES MODERNOS ==== */
+.btn-modern {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: var(--shadow-soft);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-modern-primary {
+    background: var(--gradient-pink);
+    color: white;
+}
+
+.btn-modern-success {
+    background: var(--gradient-green);
+    color: white;
+}
+
+.btn-modern:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-medium);
+}
+
+/* ==== ANIMAÇÕES SUAVES ==== */
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.card-modern {
+    animation: slideInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* Delay progressivo para cards */
+.card-modern:nth-child(1) { animation-delay: 0.1s; }
+.card-modern:nth-child(2) { animation-delay: 0.2s; }
+.card-modern:nth-child(3) { animation-delay: 0.3s; }
+.card-modern:nth-child(4) { animation-delay: 0.4s; }
+.card-modern:nth-child(5) { animation-delay: 0.5s; }
+.card-modern:nth-child(6) { animation-delay: 0.6s; }
+
+/* ==== RESPONSIVIDADE MOBILE ==== */
+@media (max-width: 767px) {
+    .dashboard-modern {
+        padding: 1rem;
+    }
+    
+    .dashboard-title {
+        font-size: 2rem;
+    }
+    
+    .card-modern {
+        padding: 1rem;
+    }
+    
+    .card-modern-value {
+        font-size: 2rem;
+    }
+    
+    .dashboard-grid-modern {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+}
+
+/* ==== RELÓGIO DO DASHBOARD ==== */
+.dashboard-clock-modern {
+    background: var(--gradient-pink);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 2rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    box-shadow: var(--shadow-glow);
+    text-align: center;
+    min-width: 180px;
+}
+
+/* ==== MODO ESCURO APRIMORADO ==== */
+@media (prefers-color-scheme: dark) {
+    .card-modern {
+        background: var(--dashboard-card-darker);
+        border-color: rgba(255, 255, 255, 0.05);
+    }
+    
+    .card-modern:hover {
+        border-color: rgba(255, 255, 255, 0.15);
+    }
+}

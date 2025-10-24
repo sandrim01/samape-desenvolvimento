@@ -177,7 +177,48 @@ def register_routes(app):
     @app.route('/dashboard')
     @login_required  
     def dashboard():
-        """Dashboard principal ultra-simplificado"""
+        """Dashboard principal moderno e bonito"""
+        try:
+            import time
+            # Tentar carregar dados reais primeiro
+            try:
+                total_orders = ServiceOrder.query.count()
+                open_orders = ServiceOrder.query.filter_by(status='Aberto').count()
+                in_progress_orders = ServiceOrder.query.filter_by(status='Em Andamento').count()
+                closed_orders = ServiceOrder.query.filter_by(status='Fechado').count()
+                
+                # Buscar ordens recentes (máximo 5)
+                recent_orders = ServiceOrder.query.order_by(ServiceOrder.created_at.desc()).limit(5).all()
+                
+            except Exception as e:
+                app.logger.warning(f"Erro ao carregar dados reais: {e}")
+                # Fallback para dados zerados
+                total_orders = open_orders = in_progress_orders = closed_orders = 0
+                recent_orders = []
+
+            # Usar template bonito
+            return render_template('dashboard-beautiful.html',
+                metrics={
+                    'total': total_orders, 'open': open_orders, 'in_progress': in_progress_orders, 'closed': closed_orders,
+                    'total_revenue': 0, 'monthly_income': 0, 'monthly_expenses': 0,
+                    'fleet_total': 0, 'fleet_active': 0, 'fleet_maintenance': 0, 'fleet_inactive': 0,
+                    'efficiency_percentage': 95, 'pending_orders': open_orders, 'in_progress_orders': in_progress_orders, 'closed_orders': closed_orders,
+                    'fleet_reserved': 0, 'nf_total': 0, 'nf_aprovadas': 0, 'nf_pendentes': 0, 'nf_rejeitadas': 0,
+                    'avg_completion_time': '2-3 dias', 'open_orders': 0, 'pending_delivery': 0, 'delivered_this_month': 0,
+                    'income_data': [0], 'expense_data': [0]
+                },
+                so_stats={'total': total_orders, 'open': open_orders, 'in_progress': in_progress_orders, 'closed': closed_orders},
+                financial_summary={'total_revenue': 0, 'monthly_income': 0, 'monthly_expenses': 0},
+                recent_orders=recent_orders, recent_logs=[], now=time.time()
+            )
+        except Exception as e:
+            app.logger.error(f"Erro crítico no dashboard bonito: {e}")
+            return redirect(url_for('dashboard_simple'))
+
+    @app.route('/dashboard/simple')
+    @login_required  
+    def dashboard_simple():
+        """Dashboard simples e seguro (fallback)"""
         try:
             import time
             # Dados mínimos que sempre funcionam
@@ -196,7 +237,7 @@ def register_routes(app):
                 recent_orders=[], recent_logs=[], now=time.time()
             )
         except Exception as e:
-            app.logger.error(f"Erro crítico no dashboard: {e}")
+            app.logger.error(f"Erro crítico no dashboard simples: {e}")
             return "Dashboard temporariamente indisponível. <a href='/dashboard/emergency'>Clique aqui para versão de emergência</a>", 500
     
     @app.route('/dashboard/emergency')
