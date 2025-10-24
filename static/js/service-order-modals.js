@@ -501,24 +501,47 @@ function saveServiceOrder() {
     console.log('Meta tag exists:', !!$('meta[name=csrf-token]').length);
     console.log('FormData sendo enviado:', JSON.stringify(formData, null, 2));
     
-    // Tentar diferentes abordagens para o CSRF
+    // Preparar dados como FormData para melhor compatibilidade com CSRF
     let requestData;
     let requestHeaders = {};
     
     if (csrfToken) {
-        // Abordagem 1: Adicionar token aos dados JSON
-        formData.csrf_token = csrfToken;
-        requestData = JSON.stringify(formData);
-        requestHeaders['Content-Type'] = 'application/json';
+        console.log('Preparando dados como FormData com CSRF token');
+        
+        // Criar FormData
+        const formDataObj = new FormData();
+        formDataObj.append('csrf_token', csrfToken);
+        
+        // Adicionar todos os campos do formData
+        for (const [key, value] of Object.entries(formData)) {
+            if (Array.isArray(value)) {
+                // Para arrays (como equipment_ids), adicionar cada item
+                value.forEach(item => formDataObj.append(key + '[]', item));
+            } else if (value !== null && value !== undefined) {
+                formDataObj.append(key, value);
+            }
+        }
+        
+        requestData = formDataObj;
+        // Não definir Content-Type, deixar o browser definir para FormData
         requestHeaders['X-CSRFToken'] = csrfToken;
     } else {
-        console.warn('CSRF Token não encontrado!');
+        console.warn('CSRF Token não encontrado! Usando JSON');
         requestData = JSON.stringify(formData);
         requestHeaders['Content-Type'] = 'application/json';
     }
     
     console.log('Request headers:', requestHeaders);
-    console.log('Request data:', requestData);
+    console.log('Request data type:', requestData.constructor.name);
+    if (requestData.constructor.name === 'String') {
+        console.log('Request data (JSON):', requestData);
+    } else {
+        console.log('Request data (FormData):', 'FormData object created');
+        // Log dos dados do FormData
+        for (let pair of requestData.entries()) {
+            console.log('FormData entry:', pair[0] + ' = ' + pair[1]);
+        }
+    }
     
     $.ajax({
         url: '/os/' + currentOrderId + '/update-ajax',
@@ -556,6 +579,18 @@ function saveServiceOrder() {
                 error: error,
                 readyState: xhr.readyState
             });
+            
+            // Log específico para erro 400
+            if (xhr.status === 400) {
+                console.error('ERRO 400 - Detalhes:');
+                console.error('Response Text:', xhr.responseText);
+                try {
+                    const errorResponse = JSON.parse(xhr.responseText);
+                    console.error('Response JSON:', errorResponse);
+                } catch (e) {
+                    console.error('Response não é JSON válido');
+                }
+            }
             
             let errorMessage = 'Erro ao salvar alterações.';
             

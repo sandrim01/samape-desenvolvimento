@@ -514,11 +514,38 @@ def register_routes(app):
             }), 400
         
         try:
+            # Tentar obter dados como JSON primeiro
             data = request.get_json()
-            print(f"DEBUG: Dados recebidos: {data}")
+            
+            # Se não for JSON, tentar FormData
+            if not data and request.form:
+                print("DEBUG: Recebendo dados como FormData")
+                data = {}
+                for key, value in request.form.items():
+                    if key.endswith('[]'):
+                        # Array field
+                        array_key = key[:-2]  # Remove '[]'
+                        if array_key not in data:
+                            data[array_key] = []
+                        data[array_key].append(value)
+                    else:
+                        # Tentar converter para int se possível
+                        try:
+                            if value.isdigit():
+                                data[key] = int(value)
+                            elif value.replace('.', '').isdigit():
+                                data[key] = float(value)
+                            else:
+                                data[key] = value
+                        except:
+                            data[key] = value
+                            
+            print(f"DEBUG: Dados recebidos (processados): {data}")
             
             if not data:
                 print("DEBUG: Nenhum dado recebido na requisição")
+                print(f"DEBUG: request.form: {dict(request.form)}")
+                print(f"DEBUG: request.json: {request.get_json()}")
                 return jsonify({
                     'error': 'Dados não foram fornecidos.'
                 }), 400
