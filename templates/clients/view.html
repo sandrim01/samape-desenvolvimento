@@ -12,6 +12,9 @@
         <div class="mobile-header-actions">
             <!-- Desktop Actions -->
             <div class="d-none d-md-flex">
+                <a href="{{ url_for('print_client_history', id=client.id) }}" target="_blank" class="btn btn-outline-info me-2">
+                    <i class="fas fa-print me-1"></i> Imprimir Histórico
+                </a>
                 <a href="{{ url_for('edit_client', id=client.id) }}" class="btn btn-outline-secondary me-2">
                     <i class="fas fa-edit me-1"></i> Editar
                 </a>
@@ -36,6 +39,10 @@
                         <i class="fas fa-ellipsis-v"></i>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="{{ url_for('print_client_history', id=client.id) }}" target="_blank">
+                            <i class="fas fa-print me-2"></i>Imprimir Histórico
+                        </a></li>
+                        <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item" href="{{ url_for('new_equipment') }}?client_id={{ client.id }}">
                             <i class="fas fa-plus me-2"></i>Adicionar Equipamento
                         </a></li>
@@ -204,6 +211,11 @@
                 {% else %}
                 <p class="text-center my-4">Nenhuma ordem de serviço para este cliente.</p>
                 {% endif %}
+            </div>
+            <div class="card-footer">
+                <a href="{{ url_for('print_client_history', id=client.id) }}" target="_blank" class="btn btn-outline-secondary">
+                    <i class="fas fa-print me-1"></i> Imprimir Histórico Completo
+                </a>
             </div>
         </div>
     </div>

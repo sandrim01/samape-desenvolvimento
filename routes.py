@@ -1368,6 +1368,46 @@ def register_routes(app):
             flash(f'Erro ao carregar histórico: {str(e)}', 'error')
             return redirect(url_for('view_equipment', id=id))
 
+    @app.route('/clientes/<int:id>/historico-print')
+    @login_required
+    def print_client_history(id):
+        """Exibe página de impressão do histórico completo do cliente"""
+        client = Client.query.get_or_404(id)
+        
+        # Buscar todas as ordens de serviço do cliente
+        service_orders = ServiceOrder.query.filter_by(
+            client_id=id
+        ).order_by(ServiceOrder.created_at.desc()).all()
+        
+        # Buscar todos os equipamentos do cliente
+        equipment_list = Equipment.query.filter_by(
+            client_id=id
+        ).order_by(Equipment.type, Equipment.brand, Equipment.model).all()
+        
+        try:
+            from datetime import datetime
+            # Get company settings
+            company_settings = CompanySettings.get_company_info()
+            
+            log_action(
+                'Visualização de Histórico de Cliente',
+                'client', 
+                client.id,
+                f'Histórico completo do cliente {client.name} acessado para impressão'
+            )
+            
+            # Render template de impressão
+            return render_template('clients/history_print.html', 
+                                 client=client,
+                                 service_orders=service_orders,
+                                 equipment=equipment_list,
+                                 company_settings=company_settings,
+                                 datetime=datetime)
+                
+        except Exception as e:
+            flash(f'Erro ao carregar histórico: {str(e)}', 'error')
+            return redirect(url_for('view_client', id=id))
+
     # Employee routes
     @app.route('/funcionarios')
     @manager_required
