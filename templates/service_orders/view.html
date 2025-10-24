@@ -5,9 +5,9 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4">
     <h1 class="page-title">Ordem de Serviço #{{ order.id }}</h1>
     <div class="d-flex align-items-center ms-auto">
-        <a href="{{ url_for('edit_service_order', id=order.id) }}" class="btn btn-primary me-2">
+        <button type="button" class="btn btn-primary me-2" onclick="openEditModal({{ order.id }})">
             <i class="fas fa-edit"></i> Editar
-        </a>
+        </button>
         <div class="btn-group me-2" role="group">
             <a href="{{ url_for('export_service_order_pdf', id=order.id) }}" class="btn btn-success" target="_blank">
                 <i class="fas fa-file-pdf"></i> PDF
@@ -195,5 +195,337 @@
         {% endif %}
     </div>
 </div>
+
+<!-- Modal para Editar Ordem de Serviço -->
+<div class="modal fade" id="editServiceOrderModal" tabindex="-1" aria-labelledby="editServiceOrderModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editServiceOrderModalLabel">
+                    <i class="fas fa-edit me-2"></i>Editar Ordem de Serviço
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body" id="editModalBodyContent">
+                <div class="text-center py-3">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Carregando...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Cancelar
+                </button>
+                <button type="button" class="btn btn-primary" id="saveOrderBtn" onclick="saveServiceOrder()">
+                    <i class="fas fa-save me-1"></i>Salvar Alterações
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Carregamento obrigatório do jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script class="requires-jquery">
+let currentOrderId = null;
+
+// Aguardar o carregamento do jQuery antes de executar
+function initializeModal() {
+    if (typeof $ === 'undefined') {
+        setTimeout(initializeModal, 100);
+        return;
+    }
+    
+    console.log('jQuery carregado e modal inicializado na página view');
+}
+
+// Inicializar quando o DOM estiver pronto
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeModal);
+} else {
+    initializeModal();
+}
+
+// Função para abrir modal de edição
+function openEditModal(orderId) {
+    console.log('openEditModal chamado com ID:', orderId);
+    
+    // Verificar se jQuery está disponível
+    if (typeof $ === 'undefined') {
+        console.error('jQuery não está carregado');
+        return;
+    }
+    
+    currentOrderId = orderId;
+    
+    // Abrir modal de edição
+    const editModal = new bootstrap.Modal(document.getElementById('editServiceOrderModal'));
+    editModal.show();
+    
+    // Resetar conteúdo do modal
+    $('#editModalBodyContent').html(`
+        <div class="text-center py-3">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Carregando...</span>
+            </div>
+        </div>
+    `);
+    
+    // Buscar dados da OS para edição via AJAX
+    console.log('Fazendo requisição AJAX para:', '/os/' + orderId + '/edit-modal');
+    $.ajax({
+        url: '/os/' + orderId + '/edit-modal',
+        method: 'GET',
+        dataType: 'json',
+        timeout: 10000,
+        success: function(data) {
+            console.log('Dados recebidos para edição:', data);
+            renderEditModal(data);
+        },
+        error: function(xhr, status, error) {
+            console.error('Erro na requisição AJAX:', {
+                status: xhr.status,
+                statusText: xhr.statusText,
+                responseText: xhr.responseText,
+                error: error
+            });
+            $('#editModalBodyContent').html(`
+                <div class="alert alert-danger" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Erro ao carregar formulário de edição:</strong><br>
+                    Status: ${xhr.status}<br>
+                    Erro: ${error}<br>
+                    Resposta: ${xhr.responseText || 'Nenhuma resposta'}
+                </div>
+            `);
+        }
+    });
+}
+
+// Função para renderizar formulário de edição (copiada da index.html)
+function renderEditModal(data) {
+    console.log('renderEditModal chamado com dados:', data);
+    
+    if (!data) {
+        console.error('Dados da ordem não fornecidos para edição');
+        return;
+    }
+    
+    // Gerar opções para clientes
+    const clientOptions = data.clients.map(client => 
+        `<option value="${client.id}" ${client.id === data.client_id ? 'selected' : ''}>${client.name}</option>`
+    ).join('');
+    
+    // Gerar opções para responsáveis
+    const userOptions = '<option value="0" ' + (data.responsible_id === 0 ? 'selected' : '') + '>A ser definido</option>' +
+        data.users.map(user => 
+            `<option value="${user.id}" ${user.id === data.responsible_id ? 'selected' : ''}>${user.name}</option>`
+        ).join('');
+    
+    // Gerar checkboxes para equipamentos
+    const equipmentCheckboxes = data.equipment.map(equipment => `
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" value="${equipment.id}" id="equipment_${equipment.id}"
+                   ${data.equipment_ids.includes(equipment.id) ? 'checked' : ''}>
+            <label class="form-check-label" for="equipment_${equipment.id}">
+                ${equipment.model} - ${equipment.brand}
+            </label>
+        </div>
+    `).join('');
+    
+    const editFormContent = `
+        <form id="editServiceOrderForm">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="edit_client_id" class="form-label">Cliente *</label>
+                        <select class="form-select" id="edit_client_id" required>
+                            <option value="">Selecione um cliente</option>
+                            ${clientOptions}
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="edit_responsible_id" class="form-label">Responsável</label>
+                        <select class="form-select" id="edit_responsible_id">
+                            ${userOptions}
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="col-12">
+                    <div class="mb-3">
+                        <label for="edit_description" class="form-label">Descrição *</label>
+                        <textarea class="form-control" id="edit_description" rows="3" required>${data.description}</textarea>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="edit_estimated_value" class="form-label">Valor Estimado</label>
+                        <input type="number" class="form-control" id="edit_estimated_value" step="0.01" value="${data.estimated_value}">
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="edit_km_inicial" class="form-label">KM Inicial</label>
+                        <input type="number" class="form-control" id="edit_km_inicial" step="0.01" value="${data.km_inicial}">
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="edit_km_final" class="form-label">KM Final</label>
+                        <input type="number" class="form-control" id="edit_km_final" step="0.01" value="${data.km_final}">
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="edit_status" class="form-label">Status</label>
+                        <select class="form-select" id="edit_status">
+                            <option value="aberta" ${data.status === 'aberta' ? 'selected' : ''}>Aberta</option>
+                            <option value="em_andamento" ${data.status === 'em_andamento' ? 'selected' : ''}>Em Andamento</option>
+                            <option value="fechada" ${data.status === 'fechada' ? 'selected' : ''}>Fechada</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="col-12">
+                    <div class="mb-3">
+                        <label for="edit_service_details" class="form-label">Detalhes do Serviço</label>
+                        <textarea class="form-control" id="edit_service_details" rows="3">${data.service_details}</textarea>
+                    </div>
+                </div>
+                
+                <div class="col-12">
+                    <div class="mb-3">
+                        <label class="form-label">Equipamentos</label>
+                        <div class="equipment-checkboxes" style="max-height: 200px; overflow-y: auto;">
+                            ${equipmentCheckboxes}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    `;
+    
+    $('#editModalBodyContent').html(editFormContent);
+}
+
+// Função para salvar alterações da OS (copiada da index.html)
+function saveServiceOrder() {
+    console.log('saveServiceOrder chamado');
+    
+    if (!currentOrderId) {
+        console.error('ID da ordem não definido');
+        return;
+    }
+    
+    // Coletar dados do formulário
+    const clientIdValue = $('#edit_client_id').val();
+    const responsibleIdValue = $('#edit_responsible_id').val();
+    const descriptionValue = $('#edit_description').val();
+    const estimatedValue = $('#edit_estimated_value').val();
+    const kmInicialValue = $('#edit_km_inicial').val();
+    const kmFinalValue = $('#edit_km_final').val();
+    const statusValue = $('#edit_status').val();
+    const serviceDetailsValue = $('#edit_service_details').val();
+    
+    console.log('Valores coletados do formulário:', {
+        clientIdValue,
+        responsibleIdValue,
+        descriptionValue,
+        estimatedValue,
+        kmInicialValue,
+        kmFinalValue,
+        statusValue,
+        serviceDetailsValue
+    });
+    
+    const formData = {
+        client_id: clientIdValue ? parseInt(clientIdValue) : null,
+        responsible_id: responsibleIdValue ? parseInt(responsibleIdValue) : 0,
+        description: descriptionValue || '',
+        estimated_value: estimatedValue ? parseFloat(estimatedValue) : null,
+        km_inicial: kmInicialValue ? parseFloat(kmInicialValue) : null,
+        km_final: kmFinalValue ? parseFloat(kmFinalValue) : null,
+        status: statusValue || 'aberta',
+        service_details: serviceDetailsValue || '',
+        equipment_ids: []
+    };
+    
+    // Coletar equipamentos selecionados
+    $('.equipment-checkboxes input[type="checkbox"]:checked').each(function() {
+        formData.equipment_ids.push(parseInt($(this).val()));
+    });
+    
+    console.log('Dados finais para salvar:', formData);
+    
+    // Validações básicas
+    if (!formData.client_id || isNaN(formData.client_id)) {
+        alert('Por favor, selecione um cliente válido.');
+        return;
+    }
+    
+    if (!formData.description || !formData.description.trim()) {
+        alert('Por favor, informe uma descrição.');
+        return;
+    }
+    
+    // Desabilitar botão de salvar
+    $('#saveOrderBtn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i>Salvando...');
+    
+    // Enviar dados via AJAX
+    $.ajax({
+        url: '/os/' + currentOrderId + '/update-ajax',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(formData),
+        success: function(response) {
+            console.log('Resposta da atualização:', response);
+            
+            if (response.success) {
+                // Fechar modal
+                $('#editServiceOrderModal').modal('hide');
+                
+                // Mostrar mensagem de sucesso
+                alert(response.message || 'Ordem de serviço atualizada com sucesso!');
+                
+                // Recarregar página para mostrar alterações
+                window.location.reload();
+            } else {
+                alert('Erro: ' + (response.error || 'Erro desconhecido'));
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('Erro ao salvar:', {
+                status: xhr.status,
+                statusText: xhr.statusText,
+                responseText: xhr.responseText,
+                error: error
+            });
+            
+            let errorMessage = 'Erro ao salvar alterações.';
+            if (xhr.responseJSON && xhr.responseJSON.error) {
+                errorMessage = xhr.responseJSON.error;
+            }
+            
+            alert(errorMessage);
+        },
+        complete: function() {
+            // Reabilitar botão
+            $('#saveOrderBtn').prop('disabled', false).html('<i class="fas fa-save me-1"></i>Salvar Alterações');
+        }
+    });
+}
+</script>
 {% endblock %}
 

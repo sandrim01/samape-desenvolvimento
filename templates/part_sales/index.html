@@ -84,7 +84,7 @@
                         </td>
                         <td>
                             {% if sale.service_order %}
-                            <a href="{{ url_for('view_service_order', id=sale.service_order_id) }}">OS #{{ sale.service_order_id }}</a>
+                            <a href="javascript:void(0)" onclick="viewServiceOrder({{ sale.service_order_id }})">OS #{{ sale.service_order_id }}</a>
                             {% else %}
                             N/A
                             {% endif %}
@@ -187,4 +187,57 @@
         {% endif %}
     </div>
 </div>
+
+<!-- Modal de Visualização da OS -->
+<div class="modal fade" id="viewServiceOrderModal" tabindex="-1" aria-labelledby="viewServiceOrderModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewServiceOrderModalLabel">
+                    <i class="fas fa-eye me-2"></i>Visualizar Ordem de Serviço
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body" id="modalBodyContent">
+                <!-- Conteúdo será carregado aqui via AJAX -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="editOrderBtn" class="btn btn-primary" onclick="editCurrentOrder()">
+                    <i class="fas fa-edit me-1"></i>Editar
+                </button>
+                <a href="#" id="fullViewBtn" class="btn btn-outline-secondary">
+                    <i class="fas fa-expand-arrows-alt me-1"></i>Visualização Completa
+                </a>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Edição da OS -->
+<div class="modal fade" id="editServiceOrderModal" tabindex="-1" aria-labelledby="editServiceOrderModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editServiceOrderModalLabel">
+                    <i class="fas fa-edit me-2"></i>Editar Ordem de Serviço
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body" id="editModalBodyContent">
+                <!-- Conteúdo será carregado aqui via AJAX -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="saveOrderBtn" class="btn btn-primary" onclick="saveServiceOrder()">
+                    <i class="fas fa-save me-1"></i>Salvar Alterações
+                </button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Script do arquivo JS comum -->
+<script src="{{ url_for('static', filename='js/service-order-modals.js') }}"></script>
+
 {% endblock %}

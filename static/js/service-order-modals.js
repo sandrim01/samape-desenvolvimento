@@ -1,316 +1,41 @@
-{% extends "base.html" %}
+/**
+ * Funções JavaScript comuns para modals de Ordem de Serviço
+ * Este arquivo deve ser incluído em todas as páginas que precisam dos modals de OS
+ */
 
-{% block title %}Ordens de Serviço - SAMAPE{% endblock %}
-
-{% block extra_css %}
-<style>
-.mobile-cards-container {
-    display: none;
-}
-
-@media (max-width: 767.98px) {
-    .mobile-cards-container {
-        display: block;
-    }
-}
-</style>
-{% endblock %}
-
-{% block content %}
-<!-- Filtros -->
-<div class="row mb-4">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">
-                    Filtros de Busca
-                </h5>
-            </div>
-            <div class="card-body">
-                <form method="GET" id="searchForm">
-                    <div class="row g-3">
-                        <!-- Filtro por Status -->
-                        <div class="col-md-3">
-                            <label for="status" class="form-label">Status:</label>
-                            <select class="form-select" id="status" name="status">
-                                <option value="">Todos</option>
-                                <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pendente</option>
-                                <option value="in_progress" {% if status_filter == 'in_progress' %}selected{% endif %}>Em Andamento</option>
-                                <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>Concluída</option>
-                                <option value="cancelled" {% if status_filter == 'cancelled' %}selected{% endif %}>Cancelada</option>
-                            </select>
-                        </div>
-
-                        <!-- Filtro por Cliente -->
-                        <div class="col-md-3">
-                            <label for="client" class="form-label">Cliente:</label>
-                            <select class="form-select" id="client" name="client">
-                                <option value="">Todos</option>
-                                {% for client in clients %}
-                                <option value="{{ client.id }}" {% if client_filter == client.id|string %}selected{% endif %}>
-                                    {{ client.name }}
-                                </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-
-                        <!-- Filtro por Responsável -->
-                        <div class="col-md-3">
-                            <label for="responsible" class="form-label">Responsável:</label>
-                            <select class="form-select" id="responsible" name="responsible">
-                                <option value="">Todos</option>
-                                {% for employee in employees %}
-                                <option value="{{ employee.id }}" {% if responsible_filter == employee.id|string %}selected{% endif %}>
-                                    {{ employee.name }}
-                                </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-
-                        <!-- Filtro por Data -->
-                        <div class="col-md-3">
-                            <label for="date_from" class="form-label">Data (De):</label>
-                            <input type="date" class="form-control" id="date_from" name="date_from" value="{{ date_from_filter }}">
-                        </div>
-
-                        <div class="col-md-3">
-                            <label for="date_to" class="form-label">Data (Até):</label>
-                            <input type="date" class="form-control" id="date_to" name="date_to" value="{{ date_to_filter }}">
-                        </div>
-
-                        <div class="col-12">
-                            <button type="submit" class="btn btn-primary">
-                                Buscar
-                            </button>
-                            <a href="{{ url_for('service_orders') }}" class="btn btn-outline-secondary">
-                                Limpar
-                            </a>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Lista de Ordens de Serviço -->
-<div class="row">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">
-                    Ordens de Serviço
-                    {% if service_orders %}
-                        <span class="badge bg-primary">{{ service_orders|length }} encontrada(s)</span>
-                    {% endif %}
-                </h5>
-                <a href="{{ url_for('new_service_order') }}" class="btn btn-primary btn-sm">
-                    Nova Ordem de Serviço
-                </a>
-            </div>
-            
-            {% if service_orders %}
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>ID</th>
-                                <th>Cliente</th>
-                                <th>Equipamento</th>
-                                <th>Status</th>
-                                <th>Responsável</th>
-                                <th>Data</th>
-                                <th>Valor</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for order in service_orders %}
-                            <tr>
-                                <td class="fw-bold text-primary">#{{ order.id }}</td>
-                                <td>{{ order.client.name }}</td>
-                                <td>
-                                    <div>
-                                        <strong>{{ order.equipment.model if order.equipment else 'N/A' }}</strong>
-                                        {% if order.equipment and order.equipment.serial_number %}
-                                        <br><small class="text-muted">S/N: {{ order.equipment.serial_number }}</small>
-                                        {% endif %}
-                                    </div>
-                                </td>
-                                <td>
-                                    {% if order.status == 'pending' %}
-                                        <span class="badge bg-warning">Pendente</span>
-                                    {% elif order.status == 'in_progress' %}
-                                        <span class="badge bg-info">Em Andamento</span>
-                                    {% elif order.status == 'completed' %}
-                                        <span class="badge bg-success">Concluída</span>
-                                    {% elif order.status == 'cancelled' %}
-                                        <span class="badge bg-danger">Cancelada</span>
-                                    {% else %}
-                                        <span class="badge bg-secondary">{{ order.status }}</span>
-                                    {% endif %}
-                                </td>
-                                <td>{{ order.responsible.name if order.responsible else 'Não atribuído' }}</td>
-                                <td>{{ order.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
-                                <td>
-                                    {% if order.total_value %}
-                                        R$ {{ "%.2f"|format(order.total_value) }}
-                                    {% else %}
-                                        <span class="text-muted">Não informado</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <div class="btn-group btn-group-sm" role="group">
-                                        <button type="button" class="btn btn-outline-primary" onclick="viewServiceOrder({{ order.id }})" title="Visualizar">
-                                            Ver
-                                        </button>
-                                        <button type="button" class="btn btn-outline-warning" onclick="openEditModal({{ order.id }})" title="Editar">
-                                            Editar
-                                        </button>
-                                        <button type="button" class="btn btn-outline-danger" onclick="deleteServiceOrder({{ order.id }})" title="Excluir">
-                                            Excluir
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            {% else %}
-            <div class="card-body text-center py-5">
-                <div class="text-muted mb-3">
-                    📋
-                </div>
-                <h5 class="text-muted">Nenhuma ordem de serviço encontrada</h5>
-                <p class="text-muted mb-4">
-                    {% if request.form or request.args %}
-                    Tente ajustar os filtros ou limpar a busca.
-                    {% else %}
-                    Comece criando sua primeira ordem de serviço.
-                    {% endif %}
-                </p>
-                <a href="{{ url_for('new_service_order') }}" class="btn btn-primary">
-                    Nova Ordem de Serviço
-                </a>
-            </div>
-            {% endif %}
-        </div>
-    </div>
-</div>
-
-<!-- Modal para Visualizar Ordem de Serviço -->
-<div class="modal fade" id="viewServiceOrderModal" tabindex="-1" aria-labelledby="viewServiceOrderModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="viewServiceOrderModalLabel">
-                    <i class="fas fa-eye me-2"></i>Visualizar Ordem de Serviço
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-            </div>
-            <div class="modal-body" id="modalBodyContent">
-                <div class="text-center py-3">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Carregando...</span>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="fas fa-times me-1"></i>Fechar
-                </button>
-                <button type="button" class="btn btn-primary" id="editOrderBtn" onclick="editCurrentOrder()">
-                    <i class="fas fa-edit me-1"></i>Editar
-                </button>
-                <a href="#" class="btn btn-success" id="fullViewBtn" target="_blank">
-                    <i class="fas fa-external-link-alt me-1"></i>Visualização Completa
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Modal para Editar Ordem de Serviço -->
-<div class="modal fade" id="editServiceOrderModal" tabindex="-1" aria-labelledby="editServiceOrderModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="editServiceOrderModalLabel">
-                    <i class="fas fa-edit me-2"></i>Editar Ordem de Serviço
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-            </div>
-            <div class="modal-body" id="editModalBodyContent">
-                <div class="text-center py-3">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Carregando...</span>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="fas fa-times me-1"></i>Cancelar
-                </button>
-                <button type="button" class="btn btn-primary" id="saveOrderBtn" onclick="saveServiceOrder()">
-                    <i class="fas fa-save me-1"></i>Salvar Alterações
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-{% endblock %}
-
-{% block scripts %}
-<!-- Carregamento obrigatório do jQuery -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-<script class="requires-jquery">
 let currentOrderId = null;
 
 // Aguardar o carregamento do jQuery antes de executar
-function initializeModal() {
+function initializeServiceOrderModals() {
     if (typeof $ === 'undefined') {
-        setTimeout(initializeModal, 100);
+        setTimeout(initializeServiceOrderModals, 100);
         return;
     }
     
-    $(document).ready(function() {
-        // Auto-submit form when filters change
-        $('#status, #client, #responsive, #date_from, #date_to').change(function() {
-            $('#searchForm').submit();
-        });
-        
-        console.log('jQuery carregado e modal inicializado');
-    });
+    console.log('Service Order Modals inicializados');
 }
 
 // Inicializar quando o DOM estiver pronto
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeModal);
+    document.addEventListener('DOMContentLoaded', initializeServiceOrderModals);
 } else {
-    initializeModal();
+    initializeServiceOrderModals();
 }
 
 // Função para visualizar ordem de serviço em modal
 function viewServiceOrder(orderId) {
     console.log('viewServiceOrder chamado com ID:', orderId);
     
-    // Verificar se jQuery está disponível
     if (typeof $ === 'undefined') {
         console.error('jQuery não está carregado');
         return;
     }
+    
     currentOrderId = orderId;
     
-    // Abrir modal
     const modal = new bootstrap.Modal(document.getElementById('viewServiceOrderModal'));
     modal.show();
     
-    // Resetar conteúdo do modal
     $('#modalBodyContent').html(`
         <div class="text-center py-3">
             <div class="spinner-border text-primary" role="status">
@@ -319,27 +44,17 @@ function viewServiceOrder(orderId) {
         </div>
     `);
     
-    // Buscar dados da OS via AJAX
-    console.log('Fazendo requisição AJAX para:', '/os/' + orderId + '/modal');
     $.ajax({
         url: '/os/' + orderId + '/modal',
         method: 'GET',
         dataType: 'json',
         timeout: 10000,
         success: function(data) {
-            console.log('Dados recebidos da API:', data);
             renderOrderModal(data);
-            // Configurar botões do modal
             $('#editOrderBtn').show();
             $('#fullViewBtn').attr('href', '/os/' + orderId).show();
         },
         error: function(xhr, status, error) {
-            console.error('Erro na requisição AJAX:', {
-                status: xhr.status,
-                statusText: xhr.statusText,
-                responseText: xhr.responseText,
-                error: error
-            });
             $('#modalBodyContent').html(`
                 <div class="alert alert-danger" role="alert">
                     <i class="fas fa-exclamation-triangle me-2"></i>
@@ -467,7 +182,7 @@ function renderOrderModal(order) {
             </div>
             ` : ''}
             
-            <!-- Informações da Nota Fiscal (se houver) -->
+            <!-- Informações da Nota Fiscal -->
             ${order.invoice_number && order.invoice_number !== 'Não informado' ? `
             <div class="col-12">
                 <div class="card">
@@ -505,7 +220,6 @@ function editCurrentOrder() {
 function openEditModal(orderId) {
     console.log('openEditModal chamado com ID:', orderId);
     
-    // Verificar se jQuery está disponível
     if (typeof $ === 'undefined') {
         console.error('jQuery não está carregado');
         return;
@@ -780,12 +494,3 @@ function saveServiceOrder() {
         }
     });
 }
-
-// Função para excluir ordem de serviço
-function deleteServiceOrder(orderId) {
-    if (confirm('Tem certeza que deseja excluir esta ordem de serviço?')) {
-        window.location.href = '/service_orders/' + orderId + '/delete';
-    }
-}
-</script>
-{% endblock %}
