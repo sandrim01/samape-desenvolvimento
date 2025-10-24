@@ -301,6 +301,28 @@ def register_routes(app):
             form=form
         )
 
+    @app.route('/api/equipment-by-client/<int:client_id>')
+    @login_required
+    def get_equipment_by_client(client_id):
+        """Rota AJAX para buscar equipamentos por cliente"""
+        try:
+            equipment_list = Equipment.query.filter_by(client_id=client_id).all()
+            equipment_data = [
+                {
+                    'id': equipment.id,
+                    'display_name': f"{equipment.type} - {equipment.brand} {equipment.model}" + 
+                                  (f" ({equipment.serial_number})" if equipment.serial_number else ""),
+                    'type': equipment.type,
+                    'brand': equipment.brand,
+                    'model': equipment.model,
+                    'serial_number': equipment.serial_number
+                }
+                for equipment in equipment_list
+            ]
+            return jsonify({'success': True, 'equipment': equipment_data})
+        except Exception as e:
+            return jsonify({'success': False, 'error': str(e)}), 500
+
     @app.route('/os/<int:id>')
     @login_required
     def view_service_order(id):

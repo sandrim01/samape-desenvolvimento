@@ -261,5 +261,145 @@ function calculateKmTotal() {
         }
     }
 }
+
+// Filtro dinâmico de equipamentos por cliente
+document.addEventListener('DOMContentLoaded', function() {
+    const clientSelect = document.getElementById('client_id');
+    const equipmentSelect = document.getElementById('equipment_select');
+    const equipmentContainer = document.getElementById('equipment-select-container');
+    const equipmentInstructions = document.getElementById('equipment-instructions');
+    const selectedEquipmentContainer = document.getElementById('selected-equipment-container');
+    const selectedEquipmentDiv = document.getElementById('selected_equipment');
+    const equipmentIdsInput = document.getElementById('equipment_ids');
+
+    let selectedEquipmentIds = [];
+
+    // Função para carregar equipamentos do cliente
+    function loadClientEquipment(clientId) {
+        if (!clientId) {
+            equipmentContainer.style.display = 'none';
+            equipmentInstructions.style.display = 'block';
+            selectedEquipmentContainer.style.display = 'none';
+            selectedEquipmentIds = [];
+            updateEquipmentInput();
+            return;
+        }
+
+        // Mostrar loading
+        equipmentInstructions.textContent = 'Carregando equipamentos...';
+        equipmentInstructions.style.display = 'block';
+        equipmentContainer.style.display = 'none';
+
+        fetch(`/api/equipment-by-client/${clientId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    equipmentInstructions.style.display = 'none';
+                    
+                    // Limpar select de equipamentos
+                    equipmentSelect.innerHTML = '';
+                    
+                    if (data.equipment.length === 0) {
+                        equipmentInstructions.textContent = 'Este cliente não possui equipamentos cadastrados.';
+                        equipmentInstructions.style.display = 'block';
+                        equipmentContainer.style.display = 'none';
+                    } else {
+                        // Popular select com equipamentos
+                        data.equipment.forEach(equipment => {
+                            const option = document.createElement('option');
+                            option.value = equipment.id;
+                            option.textContent = equipment.display_name;
+                            equipmentSelect.appendChild(option);
+                        });
+                        
+                        equipmentContainer.style.display = 'block';
+                    }
+                    
+                    // Limpar seleções anteriores
+                    selectedEquipmentIds = [];
+                    updateSelectedEquipment();
+                    updateEquipmentInput();
+                } else {
+                    equipmentInstructions.textContent = 'Erro ao carregar equipamentos: ' + data.error;
+                    equipmentInstructions.style.display = 'block';
+                    equipmentContainer.style.display = 'none';
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao carregar equipamentos:', error);
+                equipmentInstructions.textContent = 'Erro ao conectar com o servidor.';
+                equipmentInstructions.style.display = 'block';
+                equipmentContainer.style.display = 'none';
+            });
+    }
+
+    // Função para atualizar equipamentos selecionados
+    function updateSelectedEquipment() {
+        selectedEquipmentDiv.innerHTML = '';
+        
+        if (selectedEquipmentIds.length === 0) {
+            selectedEquipmentContainer.style.display = 'none';
+            return;
+        }
+        
+        selectedEquipmentContainer.style.display = 'block';
+        
+        selectedEquipmentIds.forEach(equipmentId => {
+            const option = equipmentSelect.querySelector(`option[value="${equipmentId}"]`);
+            if (option) {
+                const badge = document.createElement('span');
+                badge.className = 'badge bg-primary me-2 mb-2';
+                badge.innerHTML = `
+                    ${option.textContent}
+                    <button type="button" class="btn-close btn-close-white ms-2" aria-label="Remover" 
+                            onclick="removeEquipment(${equipmentId})"></button>
+                `;
+                selectedEquipmentDiv.appendChild(badge);
+            }
+        });
+    }
+
+    // Função para atualizar input hidden com IDs selecionados
+    function updateEquipmentInput() {
+        equipmentIdsInput.value = selectedEquipmentIds.join(',');
+    }
+
+    // Função global para remover equipamento
+    window.removeEquipment = function(equipmentId) {
+        selectedEquipmentIds = selectedEquipmentIds.filter(id => id !== equipmentId);
+        updateSelectedEquipment();
+        updateEquipmentInput();
+        
+        // Desmarcar no select múltiplo
+        const option = equipmentSelect.querySelector(`option[value="${equipmentId}"]`);
+        if (option) {
+            option.selected = false;
+        }
+    };
+
+    // Event listener para mudança de cliente
+    clientSelect.addEventListener('change', function() {
+        const clientId = this.value;
+        loadClientEquipment(clientId);
+    });
+
+    // Event listener para seleção de equipamentos
+    equipmentSelect.addEventListener('change', function() {
+        selectedEquipmentIds = [];
+        
+        // Coletar todos os options selecionados
+        for (let option of this.selectedOptions) {
+            selectedEquipmentIds.push(parseInt(option.value));
+        }
+        
+        updateSelectedEquipment();
+        updateEquipmentInput();
+    });
+
+    // Carregar equipamentos se já houver cliente selecionado
+    if (clientSelect.value) {
+        loadClientEquipment(clientSelect.value);
+    }
+});
 </script>
 {% endblock %}
