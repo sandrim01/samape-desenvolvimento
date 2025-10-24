@@ -684,15 +684,35 @@ function saveServiceOrder() {
     }
     
     // Coletar dados do formulário
+    const clientIdValue = $('#edit_client_id').val();
+    const responsibleIdValue = $('#edit_responsible_id').val();
+    const descriptionValue = $('#edit_description').val();
+    const estimatedValue = $('#edit_estimated_value').val();
+    const kmInicialValue = $('#edit_km_inicial').val();
+    const kmFinalValue = $('#edit_km_final').val();
+    const statusValue = $('#edit_status').val();
+    const serviceDetailsValue = $('#edit_service_details').val();
+    
+    console.log('Valores coletados do formulário:', {
+        clientIdValue,
+        responsibleIdValue,
+        descriptionValue,
+        estimatedValue,
+        kmInicialValue,
+        kmFinalValue,
+        statusValue,
+        serviceDetailsValue
+    });
+    
     const formData = {
-        client_id: parseInt($('#edit_client_id').val()),
-        responsible_id: parseInt($('#edit_responsible_id').val()),
-        description: $('#edit_description').val(),
-        estimated_value: parseFloat($('#edit_estimated_value').val()) || null,
-        km_inicial: parseFloat($('#edit_km_inicial').val()) || null,
-        km_final: parseFloat($('#edit_km_final').val()) || null,
-        status: $('#edit_status').val(),
-        service_details: $('#edit_service_details').val(),
+        client_id: clientIdValue ? parseInt(clientIdValue) : null,
+        responsible_id: responsibleIdValue ? parseInt(responsibleIdValue) : 0,
+        description: descriptionValue || '',
+        estimated_value: estimatedValue ? parseFloat(estimatedValue) : null,
+        km_inicial: kmInicialValue ? parseFloat(kmInicialValue) : null,
+        km_final: kmFinalValue ? parseFloat(kmFinalValue) : null,
+        status: statusValue || 'aberta',
+        service_details: serviceDetailsValue || '',
         equipment_ids: []
     };
     
@@ -701,15 +721,15 @@ function saveServiceOrder() {
         formData.equipment_ids.push(parseInt($(this).val()));
     });
     
-    console.log('Dados para salvar:', formData);
+    console.log('Dados finais para salvar:', formData);
     
     // Validações básicas
-    if (!formData.client_id) {
-        alert('Por favor, selecione um cliente.');
+    if (!formData.client_id || isNaN(formData.client_id)) {
+        alert('Por favor, selecione um cliente válido.');
         return;
     }
     
-    if (!formData.description.trim()) {
+    if (!formData.description || !formData.description.trim()) {
         alert('Por favor, informe uma descrição.');
         return;
     }

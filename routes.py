@@ -485,38 +485,70 @@ def register_routes(app):
     @app.route('/os/<int:id>/update-ajax', methods=['POST'])
     @login_required
     def update_service_order_ajax(id):
+        print(f"DEBUG: Iniciando atualização da OS {id}")
         service_order = ServiceOrder.query.get_or_404(id)
+        print(f"DEBUG: OS encontrada: {service_order.id}")
         
         # Verificar se a OS pode ser editada
         if service_order.status == ServiceOrderStatus.fechada:
+            print(f"DEBUG: OS {id} está fechada, não pode ser editada")
             return jsonify({
                 'error': 'Não é possível editar uma OS fechada.'
             }), 400
         
         try:
             data = request.get_json()
+            print(f"DEBUG: Dados recebidos: {data}")
+            
+            if not data:
+                print("DEBUG: Nenhum dado recebido na requisição")
+                return jsonify({
+                    'error': 'Dados não foram fornecidos.'
+                }), 400
             
             # Atualizar campos básicos
+            print(f"DEBUG: Atualizando campos básicos")
             service_order.client_id = data.get('client_id')
-            service_order.responsible_id = data.get('responsible_id') if data.get('responsible_id') != 0 else None
+            print(f"DEBUG: client_id = {data.get('client_id')}")
+            
+            responsible_id = data.get('responsible_id') if data.get('responsible_id') != 0 else None
+            service_order.responsible_id = responsible_id
+            print(f"DEBUG: responsible_id = {responsible_id}")
+            
             service_order.description = data.get('description', '')
             service_order.estimated_value = data.get('estimated_value') if data.get('estimated_value') else None
-            service_order.status = ServiceOrderStatus[data.get('status', 'aberta')]
+            
+            # Verificar se o status é válido
+            status_value = data.get('status', 'aberta')
+            print(f"DEBUG: status recebido = {status_value}")
+            try:
+                service_order.status = ServiceOrderStatus[status_value]
+            except KeyError:
+                print(f"DEBUG: Status inválido: {status_value}, usando 'aberta'")
+                service_order.status = ServiceOrderStatus.aberta
+            
             service_order.km_inicial = data.get('km_inicial') if data.get('km_inicial') else None
             service_order.km_final = data.get('km_final') if data.get('km_final') else None
             service_order.service_details = data.get('service_details', '')
             
+            print(f"DEBUG: Atualizando cálculo de km_total")
             # Atualizar cálculo de km_total
             service_order.update_km_total()
             
+            print(f"DEBUG: Atualizando equipamentos")
             # Atualizar equipamentos
             service_order.equipment = []
             equipment_ids = data.get('equipment_ids', [])
+            print(f"DEBUG: equipment_ids = {equipment_ids}")
+            
             if equipment_ids:
                 equipment_list = Equipment.query.filter(Equipment.id.in_(equipment_ids)).all()
+                print(f"DEBUG: Equipamentos encontrados: {len(equipment_list)}")
                 service_order.equipment = equipment_list
             
+            print(f"DEBUG: Fazendo commit no banco de dados")
             db.session.commit()
+            print(f"DEBUG: Commit realizado com sucesso")
             
             # Log da ação
             log_action(
@@ -533,6 +565,11 @@ def register_routes(app):
             })
             
         except Exception as e:
+            print(f"DEBUG: Erro capturado: {type(e).__name__}: {str(e)}")
+            import traceback
+            print(f"DEBUG: Traceback completo:")
+            traceback.print_exc()
+            
             db.session.rollback()
             return jsonify({
                 'error': f'Erro ao atualizar OS: {str(e)}'
