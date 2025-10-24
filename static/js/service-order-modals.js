@@ -497,24 +497,13 @@ function saveServiceOrder() {
     // Log dos dados finais
     console.log('FormData sendo enviado:', JSON.stringify(formData, null, 2));
     
-    // Obter token CSRF (agora com context processor)
-    const csrfToken = $('meta[name=csrf-token]').attr('content') || document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-    console.log('CSRF Token encontrado:', !!csrfToken);
-    console.log('CSRF Token value:', csrfToken);
+    // CSRF DESABILITADO - Dados simples JSON
+    console.log('CSRF desabilitado - enviando dados simples');
     
-    // Preparar dados JSON com token CSRF
     const requestData = JSON.stringify(formData);
     const requestHeaders = {
         'Content-Type': 'application/json'
     };
-    
-    // Adicionar token CSRF ao header se disponível
-    if (csrfToken) {
-        requestHeaders['X-CSRFToken'] = csrfToken;
-        console.log('CSRF Token adicionado ao header');
-    } else {
-        console.warn('CSRF Token não encontrado - endpoint deve estar isento');
-    }
     
     console.log('Dados sendo enviados:', formData);
     console.log('Headers:', requestHeaders);
