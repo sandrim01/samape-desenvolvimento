@@ -174,6 +174,45 @@ def register_routes(app):
         return redirect(url_for('login'))
 
     # Dashboard
+    @app.route('/dashboard/test-data')
+    @login_required
+    def test_dashboard_data():
+        """Teste simples para verificar dados do banco"""
+        try:
+            total_orders = ServiceOrder.query.count()
+            total_clients = Client.query.count()
+            
+            # Lista todas as ordens com mais detalhes
+            orders = ServiceOrder.query.limit(5).all()
+            orders_info = []
+            for order in orders:
+                orders_info.append({
+                    'id': order.id,
+                    'status': order.status,
+                    'client_name': order.client.name if order.client else 'Sem cliente',
+                    'description': order.description[:50] if order.description else 'Sem descrição'
+                })
+            
+            # Buscar todos os status únicos
+            statuses = db.session.query(ServiceOrder.status).distinct().all()
+            unique_statuses = [s[0] for s in statuses if s[0]]
+            
+            return jsonify({
+                'success': True,
+                'total_orders': total_orders,
+                'total_clients': total_clients,
+                'sample_orders': orders_info,
+                'unique_statuses': unique_statuses,
+                'message': 'Dados carregados com sucesso!'
+            })
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': str(e),
+                'message': 'Erro ao carregar dados do banco'
+            })
+
     @app.route('/dashboard')
     @login_required  
     def dashboard():
@@ -223,10 +262,21 @@ def register_routes(app):
                 except:
                     fleet_total = fleet_active = fleet_maintenance = fleet_inactive = 0
                 
-                app.logger.info(f"Dashboard dados: Orders={total_orders}, Clients={total_clients}, Status encontrados={status_list}")
+                app.logger.info(f"Dashboard dados detalhados:")
+                app.logger.info(f"  - Total Orders: {total_orders}")
+                app.logger.info(f"  - Open Orders: {open_orders}")
+                app.logger.info(f"  - In Progress: {in_progress_orders}")
+                app.logger.info(f"  - Closed: {closed_orders}")
+                app.logger.info(f"  - Total Clients: {total_clients}")
+                app.logger.info(f"  - Monthly Revenue: {monthly_revenue}")
+                app.logger.info(f"  - Fleet Total: {fleet_total}")
+                app.logger.info(f"  - Status únicos no banco: {status_list}")
+                app.logger.info(f"  - Recent Orders count: {len(recent_orders) if recent_orders else 0}")
                 
             except Exception as e:
                 app.logger.error(f"Erro ao carregar dados reais: {e}")
+                import traceback
+                app.logger.error(f"Traceback completo: {traceback.format_exc()}")
                 # Fallback para dados zerados
                 total_orders = open_orders = in_progress_orders = closed_orders = 0
                 total_clients = monthly_revenue = 0
@@ -234,26 +284,31 @@ def register_routes(app):
                 recent_orders = []
 
             # USAR TEMPLATE BONITO com dados REAIS
+            metrics_data = {
+                'total': total_orders, 
+                'open': open_orders, 
+                'in_progress': in_progress_orders, 
+                'closed': closed_orders,
+                'total_clients': total_clients,
+                'total_revenue': monthly_revenue, 
+                'monthly_income': monthly_revenue, 
+                'monthly_expenses': 0,
+                'fleet_total': fleet_total, 
+                'fleet_active': fleet_active, 
+                'fleet_maintenance': fleet_maintenance, 
+                'fleet_inactive': fleet_inactive,
+                'efficiency_percentage': 95 if total_orders > 0 else 100, 
+                'pending_orders': open_orders, 
+                'in_progress_orders': in_progress_orders, 
+                'closed_orders': closed_orders,
+                'avg_completion_time': '2-3 dias' if total_orders > 0 else 'N/A'
+            }
+            
+            app.logger.info(f"Enviando para template - metrics_data: {metrics_data}")
+            app.logger.info(f"Recent orders para template: {[{'id': o.id, 'client': o.client.name if o.client else 'N/A'} for o in recent_orders] if recent_orders else 'Nenhuma'}")
+            
             return render_template('dashboard-beautiful.html',
-                metrics={
-                    'total': total_orders, 
-                    'open': open_orders, 
-                    'in_progress': in_progress_orders, 
-                    'closed': closed_orders,
-                    'total_clients': total_clients,
-                    'total_revenue': monthly_revenue, 
-                    'monthly_income': monthly_revenue, 
-                    'monthly_expenses': 0,
-                    'fleet_total': fleet_total, 
-                    'fleet_active': fleet_active, 
-                    'fleet_maintenance': fleet_maintenance, 
-                    'fleet_inactive': fleet_inactive,
-                    'efficiency_percentage': 95 if total_orders > 0 else 100, 
-                    'pending_orders': open_orders, 
-                    'in_progress_orders': in_progress_orders, 
-                    'closed_orders': closed_orders,
-                    'avg_completion_time': '2-3 dias' if total_orders > 0 else 'N/A'
-                },
+                metrics=metrics_data,
                 so_stats={
                     'total': total_orders, 
                     'open': open_orders, 
