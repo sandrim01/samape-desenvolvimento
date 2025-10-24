@@ -48,17 +48,17 @@ app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 # Configure database with optimized pool settings for performance
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "postgresql://postgres:qUngJAyBvLWQdkmSkZEjjEoMoDVzOBnx@trolley.proxy.rlwy.net:22285/railway")
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
-    "pool_recycle": 900,   # 15 minutes (mais agressivo)
+    "pool_recycle": 1800,  # 30 minutes (mais estável)
     "pool_pre_ping": True,
-    "pool_size": 20,       # Aumentado para 20
-    "max_overflow": 40,    # Aumentado para 40
-    "pool_timeout": 10,    # Reduzido para 10s (muito mais rápido)
+    "pool_size": 10,       # Reduzido para estabilidade
+    "max_overflow": 20,    # Reduzido para estabilidade
+    "pool_timeout": 30,    # Timeout mais seguro
     "echo": False,         # Desabilitar logs SQL
     "future": True,        # SQLAlchemy 2.0 style
     "connect_args": {
-        "connect_timeout": 10,
-        "application_name": "samape_app",
-        "options": "-c default_transaction_isolation=read_committed"
+        "connect_timeout": 30,
+        "application_name": "samape_app"
+        # Removido options problemático
     }
 }
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
