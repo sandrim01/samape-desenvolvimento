@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Histórico de Manutenções - {{ equipment.type }}</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 2cm;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            font-size: 12px;
+            line-height: 1.4;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            background: white;
+        }
+        
+        .no-print {
+            display: block;
+        }
+        
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            
+            body {
+                padding: 0;
+                margin: 0;
+            }
+            
+            .service-order {
+                page-break-inside: avoid;
+            }
+            
+            .header {
+                page-break-after: avoid;
+            }
+        }
+        
+        .print-controls {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            margin: 0 5px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .btn:hover {
+            opacity: 0.8;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #ddd;
+        }
+        
+        .logo {
+            max-width: 150px;
+            height: auto;
+            margin-bottom: 10px;
+        }
+        
+        .company-info {
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 15px;
+        }
+        
+        .title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 15px 0;
+        }
+        
+        .equipment-info {
+            background-color: #f8f9fa;
+            padding: 20px;
+            margin-bottom: 25px;
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
+        }
+        
+        .equipment-info h2 {
+            margin: 0 0 15px 0;
+            font-size: 16px;
+            color: #2c3e50;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .info-item {
+            margin-bottom: 12px;
+        }
+        
+        .info-label {
+            font-weight: bold;
+            color: #495057;
+            margin-bottom: 5px;
+        }
+        
+        .info-value {
+            color: #666;
+        }
+        
+        .summary {
+            background-color: #e9ecef;
+            padding: 20px;
+            margin-bottom: 25px;
+            border-radius: 5px;
+        }
+        
+        .summary-title {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            text-align: center;
+        }
+        
+        .stat-item {
+            font-size: 12px;
+        }
+        
+        .stat-number {
+            font-size: 18px;
+            font-weight: bold;
+            color: #007bff;
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .history-section {
+            margin-top: 25px;
+        }
+        
+        .history-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .service-order {
+            background-color: #fff;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .service-order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .os-number {
+            font-weight: bold;
+            font-size: 14px;
+            color: #007bff;
+        }
+        
+        .os-date {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        .status-aberta {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-em-andamento {
+            background-color: #cce5ff;
+            color: #004085;
+        }
+        
+        .status-finalizada {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .status-cancelada {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .os-description {
+            margin-top: 12px;
+            padding: 12px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            font-size: 11px;
+            line-height: 1.5;
+        }
+        
+        .os-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+            margin-top: 12px;
+            font-size: 11px;
+        }
+        
+        .detail-item {
+            text-align: center;
+            padding: 8px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+        
+        .detail-label {
+            font-weight: bold;
+            color: #495057;
+            display: block;
+            margin-bottom: 4px;
+        }
+        
+        .detail-value {
+            color: #666;
+        }
+        
+        .no-history {
+            text-align: center;
+            padding: 50px;
+            color: #666;
+            font-style: italic;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 10px;
+            color: #666;
+            border-top: 1px solid #ddd;
+            padding-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Controles de Impressão -->
+    <div class="print-controls no-print">
+        <button onclick="window.print()" class="btn btn-primary">
+            🖨️ Imprimir
+        </button>
+        <button onclick="window.close()" class="btn btn-secondary">
+            ✕ Fechar
+        </button>
+    </div>
+
+    <div class="header">
+        {% if company_settings and company_settings.logo_base64 %}
+        <img src="data:image/png;base64,{{ company_settings.logo_base64 }}" alt="Logo" class="logo">
+        {% else %}
+        <img src="{{ url_for('static', filename='images/logonova2.png') }}" alt="SAMAPE Logo" class="logo">
+        {% endif %}
+        
+        {% if company_settings %}
+        <div class="company-info">
+            <strong>{{ company_settings.name or 'SAMAPE' }}</strong><br>
+            {% if company_settings.address %}{{ company_settings.address }}<br>{% endif %}
+            {% if company_settings.phone %}Telefone: {{ company_settings.phone }}{% endif %}
+            {% if company_settings.email %} | Email: {{ company_settings.email }}{% endif %}
+        </div>
+        {% endif %}
+        
+        <div class="title">HISTÓRICO DE MANUTENÇÕES</div>
+        <div style="font-size: 11px; color: #666;">
+            Gerado em {{ datetime.now().strftime('%d/%m/%Y às %H:%M') }}
+        </div>
+    </div>
+
+    <div class="equipment-info">
+        <h2>📋 Dados do Equipamento</h2>
+        <div class="info-grid">
+            <div>
+                <div class="info-item">
+                    <div class="info-label">Tipo:</div>
+                    <div class="info-value">{{ equipment.type }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Marca:</div>
+                    <div class="info-value">{{ equipment.brand or 'Não informado' }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Modelo:</div>
+                    <div class="info-value">{{ equipment.model or 'Não informado' }}</div>
+                </div>
+            </div>
+            <div>
+                <div class="info-item">
+                    <div class="info-label">Número de Série:</div>
+                    <div class="info-value">{{ equipment.serial_number or 'Não informado' }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Ano:</div>
+                    <div class="info-value">{{ equipment.year or 'Não informado' }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Cliente:</div>
+                    <div class="info-value">{{ equipment.client.name }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if service_orders %}
+    <!-- Resumo Estatístico -->
+    <div class="summary">
+        <div class="summary-title">📊 Resumo do Histórico</div>
+        <div class="summary-stats">
+            <div class="stat-item">
+                <span class="stat-number">{{ service_orders|length }}</span>
+                Total de OS
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">
+                    {{ service_orders|selectattr('status.name', 'equalto', 'finalizada')|list|length }}
+                </span>
+                Finalizadas
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">
+                    {{ service_orders|selectattr('status.name', 'equalto', 'em_andamento')|list|length }}
+                </span>
+                Em Andamento
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">
+                    {{ service_orders|selectattr('status.name', 'equalto', 'aberta')|list|length }}
+                </span>
+                Abertas
+            </div>
+        </div>
+    </div>
+
+    <div class="history-section">
+        <div class="history-title">
+            📝 Histórico de Ordens de Serviço
+        </div>
+
+        {% for order in service_orders %}
+        <div class="service-order">
+            <div class="service-order-header">
+                <div class="os-number">OS #{{ order.id }}</div>
+                <div class="os-date">{{ order.created_at.strftime('%d/%m/%Y') if order.created_at else 'Data não definida' }}</div>
+                <div class="status-badge status-{{ order.status.name }}">
+                    {{ order.status.value }}
+                </div>
+            </div>
+
+            <div class="os-description">
+                <strong>Descrição do Serviço:</strong><br>
+                {{ order.description }}
+            </div>
+
+            <div class="os-details">
+                <div class="detail-item">
+                    <span class="detail-label">Responsável</span>
+                    <span class="detail-value">
+                        {{ order.responsible.name if order.responsible else 'Não definido' }}
+                    </span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Valor Estimado</span>
+                    <span class="detail-value">
+                        {% if order.estimated_value %}
+                            R$ {{ "%.2f"|format(order.estimated_value)|replace('.', ',') }}
+                        {% else %}
+                            Não informado
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Última Atualização</span>
+                    <span class="detail-value">
+                        {{ order.updated_at.strftime('%d/%m/%Y') if order.updated_at else 'Não definida' }}
+                    </span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <div class="history-section">
+        <div class="history-title">📝 Histórico de Ordens de Serviço</div>
+        <div class="no-history">
+            ℹ️ Nenhuma ordem de serviço foi registrada para este equipamento até o momento.
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="footer">
+        <div>
+            Sistema de Gestão de Serviços - SAMAPE<br>
+            Este relatório é confidencial e destinado exclusivamente ao uso interno da empresa.
+        </div>
+    </div>
+
+    <script>
+        // Auto-focus na janela para impressão
+        window.onload = function() {
+            // Se foi aberto em nova janela, focar para impressão
+            if (window.opener) {
+                window.focus();
+            }
+        };
+        
+        // Atalho de teclado para imprimir
+        document.addEventListener('keydown', function(event) {
+            if (event.ctrlKey && event.key === 'p') {
+                event.preventDefault();
+                window.print();
+            }
+        });
+    </script>
+</body>
+</html>

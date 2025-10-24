@@ -1332,10 +1332,10 @@ def register_routes(app):
         except Exception as e:
             return f'Erro ao carregar imagem: {str(e)}', 500
 
-    @app.route('/maquinarios/<int:id>/historico-pdf')
+    @app.route('/maquinarios/<int:id>/historico-print')
     @login_required
-    def export_equipment_history_pdf(id):
-        """Gera e retorna o PDF do histórico de manutenções do equipamento"""
+    def print_equipment_history(id):
+        """Exibe página de impressão do histórico de manutenções do equipamento"""
         equipment = Equipment.query.get_or_404(id)
         
         # Buscar todas as ordens de serviço relacionadas ao equipamento
@@ -1350,55 +1350,22 @@ def register_routes(app):
             # Get company settings
             company_settings = CompanySettings.get_company_info()
             
-            # Render the template to HTML
-            html_content = render_template('equipment/history_pdf.html', 
-                                         equipment=equipment,
-                                         service_orders=service_orders,
-                                         company_settings=company_settings,
-                                         datetime=datetime)
+            log_action(
+                'Visualização de Histórico',
+                'equipment', 
+                equipment.id,
+                f'Histórico do equipamento {equipment.type} acessado para impressão'
+            )
             
-            # Try WeasyPrint first (more reliable)
-            try:
-                from weasyprint import HTML
-                import tempfile
-                import os
-                
-                # Create a temporary file
-                with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as temp:
-                    # Generate PDF from HTML with base_url for images
-                    base_url = request.url_root
-                    HTML(string=html_content, base_url=base_url).write_pdf(temp.name)
-                    
-                    # Read the PDF content
-                    with open(temp.name, 'rb') as pdf_file:
-                        pdf_data = pdf_file.read()
-                    
-                    # Clean up temporary file
-                    os.unlink(temp.name)
-                    
-                    # Return PDF as response
-                    response = make_response(pdf_data)
-                    response.headers['Content-Type'] = 'application/pdf'
-                    response.headers['Content-Disposition'] = f'attachment; filename="historico_equipamento_{equipment.id}.pdf"'
-                    
-                    log_action(
-                        'Exportação de Histórico',
-                        'equipment', 
-                        equipment.id,
-                        f'Histórico do equipamento {equipment.type} exportado em PDF'
-                    )
-                    
-                    return response
-                    
-            except ImportError:
-                flash('WeasyPrint não está instalado. PDF não pode ser gerado.', 'error')
-                return redirect(url_for('view_equipment', id=id))
-            except Exception as e:
-                flash(f'Erro ao gerar PDF: {str(e)}', 'error')
-                return redirect(url_for('view_equipment', id=id))
+            # Render template de impressão
+            return render_template('equipment/history_print.html', 
+                                 equipment=equipment,
+                                 service_orders=service_orders,
+                                 company_settings=company_settings,
+                                 datetime=datetime)
                 
         except Exception as e:
-            flash(f'Erro ao exportar histórico: {str(e)}', 'error')
+            flash(f'Erro ao carregar histórico: {str(e)}', 'error')
             return redirect(url_for('view_equipment', id=id))
 
     # Employee routes

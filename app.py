@@ -49,11 +49,6 @@ app.config["WTF_CSRF_ENABLED"] = False  # DESABILITADO TEMPORARIAMENTE
 app.config["WTF_CSRF_TIME_LIMIT"] = 3600  # 1 hour
 app.config["WTF_CSRF_SSL_STRICT"] = False  # Para ambiente de desenvolvimento
 
-# Disable template cache for debugging
-app.config["TEMPLATES_AUTO_RELOAD"] = True
-app.jinja_env.auto_reload = True
-app.jinja_env.cache = {}
-
 # Initialize extensions with app
 db.init_app(app)
 login_manager.init_app(app)
@@ -71,14 +66,6 @@ login_manager.login_message_category = "warning"
 
 # Import models 
 import models
-
-# Add no-cache headers to prevent browser caching issues
-@app.after_request
-def after_request(response):
-    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, public, max-age=0"
-    response.headers["Expires"] = "0" 
-    response.headers["Pragma"] = "no-cache"
-    return response
 
 # Context processor para CSRF (funciona mesmo com CSRF desabilitado)
 @app.context_processor
