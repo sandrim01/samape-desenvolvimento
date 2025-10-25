@@ -343,7 +343,17 @@ def register_routes(app):
                 'pending_orders': open_orders, 
                 'in_progress_orders': in_progress_orders, 
                 'closed_orders': closed_orders,
-                'avg_completion_time': '2-3 dias' if total_orders > 0 else 'N/A'
+                'avg_completion_time': '2-3 dias' if total_orders > 0 else 'N/A',
+                # Campos extras que o template dashboard.html precisa
+                'income_data': [monthly_revenue or 0],
+                'expense_data': [0],
+                'nf_total': 0,
+                'nf_aprovadas': 0, 
+                'nf_pendentes': 0,
+                'nf_rejeitadas': 0,
+                'open_orders': open_orders,
+                'pending_delivery': 0,
+                'delivered_this_month': closed_orders
             }
             
             app.logger.info(f"Enviando para template - metrics_data: {metrics_data}")
@@ -370,7 +380,12 @@ def register_routes(app):
             app.logger.error(f"Erro crítico no dashboard: {e}")
             # Em caso de erro, mostrar dashboard simples mas funcional
             return render_template('dashboard.html',
-                metrics={'total': 0, 'open': 0, 'in_progress': 0, 'closed': 0, 'efficiency_percentage': 100},
+                metrics={
+                    'total': 0, 'open': 0, 'in_progress': 0, 'closed': 0, 'efficiency_percentage': 100,
+                    'monthly_income': 0, 'monthly_expenses': 0, 'income_data': [0], 'expense_data': [0],
+                    'nf_total': 0, 'nf_aprovadas': 0, 'nf_pendentes': 0, 'nf_rejeitadas': 0,
+                    'open_orders': 0, 'pending_delivery': 0, 'delivered_this_month': 0
+                },
                 so_stats={'total': 0, 'open': 0, 'in_progress': 0, 'closed': 0},
                 financial_summary={'total_revenue': 0, 'monthly_income': 0, 'monthly_expenses': 0},
                 recent_orders=[], recent_logs=[], now=time.time()
@@ -398,7 +413,10 @@ def register_routes(app):
                     'total_revenue': 0, 'monthly_income': 0, 'monthly_expenses': 0,
                     'fleet_total': 0, 'fleet_active': 0, 'fleet_maintenance': 0, 'fleet_inactive': 0,
                     'efficiency_percentage': 100, 'pending_orders': 0, 'in_progress_orders': 0, 'closed_orders': 0,
-                    'avg_completion_time': 'N/A'
+                    'avg_completion_time': 'N/A',
+                    'income_data': [0], 'expense_data': [0],
+                    'nf_total': 0, 'nf_aprovadas': 0, 'nf_pendentes': 0, 'nf_rejeitadas': 0,
+                    'open_orders': 0, 'pending_delivery': 0, 'delivered_this_month': 0
                 },
                 so_stats={'total': total_orders, 'open': 0, 'in_progress': 0, 'closed': 0},
                 financial_summary={'total_revenue': 0, 'monthly_income': 0, 'monthly_expenses': 0},
