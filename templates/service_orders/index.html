@@ -104,9 +104,9 @@
                         <span class="badge bg-primary">{{ service_orders.total }} encontrada(s)</span>
                     {% endif %}
                 </h5>
-                <a href="{{ url_for('new_service_order') }}" class="btn btn-primary btn-sm">
-                    Nova Ordem de Serviço
-                </a>
+                <button type="button" class="btn btn-primary btn-sm" onclick="openCreateModal()">
+                    <i class="fas fa-plus me-1"></i>Nova Ordem de Serviço
+                </button>
             </div>
             
             {% if service_orders and service_orders.items %}
@@ -256,9 +256,9 @@
                     Comece criando sua primeira ordem de serviço.
                     {% endif %}
                 </p>
-                <a href="{{ url_for('new_service_order') }}" class="btn btn-primary">
-                    Nova Ordem de Serviço
-                </a>
+                <button type="button" class="btn btn-primary" onclick="openCreateModal()">
+                    <i class="fas fa-plus me-1"></i>Nova Ordem de Serviço
+                </button>
             </div>
             {% endif %}
         </div>
@@ -326,6 +326,35 @@
     </div>
 </div>
 
+<!-- Modal para Criar Nova Ordem de Serviço -->
+<div class="modal fade" id="createServiceOrderModal" tabindex="-1" aria-labelledby="createServiceOrderModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createServiceOrderModalLabel">
+                    <i class="fas fa-plus me-2"></i>Nova Ordem de Serviço
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body" id="createModalBodyContent">
+                <div class="text-center py-3">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Carregando...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Cancelar
+                </button>
+                <button type="button" class="btn btn-success" id="createOrderBtn" onclick="createServiceOrder()">
+                    <i class="fas fa-plus me-1"></i>Criar Ordem de Serviço
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
 
 {% block scripts %}
@@ -334,6 +363,23 @@
 
 <script class="requires-jquery">
 let currentOrderId = null;
+
+// Verificar se deve abrir o modal de criação automaticamente
+$(document).ready(function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('action') === 'create') {
+        const preselectedClientId = urlParams.get('client_id');
+        
+        // Remover os parâmetros da URL sem recarregar a página
+        const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+        window.history.replaceState({path:newUrl}, '', newUrl);
+        
+        // Abrir o modal de criação com cliente pré-selecionado
+        setTimeout(function() {
+            openCreateModal(preselectedClientId);
+        }, 500);
+    }
+});
 
 // Aguardar o carregamento do jQuery antes de executar
 function initializeModal() {
@@ -841,6 +887,293 @@ function saveServiceOrder() {
         complete: function() {
             // Reabilitar botão
             $('#saveOrderBtn').prop('disabled', false).html('<i class="fas fa-save me-1"></i>Salvar Alterações');
+        }
+    });
+}
+
+// Função para abrir modal de criação de nova OS
+function openCreateModal(preselectedClientId = null) {
+    console.log('openCreateModal chamado com cliente:', preselectedClientId);
+    
+    // Verificar se jQuery está disponível
+    if (typeof $ === 'undefined') {
+        console.error('jQuery não está carregado');
+        return;
+    }
+    
+    // Abrir modal de criação
+    const createModal = new bootstrap.Modal(document.getElementById('createServiceOrderModal'));
+    createModal.show();
+    
+    // Resetar conteúdo do modal
+    $('#createModalBodyContent').html(`
+        <div class="text-center py-3">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Carregando...</span>
+            </div>
+        </div>
+    `);
+    
+    // Buscar dados para criação via AJAX
+    console.log('Fazendo requisição AJAX para:', '/os/new-modal');
+    $.ajax({
+        url: '/os/new-modal',
+        method: 'GET',
+        dataType: 'json',
+        timeout: 10000,
+        success: function(data) {
+            console.log('Dados recebidos para criação:', data);
+            renderCreateModal(data, preselectedClientId);
+        },
+        error: function(xhr, status, error) {
+            console.error('Erro na requisição AJAX:', {
+                status: xhr.status,
+                statusText: xhr.statusText,
+                responseText: xhr.responseText,
+                error: error
+            });
+            $('#createModalBodyContent').html(`
+                <div class="alert alert-danger" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Erro ao carregar formulário de criação:</strong><br>
+                    Status: ${xhr.status}<br>
+                    Erro: ${error}<br>
+                    Resposta: ${xhr.responseText || 'Nenhuma resposta'}
+                </div>
+            `);
+        }
+    });
+}
+
+// Função para renderizar formulário de criação
+function renderCreateModal(data, preselectedClientId = null) {
+    console.log('renderCreateModal chamado com dados:', data, 'Cliente pré-selecionado:', preselectedClientId);
+    
+    if (!data) {
+        console.error('Dados não fornecidos para criação');
+        return;
+    }
+    
+    // Gerar opções para clientes
+    const clientOptions = data.clients.map(client => 
+        `<option value="${client.id}" ${preselectedClientId && client.id == preselectedClientId ? 'selected' : ''}>${client.name}</option>`
+    ).join('');
+    
+    // Gerar opções para responsáveis
+    const userOptions = '<option value="0" selected>A ser definido</option>' +
+        data.users.map(user => 
+            `<option value="${user.id}">${user.name}</option>`
+        ).join('');
+    
+    const createFormContent = `
+        <form id="createServiceOrderForm">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="create_client_id" class="form-label">Cliente *</label>
+                        <select class="form-select" id="create_client_id" required onchange="loadClientEquipment(this.value)">
+                            <option value="">Selecione um cliente</option>
+                            ${clientOptions}
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="create_responsible_id" class="form-label">Responsável</label>
+                        <select class="form-select" id="create_responsible_id">
+                            ${userOptions}
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="col-12">
+                    <div class="mb-3">
+                        <label for="create_description" class="form-label">Descrição *</label>
+                        <textarea class="form-control" id="create_description" rows="3" required></textarea>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="create_estimated_value" class="form-label">Valor Estimado</label>
+                        <input type="number" class="form-control" id="create_estimated_value" step="0.01" value="0">
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="create_km_inicial" class="form-label">KM Inicial</label>
+                        <input type="number" class="form-control" id="create_km_inicial" step="0.01" value="0">
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="create_km_final" class="form-label">KM Final</label>
+                        <input type="number" class="form-control" id="create_km_final" step="0.01" value="0">
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="create_status" class="form-label">Status</label>
+                        <select class="form-select" id="create_status">
+                            <option value="aberta" selected>Aberta</option>
+                            <option value="em_andamento">Em Andamento</option>
+                            <option value="fechada">Fechada</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="col-12">
+                    <div class="mb-3">
+                        <label class="form-label">Equipamentos</label>
+                        <div class="equipment-checkboxes-create" style="max-height: 200px; overflow-y: auto;">
+                            <p class="text-muted">Selecione um cliente para ver os equipamentos disponíveis.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    `;
+    
+    $('#createModalBodyContent').html(createFormContent);
+    
+    // Se um cliente estiver pré-selecionado, carregar seus equipamentos
+    if (preselectedClientId) {
+        setTimeout(function() {
+            loadClientEquipment(preselectedClientId);
+        }, 100);
+    }
+}
+
+// Função para carregar equipamentos do cliente selecionado
+function loadClientEquipment(clientId) {
+    if (!clientId) {
+        $('.equipment-checkboxes-create').html('<p class="text-muted">Selecione um cliente para ver os equipamentos disponíveis.</p>');
+        return;
+    }
+    
+    $.ajax({
+        url: '/clientes/' + clientId + '/equipamentos',
+        method: 'GET',
+        success: function(equipment) {
+            if (equipment && equipment.length > 0) {
+                const equipmentCheckboxes = equipment.map(eq => `
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="${eq.id}" id="create_equipment_${eq.id}">
+                        <label class="form-check-label" for="create_equipment_${eq.id}">
+                            ${eq.name} - ${eq.model}
+                        </label>
+                    </div>
+                `).join('');
+                $('.equipment-checkboxes-create').html(equipmentCheckboxes);
+            } else {
+                $('.equipment-checkboxes-create').html('<p class="text-muted">Nenhum equipamento encontrado para este cliente.</p>');
+            }
+        },
+        error: function() {
+            $('.equipment-checkboxes-create').html('<p class="text-danger">Erro ao carregar equipamentos.</p>');
+        }
+    });
+}
+
+// Função para criar nova ordem de serviço
+function createServiceOrder() {
+    console.log('createServiceOrder chamado');
+    
+    // Coletar dados do formulário
+    const clientIdValue = $('#create_client_id').val();
+    const responsibleIdValue = $('#create_responsible_id').val();
+    const descriptionValue = $('#create_description').val();
+    const estimatedValue = $('#create_estimated_value').val();
+    const kmInicialValue = $('#create_km_inicial').val();
+    const kmFinalValue = $('#create_km_final').val();
+    const statusValue = $('#create_status').val();
+    
+    console.log('Valores coletados do formulário:', {
+        clientIdValue,
+        responsibleIdValue,
+        descriptionValue,
+        estimatedValue,
+        kmInicialValue,
+        kmFinalValue,
+        statusValue
+    });
+    
+    const formData = {
+        client_id: clientIdValue ? parseInt(clientIdValue) : null,
+        responsible_id: responsibleIdValue ? parseInt(responsibleIdValue) : 0,
+        description: descriptionValue || '',
+        estimated_value: estimatedValue ? parseFloat(estimatedValue) : 0,
+        km_inicial: kmInicialValue ? parseFloat(kmInicialValue) : 0,
+        km_final: kmFinalValue ? parseFloat(kmFinalValue) : 0,
+        status: statusValue || 'aberta',
+        equipment_ids: []
+    };
+    
+    // Coletar equipamentos selecionados
+    $('.equipment-checkboxes-create input[type="checkbox"]:checked').each(function() {
+        formData.equipment_ids.push(parseInt($(this).val()));
+    });
+    
+    console.log('Dados finais para criar:', formData);
+    
+    // Validações básicas
+    if (!formData.client_id || isNaN(formData.client_id)) {
+        alert('Por favor, selecione um cliente válido.');
+        return;
+    }
+    
+    if (!formData.description || !formData.description.trim()) {
+        alert('Por favor, informe uma descrição.');
+        return;
+    }
+    
+    // Desabilitar botão de criar
+    $('#createOrderBtn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i>Criando...');
+    
+    // Enviar dados via AJAX
+    $.ajax({
+        url: '/os/create-modal',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(formData),
+        success: function(response) {
+            console.log('Resposta da criação:', response);
+            
+            if (response.success) {
+                // Fechar modal
+                $('#createServiceOrderModal').modal('hide');
+                
+                // Mostrar mensagem de sucesso
+                alert(response.message || 'Ordem de serviço criada com sucesso!');
+                
+                // Recarregar página para mostrar nova OS
+                window.location.reload();
+            } else {
+                alert('Erro: ' + (response.error || 'Erro desconhecido'));
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('Erro ao criar:', {
+                status: xhr.status,
+                statusText: xhr.statusText,
+                responseText: xhr.responseText,
+                error: error
+            });
+            
+            let errorMessage = 'Erro ao criar ordem de serviço.';
+            if (xhr.responseJSON && xhr.responseJSON.error) {
+                errorMessage = xhr.responseJSON.error;
+            }
+            
+            alert(errorMessage);
+        },
+        complete: function() {
+            // Reabilitar botão
+            $('#createOrderBtn').prop('disabled', false).html('<i class="fas fa-plus me-1"></i>Criar Ordem de Serviço');
         }
     });
 }

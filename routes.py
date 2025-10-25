@@ -704,6 +704,107 @@ def register_routes(app):
         
         return jsonify(order_data)
 
+    @app.route('/os/new-modal')
+    @login_required
+    def get_new_service_order_modal():
+        """Rota para carregar dados do modal de criação de nova OS"""
+        try:
+            print("DEBUG NEW-MODAL: Carregando dados para criar nova OS")
+            
+            # Buscar dados necessários para o formulário
+            clients = Client.query.order_by(Client.name).all()
+            users = User.query.filter_by(active=True).order_by(User.name).all()
+            equipment_all = Equipment.query.order_by(Equipment.model).all()
+            
+            print(f"DEBUG NEW-MODAL: Dados carregados - Clientes: {len(clients)}, Usuários: {len(users)}, Equipamentos: {len(equipment_all)}")
+            
+            # Preparar dados para o modal (todos vazios para nova OS)
+            new_data = {
+                'client_id': '',
+                'responsible_id': 0,
+                'description': '',
+                'estimated_value': 0,
+                'status': 'aberta',
+                'km_inicial': 0,
+                'km_final': 0,
+                'service_details': '',
+                'equipment_ids': [],
+                'clients': [{'id': c.id, 'name': c.name} for c in clients],
+                'users': [{'id': u.id, 'name': u.name} for u in users],
+                'equipment': [{'id': e.id, 'model': e.model, 'brand': e.brand, 'client_id': e.client_id} for e in equipment_all]
+            }
+            
+            print("DEBUG NEW-MODAL: Dados preparados com sucesso para nova OS")
+            return jsonify(new_data)
+            
+        except Exception as e:
+            print(f"DEBUG NEW-MODAL: Erro interno: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            return jsonify({'error': f'Erro interno: {str(e)}'}), 500
+
+    @app.route('/clientes/<int:client_id>/equipamentos')
+    @login_required
+    def get_client_equipment(client_id):
+        try:
+            equipment = Equipment.query.filter_by(client_id=client_id).all()
+            equipment_list = [{'id': eq.id, 'name': eq.name, 'model': eq.model} for eq in equipment]
+            return jsonify(equipment_list)
+        except Exception as e:
+            app.logger.error(f"Erro ao carregar equipamentos do cliente {client_id}: {e}")
+            return jsonify({'error': 'Erro ao carregar equipamentos'}), 500
+
+    @app.route('/os/create-modal', methods=['POST'])
+    @login_required
+    def create_service_order_modal():
+        try:
+            data = request.get_json()
+            
+            service_order = ServiceOrder(
+                client_id=data.get('client_id'),
+                responsible_id=data.get('responsible_id') if data.get('responsible_id') != 0 else None,
+                description=data.get('description', ''),
+                estimated_value=data.get('estimated_value', 0),
+                status=ServiceOrderStatus[data.get('status', 'pending')],
+                km_inicial=data.get('km_inicial', 0),
+                km_final=data.get('km_final', 0)
+            )
+            
+            # Calculate km_total if both values are provided
+            service_order.update_km_total()
+            
+            # Add equipment relationships if selected
+            equipment_ids = data.get('equipment_ids', [])
+            if equipment_ids:
+                for eq_id in equipment_ids:
+                    equipment = Equipment.query.get(int(eq_id))
+                    if equipment and equipment.client_id == service_order.client_id:
+                        service_order.equipment.append(equipment)
+            
+            db.session.add(service_order)
+            db.session.commit()
+            
+            log_action(
+                'Criação de OS',
+                'service_order',
+                service_order.id,
+                f"OS criada para cliente {service_order.client.name}"
+            )
+            
+            return jsonify({
+                'success': True,
+                'message': 'Ordem de serviço criada com sucesso!',
+                'id': service_order.id
+            })
+            
+        except Exception as e:
+            db.session.rollback()
+            app.logger.error(f"Erro ao criar OS via modal: {e}")
+            return jsonify({
+                'success': False,
+                'error': 'Erro ao criar ordem de serviço'
+            }), 500
+
     @app.route('/os/<int:id>/edit-modal')
     @login_required
     def get_service_order_edit_modal(id):

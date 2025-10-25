@@ -231,10 +231,10 @@
             
             <div class="row g-3 mt-2">
                 <div class="col-md-3">
-                    <a href="{{ url_for('service_orders') }}" class="btn btn-modern btn-modern-primary w-100">
+                    <button type="button" class="btn btn-modern btn-modern-primary w-100" onclick="openCreateModal()">
                         <i class="fas fa-wrench me-2"></i>
                         Nova OS
-                    </a>
+                    </button>
                 </div>
                 <div class="col-md-3">
                     <a href="{{ url_for('clients') }}" class="btn btn-modern btn-modern-success w-100">
@@ -348,6 +348,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }, index * 100);
     });
 });
+
+// Função para abrir modal de criação de nova OS (redirecionamento temporário)
+function openCreateModal() {
+    // Como este é o dashboard, vamos redirecionar para a página de OS onde o modal está implementado
+    window.location.href = "{{ url_for('service_orders') }}?action=create";
+}
 
 // Atualização automática do dashboard (opcional)
 setTimeout(function() {
