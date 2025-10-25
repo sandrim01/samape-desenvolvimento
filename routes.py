@@ -359,7 +359,7 @@ def register_routes(app):
             app.logger.info(f"Enviando para template - metrics_data: {metrics_data}")
             app.logger.info(f"Recent orders para template: {[{'id': o.id, 'client': o.client.name if o.client else 'N/A'} for o in recent_orders] if recent_orders else 'Nenhuma'}")
             
-            return render_template('dashboard.html',
+            return render_template('dashboard-beautiful.html',
                 metrics=metrics_data,
                 so_stats={
                     'total': total_orders, 
@@ -379,7 +379,7 @@ def register_routes(app):
         except Exception as e:
             app.logger.error(f"Erro crítico no dashboard: {e}")
             # Em caso de erro, mostrar dashboard simples mas funcional
-            return render_template('dashboard.html',
+            return render_template('dashboard-beautiful.html',
                 metrics={
                     'total': 0, 'open': 0, 'in_progress': 0, 'closed': 0, 'efficiency_percentage': 100,
                     'monthly_income': 0, 'monthly_expenses': 0, 'income_data': [0], 'expense_data': [0],
@@ -405,8 +405,8 @@ def register_routes(app):
             except:
                 total_orders = total_clients = 0
             
-            # Usar template ORIGINAL que funciona
-            return render_template('dashboard.html',
+            # Usar template BONITO com dados reais
+            return render_template('dashboard-beautiful.html',
                 metrics={
                     'total': total_orders, 'open': 0, 'in_progress': 0, 'closed': 0,
                     'total_clients': total_clients,
