@@ -177,40 +177,82 @@ def register_routes(app):
     @app.route('/dashboard/test-data')
     @login_required
     def test_dashboard_data():
-        """Teste simples para verificar dados do banco"""
+        """Teste específico para PostgreSQL Railway"""
         try:
-            total_orders = ServiceOrder.query.count()
-            total_clients = Client.query.count()
+            # Teste básico de conexão
+            with db.engine.connect() as connection:
+                connection.execute(db.text('SELECT 1'))
             
-            # Lista todas as ordens com mais detalhes
-            orders = ServiceOrder.query.limit(5).all()
-            orders_info = []
-            for order in orders:
-                orders_info.append({
-                    'id': order.id,
-                    'status': order.status,
-                    'client_name': order.client.name if order.client else 'Sem cliente',
-                    'description': order.description[:50] if order.description else 'Sem descrição'
-                })
+            # Verificar se as tabelas existem
+            tables_exist = {}
+            try:
+                with db.engine.connect() as connection:
+                    result = connection.execute(db.text("SELECT COUNT(*) FROM service_order"))
+                    tables_exist['service_order'] = result.scalar()
+            except Exception as e:
+                tables_exist['service_order'] = f"ERRO: {e}"
+                
+            try:
+                with db.engine.connect() as connection:
+                    result = connection.execute(db.text("SELECT COUNT(*) FROM client"))
+                    tables_exist['client'] = result.scalar()
+            except Exception as e:
+                tables_exist['client'] = f"ERRO: {e}"
             
-            # Buscar todos os status únicos
-            statuses = db.session.query(ServiceOrder.status).distinct().all()
-            unique_statuses = [s[0] for s in statuses if s[0]]
+            try:
+                with db.engine.connect() as connection:
+                    result = connection.execute(db.text("SELECT COUNT(*) FROM vehicle"))
+                    tables_exist['vehicle'] = result.scalar()
+            except Exception as e:
+                tables_exist['vehicle'] = f"ERRO: {e}"
+            
+            try:
+                with db.engine.connect() as connection:
+                    result = connection.execute(db.text("SELECT COUNT(*) FROM financial_entry"))
+                    tables_exist['financial_entry'] = result.scalar()
+            except Exception as e:
+                tables_exist['financial_entry'] = f"ERRO: {e}"
+            
+            # Listar todas as tabelas que existem no banco
+            try:
+                with db.engine.connect() as connection:
+                    result = connection.execute(db.text("SELECT table_name FROM information_schema.tables WHERE table_schema='public'"))
+                    all_tables = [row[0] for row in result]
+            except Exception as e:
+                all_tables = f"Erro ao listar tabelas: {e}"
+            
+            # Teste usando SQLAlchemy ORM
+            try:
+                total_orders = ServiceOrder.query.count()
+            except Exception as e:
+                total_orders = f"ERRO ORM: {e}"
+                
+            try:
+                total_clients = Client.query.count()
+            except Exception as e:
+                total_clients = f"ERRO ORM: {e}"
             
             return jsonify({
                 'success': True,
-                'total_orders': total_orders,
-                'total_clients': total_clients,
-                'sample_orders': orders_info,
-                'unique_statuses': unique_statuses,
-                'message': 'Dados carregados com sucesso!'
+                'database_connection': 'OK',
+                'database_url': os.environ.get('DATABASE_URL', 'NÃO DEFINIDA')[:50] + '...',
+                'tables_count': tables_exist,
+                'all_tables': all_tables,
+                'orm_results': {
+                    'total_orders': total_orders,
+                    'total_clients': total_clients
+                },
+                'message': 'Teste de conexão PostgreSQL concluído!'
             })
             
         except Exception as e:
+            import traceback
             return jsonify({
                 'success': False,
                 'error': str(e),
-                'message': 'Erro ao carregar dados do banco'
+                'traceback': traceback.format_exc(),
+                'database_url': os.environ.get('DATABASE_URL', 'NÃO DEFINIDA')[:50] + '...' if os.environ.get('DATABASE_URL') else 'NÃO DEFINIDA',
+                'message': 'Erro na conexão PostgreSQL'
             })
 
     @app.route('/dashboard')
