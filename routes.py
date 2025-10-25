@@ -743,17 +743,6 @@ def register_routes(app):
             traceback.print_exc()
             return jsonify({'error': f'Erro interno: {str(e)}'}), 500
 
-    @app.route('/clientes/<int:client_id>/equipamentos')
-    @login_required
-    def get_client_equipment(client_id):
-        try:
-            equipment = Equipment.query.filter_by(client_id=client_id).all()
-            equipment_list = [{'id': eq.id, 'name': eq.name, 'model': eq.model} for eq in equipment]
-            return jsonify(equipment_list)
-        except Exception as e:
-            app.logger.error(f"Erro ao carregar equipamentos do cliente {client_id}: {e}")
-            return jsonify({'error': 'Erro ao carregar equipamentos'}), 500
-
     @app.route('/os/create-modal', methods=['POST'])
     @login_required
     def create_service_order_modal():
