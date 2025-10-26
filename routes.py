@@ -263,45 +263,68 @@ def register_routes(app):
             import time
             from sqlalchemy.orm import joinedload
             
+            app.logger.info("=== DASHBOARD DEBUG - INICIANDO ===")
+            
             # DADOS REAIS DO SISTEMA
             try:
+                app.logger.info("Tentando contar ordens de serviço...")
                 # Contar ordens por status real
                 total_orders = ServiceOrder.query.count()
+                app.logger.info(f"Total de ordens encontradas: {total_orders}")
                 
                 # Buscar todos os status únicos que existem no banco
                 existing_statuses = db.session.query(ServiceOrder.status).distinct().all()
                 status_list = [s[0] for s in existing_statuses if s[0]]
+                app.logger.info(f"Status únicos encontrados: {status_list}")
                 
                 # Contar por status que realmente existe
-                open_orders = ServiceOrder.query.filter(ServiceOrder.status.in_(['Aberto', 'Pendente', 'Novo', 'Criado'])).count()
-                in_progress_orders = ServiceOrder.query.filter(ServiceOrder.status.in_(['Em Andamento', 'Andamento', 'Executando'])).count()
-                closed_orders = ServiceOrder.query.filter(ServiceOrder.status.in_(['Fechado', 'Concluído', 'Finalizado', 'Completo'])).count()
+                app.logger.info("Contando ordens por status...")
+                open_orders = ServiceOrder.query.filter(ServiceOrder.status.in_(['Aberto', 'Pendente', 'Novo', 'Criado', 'pending', 'aberta'])).count()
+                in_progress_orders = ServiceOrder.query.filter(ServiceOrder.status.in_(['Em Andamento', 'Andamento', 'Executando', 'em_andamento', 'in_progress'])).count()
+                closed_orders = ServiceOrder.query.filter(ServiceOrder.status.in_(['Fechado', 'Concluído', 'Finalizado', 'Completo', 'fechada', 'closed'])).count()
+                app.logger.info(f"Abertas: {open_orders}, Em andamento: {in_progress_orders}, Fechadas: {closed_orders}")
                 
                 # Buscar clientes reais
+                app.logger.info("Contando clientes...")
                 total_clients = Client.query.count()
+                app.logger.info(f"Total de clientes: {total_clients}")
                 
                 # Buscar ordens recentes com dados reais
-                recent_orders = ServiceOrder.query.options(
-                    joinedload(ServiceOrder.client),
-                    joinedload(ServiceOrder.equipment)
-                ).order_by(ServiceOrder.created_at.desc()).limit(5).all()
+                app.logger.info("Buscando ordens recentes...")
+                try:
+                    recent_orders = ServiceOrder.query.options(
+                        joinedload(ServiceOrder.client),
+                        joinedload(ServiceOrder.equipment)
+                    ).order_by(ServiceOrder.created_at.desc()).limit(5).all()
+                    app.logger.info(f"Ordens recentes encontradas: {len(recent_orders)}")
+                except Exception as ro_error:
+                    app.logger.warning(f"Erro ao buscar ordens recentes: {ro_error}")
+                    # Fallback sem joinedload
+                    recent_orders = ServiceOrder.query.order_by(ServiceOrder.created_at.desc()).limit(5).all()
+                    app.logger.info(f"Ordens recentes (fallback): {len(recent_orders)}")
                 
                 # Dados financeiros básicos (se existir a tabela)
                 try:
+                    app.logger.info("Tentando buscar dados financeiros...")
                     monthly_revenue = db.session.query(db.func.sum(FinancialEntry.value)).filter(
                         FinancialEntry.type == 'receita',
                         FinancialEntry.date >= db.func.date_trunc('month', db.func.current_date())
                     ).scalar() or 0
-                except:
+                    app.logger.info(f"Receita mensal: {monthly_revenue}")
+                except Exception as fe:
+                    app.logger.warning(f"Erro ao buscar dados financeiros: {fe}")
                     monthly_revenue = 0
                 
                 # Dados da frota (se existir)
                 try:
+                    app.logger.info("Tentando buscar dados da frota...")
                     fleet_total = Vehicle.query.count()
                     fleet_active = Vehicle.query.filter_by(status='ativo').count()
                     fleet_maintenance = Vehicle.query.filter_by(status='em_manutencao').count()
                     fleet_inactive = Vehicle.query.filter_by(status='inativo').count()
-                except:
+                    app.logger.info(f"Frota - Total: {fleet_total}, Ativos: {fleet_active}, Manutenção: {fleet_maintenance}, Inativos: {fleet_inactive}")
+                except Exception as ve:
+                    app.logger.warning(f"Erro ao buscar dados da frota: {ve}")
                     fleet_total = fleet_active = fleet_maintenance = fleet_inactive = 0
                 
                 app.logger.info(f"Dashboard dados detalhados:")
