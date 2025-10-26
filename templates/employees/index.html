@@ -188,9 +188,8 @@
                                     </div>
                                 </div>
                             </div>
-                            {% endif %}
-                            {% endif %}
-                            {% endif %}
+                            {% endif %}  <!-- Fecha {% if employee.active %} linha 133 -->
+                            {% endif %}  <!-- Fecha {% if current_user.is_admin() %} linha 87 -->
                         </td>
                     </tr>
                     {% endfor %}
