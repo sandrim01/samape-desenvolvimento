@@ -29,7 +29,7 @@
                                 <div class="form-group">
                                     <label for="data" class="form-label">Data *</label>
                                     <input type="date" class="form-control" id="data" name="data" 
-                                           value="{{ moment().format('YYYY-MM-DD') }}" required>
+                                           value="{{ moment().strftime('%Y-%m-%d') }}" required>
                                 </div>
                             </div>
                             <div class="col-md-3">

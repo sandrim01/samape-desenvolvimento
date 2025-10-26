@@ -129,10 +129,9 @@
                                     </span>
                                 </td>
                                 <td>
-                                    {% set tempo_atual = (moment().replace(hour=0, minute=0, second=0) - ponto.hora_entrada.replace(hour=0, minute=0, second=0)).total_seconds() / 3600 %}
                                     <span class="text-danger">
                                         <i class="fas fa-clock"></i>
-                                        Aberto há {{ "%.1f"|format(tempo_atual) }}h
+                                        Aguardando saída
                                     </span>
                                 </td>
                                 <td>

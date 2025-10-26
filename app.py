@@ -127,6 +127,11 @@ app.jinja_env.filters['safe_float'] = safe_float
 app.jinja_env.filters['safe_money'] = safe_money
 app.jinja_env.globals['hasattr'] = hasattr
 
+# Add datetime functions for templates
+from datetime import datetime
+app.jinja_env.globals['moment'] = lambda: datetime.now()
+app.jinja_env.globals['momento'] = lambda: datetime.now()
+
 # Create application context first
 with app.app_context():
     # Rota de teste para CSRF
