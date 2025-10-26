@@ -267,8 +267,17 @@ def register_routes(app):
             
             # TESTE RÁPIDO DE CONECTIVIDADE DO BANCO
             try:
+                # Primeiro teste: verificar se a tabela existe
+                tables_test = db.session.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()
+                app.logger.info(f"TABELAS NO BANCO: {[t[0] for t in tables_test]}")
+                
                 test_count = db.session.execute("SELECT COUNT(*) FROM service_order").scalar()
                 app.logger.info(f"TESTE DIRETO SQL - Ordens no banco: {test_count}")
+                
+                # Testar clientes também
+                client_count = db.session.execute("SELECT COUNT(*) FROM client").scalar()
+                app.logger.info(f"TESTE DIRETO SQL - Clientes no banco: {client_count}")
+                
             except Exception as sql_test:
                 app.logger.error(f"ERRO NO TESTE SQL: {sql_test}")
             
@@ -277,7 +286,7 @@ def register_routes(app):
                 app.logger.info("Tentando contar ordens de serviço...")
                 # Contar ordens por status real
                 total_orders = ServiceOrder.query.count()
-                app.logger.info(f"Total de ordens encontradas: {total_orders}")
+                app.logger.info(f"Total de ordens encontradas via ORM: {total_orders}")
                 
                 # Buscar todos os status únicos que existem no banco
                 existing_statuses = db.session.query(ServiceOrder.status).distinct().all()
@@ -294,7 +303,23 @@ def register_routes(app):
                 # Buscar clientes reais
                 app.logger.info("Contando clientes...")
                 total_clients = Client.query.count()
-                app.logger.info(f"Total de clientes: {total_clients}")
+                app.logger.info(f"Total de clientes via ORM: {total_clients}")
+                
+                # Informações adicionais do banco
+                app.logger.info(f"Database URL: {db.engine.url}")
+                app.logger.info(f"Database dialect: {db.engine.dialect.name}")
+                
+                # Se ORM retornou zero, tentar SQL direto como backup
+                if total_orders == 0:
+                    app.logger.info("ORM retornou 0, tentando SQL direto...")
+                    total_orders_sql = db.session.execute("SELECT COUNT(*) FROM service_order").scalar() or 0
+                    total_clients_sql = db.session.execute("SELECT COUNT(*) FROM client").scalar() or 0
+                    app.logger.info(f"SQL direto - Ordens: {total_orders_sql}, Clientes: {total_clients_sql}")
+                    
+                    if total_orders_sql > 0:
+                        total_orders = total_orders_sql
+                        total_clients = total_clients_sql
+                        app.logger.info("Usando dados do SQL direto pois ORM retornou zero")
                 
                 # Buscar ordens recentes com dados reais
                 app.logger.info("Buscando ordens recentes...")
@@ -355,6 +380,14 @@ def register_routes(app):
                 fleet_total = fleet_active = fleet_maintenance = fleet_inactive = 0
                 recent_orders = []
 
+            # Log final dos dados que serão enviados
+            app.logger.info("=== DADOS FINAIS PARA O TEMPLATE ===")
+            app.logger.info(f"Total Orders: {total_orders}")
+            app.logger.info(f"Total Clients: {total_clients}")
+            app.logger.info(f"Open Orders: {open_orders}")
+            app.logger.info(f"In Progress: {in_progress_orders}")
+            app.logger.info(f"Closed Orders: {closed_orders}")
+            
             # USAR TEMPLATE BONITO com dados REAIS
             metrics_data = {
                 'total': total_orders, 
@@ -478,25 +511,59 @@ def register_routes(app):
     def dashboard_test():
         """Rota de teste para verificar dados do dashboard"""
         try:
-            # Teste básico das tabelas
-            service_orders_count = ServiceOrder.query.count()
-            clients_count = Client.query.count()
+            # Teste das tabelas via SQL direto
+            sql_results = {}
+            try:
+                sql_results['service_orders_sql'] = db.session.execute("SELECT COUNT(*) FROM service_order").scalar()
+                sql_results['clients_sql'] = db.session.execute("SELECT COUNT(*) FROM client").scalar()
+                
+                # Pegar exemplo de dados
+                sample_sql = db.session.execute("SELECT id, status, client_id, created_at FROM service_order LIMIT 3").fetchall()
+                sql_results['sample_orders_sql'] = [{'id': r[0], 'status': r[1], 'client_id': r[2], 'created_at': str(r[3])} for r in sample_sql]
+                
+            except Exception as sql_e:
+                sql_results['sql_error'] = str(sql_e)
             
-            # Verificar se há ordens no banco
-            sample_orders = ServiceOrder.query.limit(3).all()
-            orders_info = []
-            for order in sample_orders:
-                orders_info.append({
-                    'id': order.id,
-                    'status': str(order.status),
-                    'client_id': order.client_id,
-                    'created_at': str(order.created_at)
-                })
+            # Teste via ORM
+            orm_results = {}
+            try:
+                orm_results['service_orders_orm'] = ServiceOrder.query.count()
+                orm_results['clients_orm'] = Client.query.count()
+                
+                sample_orders = ServiceOrder.query.limit(3).all()
+                orm_results['sample_orders_orm'] = []
+                for order in sample_orders:
+                    orm_results['sample_orders_orm'].append({
+                        'id': order.id,
+                        'status': str(order.status),
+                        'client_id': order.client_id,
+                        'created_at': str(order.created_at)
+                    })
+            except Exception as orm_e:
+                orm_results['orm_error'] = str(orm_e)
+            
+            # Informações do banco
+            db_info = {
+                'database_url': str(db.engine.url),
+                'dialect': db.engine.dialect.name,
+                'tables': []
+            }
+            
+            try:
+                tables = db.session.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()
+                db_info['tables'] = [t[0] for t in tables]
+            except:
+                try:
+                    # PostgreSQL
+                    tables = db.session.execute("SELECT tablename FROM pg_tables WHERE schemaname = 'public'").fetchall()
+                    db_info['tables'] = [t[0] for t in tables]
+                except:
+                    db_info['tables'] = ['Não foi possível listar tabelas']
             
             return jsonify({
-                'service_orders_count': service_orders_count,
-                'clients_count': clients_count,
-                'sample_orders': orders_info,
+                'sql_results': sql_results,
+                'orm_results': orm_results,
+                'database_info': db_info,
                 'status': 'OK'
             })
         except Exception as e:
