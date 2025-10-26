@@ -2166,6 +2166,60 @@ def register_routes(app):
         flash(f'FuncionÃ¡rio {action} com sucesso!', 'success')
         return redirect(url_for('employees'))
 
+    @app.route('/funcionarios/<int:id>/baixa', methods=['POST'])
+    @admin_required
+    def dar_baixa_funcionario(id):
+        user = User.query.get_or_404(id)
+        
+        # Prevent deactivating yourself
+        if user.id == current_user.id:
+            flash('Você não pode dar baixa em sua própria conta.', 'danger')
+            return redirect(url_for('employees'))
+            
+        # Verificar se tem pontos em aberto
+        from models import Ponto
+        pontos_abertos = Ponto.query.filter_by(
+            usuario_id=user.id,
+            hora_saida=None
+        ).count()
+        
+        if pontos_abertos > 0:
+            flash(f'Não é possível dar baixa no funcionário {user.name}. Existe(m) {pontos_abertos} ponto(s) em aberto. Finalize os pontos primeiro.', 'warning')
+            return redirect(url_for('employees'))
+        
+        # Obter motivo da baixa
+        motivo = request.form.get('motivo', '').strip()
+        if not motivo:
+            flash('É obrigatório informar o motivo da baixa do funcionário.', 'danger')
+            return redirect(url_for('employees'))
+            
+        # Soft delete: marcar como inativo e adicionar data de saída
+        user.active = False
+        
+        # Se o modelo User tiver campo data_saida, usar. Caso contrário, usar observações
+        if hasattr(user, 'data_saida'):
+            from datetime import datetime
+            user.data_saida = datetime.now()
+        
+        if hasattr(user, 'motivo_saida'):
+            user.motivo_saida = motivo
+        else:
+            # Se não tiver o campo, pode adicionar nas observações ou criar um novo campo
+            if hasattr(user, 'observacoes'):
+                user.observacoes = f"Baixa em {datetime.now().strftime('%d/%m/%Y')}: {motivo}"
+        
+        db.session.commit()
+        
+        log_action(
+            'Funcionário com baixa',
+            'user',
+            user.id,
+            f"Funcionário {user.name} recebeu baixa. Motivo: {motivo}"
+        )
+        
+        flash(f'Baixa do funcionário {user.name} realizada com sucesso!', 'success')
+        return redirect(url_for('employees'))
+
     # Financial routes
     @app.route('/financeiro')
     @login_required

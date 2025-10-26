@@ -8,6 +8,12 @@
     <h1 class="mobile-page-title h2">Funcionários</h1>
     <div class="mobile-page-actions btn-toolbar mb-2 mb-md-0">
         {% if current_user.is_admin() %}
+        <div class="btn-group me-2" role="group">
+            <input type="checkbox" class="btn-check" id="showInactive" autocomplete="off" onchange="toggleInactiveEmployees()">
+            <label class="btn btn-outline-secondary btn-sm" for="showInactive">
+                <i class="fas fa-eye-slash me-1"></i>Mostrar com Baixa
+            </label>
+        </div>
         <a href="{{ url_for('new_employee') }}" class="mobile-action-btn-expanded btn btn-primary">
             <i class="fas fa-plus"></i> Novo Funcionário
         </a>
@@ -36,7 +42,7 @@
                 </thead>
                 <tbody>
                     {% for employee in employees %}
-                    <tr>
+                    <tr class="employee-row {% if not employee.active %}inactive-employee{% endif %}" {% if not employee.active %}style="display: none;"{% endif %}>
                         <td>
                             <div class="d-flex justify-content-center">
                                 <img src="{{ employee.get_profile_image() }}" 
@@ -49,7 +55,14 @@
                         </td>
                         <td>
                             <div class="d-flex align-items-center">
-                                <strong>{{ employee.name }}</strong>
+                                <div>
+                                    <strong class="{% if not employee.active %}text-muted{% endif %}">{{ employee.name }}</strong>
+                                    {% if not employee.active %}
+                                    <br><small class="text-muted">
+                                        <i class="fas fa-info-circle me-1"></i>Funcionário com baixa efetuada
+                                    </small>
+                                    {% endif %}
+                                </div>
                             </div>
                         </td>
                         <td class="d-none d-md-table-cell">{{ employee.email }}</td>
@@ -59,20 +72,34 @@
                             </span>
                         </td>
                         <td class="d-none d-lg-table-cell">
-                            <span class="badge {% if employee.active %}bg-success{% else %}bg-danger{% endif %}">
-                                {{ 'Ativo' if employee.active else 'Inativo' }}
-                            </span>
+                            {% if employee.active %}
+                                <span class="badge bg-success">
+                                    <i class="fas fa-check-circle me-1"></i>Ativo
+                                </span>
+                            {% else %}
+                                <span class="badge bg-danger">
+                                    <i class="fas fa-user-times me-1"></i>Baixa Efetuada
+                                </span>
+                            {% endif %}
                         </td>
                         <td class="d-none d-lg-table-cell">{{ employee.created_at.strftime('%d/%m/%Y') }}</td>
                         <td class="table-actions">
                             {% if current_user.is_admin() %}
-                            <a href="{{ url_for('edit_employee', id=employee.id) }}" class="btn btn-sm btn-outline-secondary" data-bs-toggle="tooltip" data-bs-placement="top" title="Editar">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                            {% if employee.id != current_user.id %}
-                            <button type="button" class="btn btn-sm {% if employee.active %}btn-outline-danger{% else %}btn-outline-success{% endif %}" data-bs-toggle="modal" data-bs-target="#toggleStatusModal{{ employee.id }}" title="{{ 'Desativar' if employee.active else 'Ativar' }}">
-                                <i class="fas {% if employee.active %}fa-user-slash{% else %}fa-user-check{% endif %}"></i>
-                            </button>
+                            <div class="btn-group" role="group">
+                                <a href="{{ url_for('edit_employee', id=employee.id) }}" class="btn btn-sm btn-outline-secondary" data-bs-toggle="tooltip" data-bs-placement="top" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                {% if employee.id != current_user.id %}
+                                <button type="button" class="btn btn-sm {% if employee.active %}btn-outline-warning{% else %}btn-outline-success{% endif %}" data-bs-toggle="modal" data-bs-target="#toggleStatusModal{{ employee.id }}" title="{{ 'Desativar' if employee.active else 'Ativar' }}">
+                                    <i class="fas {% if employee.active %}fa-user-slash{% else %}fa-user-check{% endif %}"></i>
+                                </button>
+                                {% if employee.active %}
+                                <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#baixaModal{{ employee.id }}" title="Dar Baixa">
+                                    <i class="fas fa-user-times"></i>
+                                </button>
+                                {% endif %}
+                                {% endif %}
+                            </div>
                             
                             <!-- Toggle Status Modal -->
                             <div class="modal fade" id="toggleStatusModal{{ employee.id }}" tabindex="-1" aria-hidden="true">
@@ -102,6 +129,66 @@
                                     </div>
                                 </div>
                             </div>
+                            
+                            {% if employee.active %}
+                            <!-- Modal de Baixa de Funcionário -->
+                            <div class="modal fade" id="baixaModal{{ employee.id }}" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header bg-danger text-white">
+                                            <h5 class="modal-title">
+                                                <i class="fas fa-user-times me-2"></i>Dar Baixa no Funcionário
+                                            </h5>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <form method="post" action="{{ url_for('dar_baixa_funcionario', id=employee.id) }}">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                            <div class="modal-body">
+                                                <div class="alert alert-warning" role="alert">
+                                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                                    <strong>Atenção!</strong> Esta ação dará baixa definitiva no funcionário <strong>{{ employee.name }}</strong>.
+                                                </div>
+                                                
+                                                <p class="text-muted mb-3">
+                                                    O funcionário será automaticamente desativado e não poderá mais fazer login no sistema. 
+                                                    Certifique-se de que todos os pontos estão finalizados antes de prosseguir.
+                                                </p>
+                                                
+                                                <div class="mb-3">
+                                                    <label for="motivo{{ employee.id }}" class="form-label">
+                                                        <strong>Motivo da Baixa *</strong>
+                                                    </label>
+                                                    <textarea 
+                                                        class="form-control" 
+                                                        id="motivo{{ employee.id }}" 
+                                                        name="motivo" 
+                                                        rows="3" 
+                                                        placeholder="Ex: Demissão, Pedido de demissão, Término de contrato, etc."
+                                                        required
+                                                        maxlength="500"></textarea>
+                                                    <div class="form-text">Máximo 500 caracteres</div>
+                                                </div>
+                                                
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="confirmBaixa{{ employee.id }}" required>
+                                                    <label class="form-check-label text-danger" for="confirmBaixa{{ employee.id }}">
+                                                        <strong>Confirmo que quero dar baixa neste funcionário</strong>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                    <i class="fas fa-times me-1"></i>Cancelar
+                                                </button>
+                                                <button type="submit" class="btn btn-danger">
+                                                    <i class="fas fa-user-times me-1"></i>Confirmar Baixa
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
                             {% endif %}
                             {% endif %}
                         </td>
@@ -123,4 +210,47 @@
     </a>
 </div>
 {% endif %}
+
+<style>
+.inactive-employee {
+    opacity: 0.7;
+    background-color: #f8f9fa !important;
+}
+
+.inactive-employee td {
+    border-color: #dee2e6 !important;
+}
+</style>
+
+<script>
+function toggleInactiveEmployees() {
+    const checkbox = document.getElementById('showInactive');
+    const inactiveRows = document.querySelectorAll('.inactive-employee');
+    
+    inactiveRows.forEach(row => {
+        if (checkbox.checked) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+    
+    // Update counter
+    updateEmployeeCounter();
+}
+
+function updateEmployeeCounter() {
+    const allRows = document.querySelectorAll('.employee-row');
+    const visibleRows = document.querySelectorAll('.employee-row:not([style*="display: none"])');
+    const activeCount = document.querySelectorAll('.employee-row:not(.inactive-employee)').length;
+    const inactiveCount = document.querySelectorAll('.inactive-employee').length;
+    
+    console.log(`Total: ${allRows.length}, Ativos: ${activeCount}, Com baixa: ${inactiveCount}, Visíveis: ${visibleRows.length}`);
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    updateEmployeeCounter();
+});
+</script>
 {% endblock %}
