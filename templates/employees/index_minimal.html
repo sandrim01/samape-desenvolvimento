@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Funcionários{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h2>Funcionários</h2>
+            
+            {% if employees %}
+            <table class="table">
+                <tbody>
+                    {% for employee in employees %}
+                    <tr>
+                        <td>{{ employee.name }}</td>
+                        <td>
+                            {% if current_user.is_admin() %}
+                                Admin controls here
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p>Nenhum funcionário cadastrado.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
