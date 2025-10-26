@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+
+{% block title %}Lançamento Rápido de Ponto{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-bolt"></i> Lançamento Rápido de Ponto
+        </h1>
+        <a href="{{ url_for('ponto.admin_view') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Voltar
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-10">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-users-clock"></i> Lançamento em Lote
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <form method="POST" id="lancamentoRapidoForm">
+                        <!-- Configurações Gerais -->
+                        <div class="row mb-4">
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="data" class="form-label">Data *</label>
+                                    <input type="date" class="form-control" id="data" name="data" 
+                                           value="{{ moment().format('YYYY-MM-DD') }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="tipo_lancamento" class="form-label">Tipo de Lançamento *</label>
+                                    <select class="form-control" id="tipo_lancamento" name="tipo_lancamento" required>
+                                        <option value="">Selecione...</option>
+                                        <option value="entrada">Apenas Entrada</option>
+                                        <option value="saida">Apenas Saída</option>
+                                        <option value="completo">Ponto Completo</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="hora_entrada" class="form-label">Hora de Entrada</label>
+                                    <input type="time" class="form-control" id="hora_entrada" name="hora_entrada">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="hora_saida" class="form-label">Hora de Saída</label>
+                                    <input type="time" class="form-control" id="hora_saida" name="hora_saida">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Observação Geral -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <label for="observacao_geral" class="form-label">Observação Geral (Opcional)</label>
+                                    <textarea class="form-control" id="observacao_geral" name="observacao_geral" rows="2"
+                                              placeholder="Observação que será adicionada a todos os lançamentos"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Seleção de Funcionários -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <label class="form-label">Funcionários *</label>
+                                <div class="card border-light">
+                                    <div class="card-header bg-light">
+                                        <div class="row align-items-center">
+                                            <div class="col">
+                                                <h6 class="mb-0">Selecionar Funcionários</h6>
+                                            </div>
+                                            <div class="col-auto">
+                                                <button type="button" class="btn btn-sm btn-outline-primary" id="selecionarTodos">
+                                                    <i class="fas fa-check-square"></i> Todos
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary" id="limparSelecao">
+                                                    <i class="fas fa-square"></i> Nenhum
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="card-body" style="max-height: 300px; overflow-y: auto;">
+                                        <div class="row">
+                                            {% for usuario in usuarios %}
+                                            <div class="col-md-6 col-lg-4 mb-2">
+                                                <div class="form-check">
+                                                    <input class="form-check-input funcionario-checkbox" type="checkbox" 
+                                                           value="{{ usuario.id }}" name="usuarios_selecionados[]" 
+                                                           id="usuario_{{ usuario.id }}">
+                                                    <label class="form-check-label" for="usuario_{{ usuario.id }}">
+                                                        <strong>{{ usuario.name }}</strong><br>
+                                                        <small class="text-muted">{{ usuario.email }}</small>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Confirmação de Senha -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    <strong>Confirmação de Administrador:</strong> Digite sua senha para confirmar o lançamento.
+                                </div>
+                                <div class="form-group">
+                                    <label for="senha_admin" class="form-label">Senha do Administrador *</label>
+                                    <input type="password" class="form-control" id="senha_admin" name="senha_admin" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botões -->
+                        <div class="row">
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-bolt"></i> Realizar Lançamento
+                                </button>
+                                <a href="{{ url_for('ponto.admin_view') }}" class="btn btn-secondary ms-2">
+                                    <i class="fas fa-times"></i> Cancelar
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Controle do tipo de lançamento
+    const tipoLancamento = document.getElementById('tipo_lancamento');
+    const horaEntrada = document.getElementById('hora_entrada');
+    const horaSaida = document.getElementById('hora_saida');
+    
+    tipoLancamento.addEventListener('change', function() {
+        const tipo = this.value;
+        
+        // Reset
+        horaEntrada.required = false;
+        horaSaida.required = false;
+        horaEntrada.disabled = false;
+        horaSaida.disabled = false;
+        
+        switch(tipo) {
+            case 'entrada':
+                horaEntrada.required = true;
+                horaSaida.disabled = true;
+                horaSaida.value = '';
+                break;
+            case 'saida':
+                horaSaida.required = true;
+                horaEntrada.disabled = true;
+                horaEntrada.value = '';
+                break;
+            case 'completo':
+                horaEntrada.required = true;
+                break;
+        }
+    });
+    
+    // Selecionar todos os funcionários
+    document.getElementById('selecionarTodos').addEventListener('click', function() {
+        const checkboxes = document.querySelectorAll('.funcionario-checkbox');
+        checkboxes.forEach(cb => cb.checked = true);
+    });
+    
+    // Limpar seleção
+    document.getElementById('limparSelecao').addEventListener('click', function() {
+        const checkboxes = document.querySelectorAll('.funcionario-checkbox');
+        checkboxes.forEach(cb => cb.checked = false);
+    });
+    
+    // Validação do formulário
+    document.getElementById('lancamentoRapidoForm').addEventListener('submit', function(e) {
+        const funcionariosSelecionados = document.querySelectorAll('.funcionario-checkbox:checked');
+        
+        if (funcionariosSelecionados.length === 0) {
+            e.preventDefault();
+            alert('Selecione pelo menos um funcionário!');
+            return;
+        }
+        
+        const senhaAdmin = document.getElementById('senha_admin').value;
+        if (!senhaAdmin) {
+            e.preventDefault();
+            alert('Digite sua senha de administrador para confirmar!');
+            return;
+        }
+        
+        if (!confirm(`Confirma o lançamento de ponto para ${funcionariosSelecionados.length} funcionário(s)?`)) {
+            e.preventDefault();
+        }
+    });
+});
+</script>
+{% endblock %}

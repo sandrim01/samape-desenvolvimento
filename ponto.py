@@ -343,3 +343,211 @@ def criar_ponto():
             flash(f'Erro ao criar ponto: {str(e)}', 'error')
     
     return render_template('ponto/criar.html', usuarios=usuarios)
+
+
+@bp_ponto.route('/lancamento-rapido', methods=['GET', 'POST'])
+@admin_required
+def lancamento_rapido():
+    """Lançamento rápido de ponto para múltiplos funcionários (apenas administradores)"""
+    usuarios = User.query.filter_by(active=True, role=UserRole.funcionario).order_by(User.name).all()
+    
+    if request.method == 'POST':
+        # Verificar senha do administrador
+        senha_admin = request.form.get('senha_admin')
+        if not senha_admin or not current_user.check_password(senha_admin):
+            flash('Senha de administrador incorreta!', 'error')
+            return render_template('ponto/lancamento_rapido.html', usuarios=usuarios)
+        
+        try:
+            data_str = request.form.get('data')
+            tipo_lancamento = request.form.get('tipo_lancamento')  # 'entrada', 'saida', 'completo'
+            hora_entrada_str = request.form.get('hora_entrada')
+            hora_saida_str = request.form.get('hora_saida')
+            observacao_geral = request.form.get('observacao_geral', '').strip()
+            usuarios_selecionados = request.form.getlist('usuarios_selecionados[]')
+            
+            if not data_str or not tipo_lancamento or not usuarios_selecionados:
+                flash('Data, tipo de lançamento e pelo menos um funcionário são obrigatórios!', 'error')
+                return render_template('ponto/lancamento_rapido.html', usuarios=usuarios)
+            
+            data_ponto = datetime.strptime(data_str, '%Y-%m-%d').date()
+            lancamentos_realizados = 0
+            
+            for user_id in usuarios_selecionados:
+                try:
+                    user_id = int(user_id)
+                    usuario = User.query.get(user_id)
+                    
+                    if not usuario:
+                        continue
+                    
+                    # Verificar se já existe ponto para este dia
+                    ponto_existente = Ponto.query.filter_by(user_id=user_id, data=data_ponto).first()
+                    
+                    if tipo_lancamento == 'entrada' and hora_entrada_str:
+                        if ponto_existente:
+                            # Atualizar apenas a entrada se não tiver
+                            if not ponto_existente.hora_entrada:
+                                hora_entrada = datetime.strptime(hora_entrada_str, '%H:%M').time()
+                                ponto_existente.hora_entrada = datetime.combine(data_ponto, hora_entrada)
+                                ponto_existente.observacao = f"[ADMIN] Entrada lançada por {current_user.name}" + (f" - {observacao_geral}" if observacao_geral else "")
+                                lancamentos_realizados += 1
+                        else:
+                            # Criar novo ponto só com entrada
+                            hora_entrada = datetime.strptime(hora_entrada_str, '%H:%M').time()
+                            novo_ponto = Ponto(
+                                user_id=user_id,
+                                data=data_ponto,
+                                hora_entrada=datetime.combine(data_ponto, hora_entrada),
+                                observacao=f"[ADMIN] Entrada lançada por {current_user.name}" + (f" - {observacao_geral}" if observacao_geral else "")
+                            )
+                            db.session.add(novo_ponto)
+                            lancamentos_realizados += 1
+                    
+                    elif tipo_lancamento == 'saida' and hora_saida_str:
+                        if ponto_existente and ponto_existente.hora_entrada and not ponto_existente.hora_saida:
+                            hora_saida = datetime.strptime(hora_saida_str, '%H:%M').time()
+                            ponto_existente.hora_saida = datetime.combine(data_ponto, hora_saida)
+                            obs_atual = ponto_existente.observacao or ""
+                            ponto_existente.observacao = obs_atual + f"\n[ADMIN] Saída lançada por {current_user.name}" + (f" - {observacao_geral}" if observacao_geral else "")
+                            lancamentos_realizados += 1
+                    
+                    elif tipo_lancamento == 'completo' and hora_entrada_str:
+                        if not ponto_existente:
+                            # Criar ponto completo
+                            hora_entrada = datetime.strptime(hora_entrada_str, '%H:%M').time()
+                            hora_saida_dt = None
+                            if hora_saida_str:
+                                hora_saida = datetime.strptime(hora_saida_str, '%H:%M').time()
+                                hora_saida_dt = datetime.combine(data_ponto, hora_saida)
+                            
+                            novo_ponto = Ponto(
+                                user_id=user_id,
+                                data=data_ponto,
+                                hora_entrada=datetime.combine(data_ponto, hora_entrada),
+                                hora_saida=hora_saida_dt,
+                                observacao=f"[ADMIN] Ponto lançado por {current_user.name}" + (f" - {observacao_geral}" if observacao_geral else "")
+                            )
+                            db.session.add(novo_ponto)
+                            lancamentos_realizados += 1
+                    
+                except (ValueError, TypeError):
+                    continue
+            
+            if lancamentos_realizados > 0:
+                db.session.commit()
+                flash(f'Lançamento realizado com sucesso para {lancamentos_realizados} funcionário(s)!', 'success')
+                return redirect(url_for('ponto.admin_view'))
+            else:
+                flash('Nenhum lançamento foi realizado. Verifique os dados informados.', 'warning')
+                
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Erro ao realizar lançamento: {str(e)}', 'error')
+    
+    return render_template('ponto/lancamento_rapido.html', usuarios=usuarios)
+
+
+@bp_ponto.route('/acertos-pendentes')
+@admin_required
+def acertos_pendentes():
+    """Lista de pontos que precisam de acertos (apenas administradores)"""
+    # Buscar pontos com problemas nos últimos 30 dias
+    data_limite = date.today() - timedelta(days=30)
+    
+    # Pontos sem saída (entrada mas não saída)
+    pontos_sem_saida = db.session.query(Ponto, User).join(User).filter(
+        Ponto.data >= data_limite,
+        Ponto.hora_entrada.isnot(None),
+        Ponto.hora_saida.is_(None),
+        User.active == True
+    ).order_by(Ponto.data.desc()).all()
+    
+    # Pontos com horários inconsistentes (saída antes da entrada)
+    pontos_inconsistentes = db.session.query(Ponto, User).join(User).filter(
+        Ponto.data >= data_limite,
+        Ponto.hora_entrada.isnot(None),
+        Ponto.hora_saida.isnot(None),
+        Ponto.hora_saida <= Ponto.hora_entrada,
+        User.active == True
+    ).order_by(Ponto.data.desc()).all()
+    
+    # Funcionários sem ponto nos últimos 7 dias úteis
+    funcionarios_sem_ponto = []
+    for i in range(1, 8):  # Últimos 7 dias
+        data_verif = date.today() - timedelta(days=i)
+        # Só verificar dias úteis (segunda a sexta)
+        if data_verif.weekday() < 5:
+            usuarios_com_ponto = set([p.user_id for p in Ponto.query.filter_by(data=data_verif).all()])
+            usuarios_ativos = User.query.filter_by(active=True, role=UserRole.funcionario).all()
+            
+            for usuario in usuarios_ativos:
+                if usuario.id not in usuarios_com_ponto:
+                    funcionarios_sem_ponto.append({
+                        'usuario': usuario,
+                        'data': data_verif,
+                        'dias_sem_ponto': i
+                    })
+    
+    return render_template('ponto/acertos_pendentes.html', 
+                         pontos_sem_saida=pontos_sem_saida,
+                         pontos_inconsistentes=pontos_inconsistentes,
+                         funcionarios_sem_ponto=funcionarios_sem_ponto)
+
+
+@bp_ponto.route('/corrigir-batch', methods=['POST'])
+@admin_required
+def corrigir_batch():
+    """Correção em lote de múltiplos pontos (apenas administradores)"""
+    # Verificar senha do administrador
+    senha_admin = request.form.get('senha_admin')
+    if not senha_admin or not current_user.check_password(senha_admin):
+        flash('Senha de administrador incorreta!', 'error')
+        return redirect(url_for('ponto.acertos_pendentes'))
+    
+    try:
+        pontos_ids = request.form.getlist('pontos_selecionados[]')
+        acao = request.form.get('acao')  # 'adicionar_saida', 'remover_saida', 'excluir'
+        hora_padrao = request.form.get('hora_padrao')
+        
+        if not pontos_ids or not acao:
+            flash('Selecione pelo menos um ponto e uma ação!', 'error')
+            return redirect(url_for('ponto.acertos_pendentes'))
+        
+        correcoes_realizadas = 0
+        
+        for ponto_id in pontos_ids:
+            ponto = Ponto.query.get(int(ponto_id))
+            if not ponto:
+                continue
+            
+            if acao == 'adicionar_saida' and hora_padrao:
+                if not ponto.hora_saida:
+                    hora_saida = datetime.strptime(hora_padrao, '%H:%M').time()
+                    ponto.hora_saida = datetime.combine(ponto.data, hora_saida)
+                    obs_atual = ponto.observacao or ""
+                    ponto.observacao = obs_atual + f"\n[ADMIN] Saída corrigida por {current_user.name}"
+                    correcoes_realizadas += 1
+            
+            elif acao == 'remover_saida':
+                if ponto.hora_saida:
+                    ponto.hora_saida = None
+                    obs_atual = ponto.observacao or ""
+                    ponto.observacao = obs_atual + f"\n[ADMIN] Saída removida por {current_user.name}"
+                    correcoes_realizadas += 1
+            
+            elif acao == 'excluir':
+                db.session.delete(ponto)
+                correcoes_realizadas += 1
+        
+        if correcoes_realizadas > 0:
+            db.session.commit()
+            flash(f'Correção realizada em {correcoes_realizadas} ponto(s)!', 'success')
+        else:
+            flash('Nenhuma correção foi aplicada.', 'warning')
+            
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Erro ao realizar correções: {str(e)}', 'error')
+    
+    return redirect(url_for('ponto.acertos_pendentes'))

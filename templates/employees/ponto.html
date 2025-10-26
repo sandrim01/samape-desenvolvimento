@@ -13,6 +13,25 @@
             {% if current_user.is_admin() or current_user.is_manager() %}
             <!-- Desktop Actions -->
             <div class="d-none d-md-flex">
+                {% if current_user.is_admin() %}
+                <div class="btn-group me-2" role="group">
+                    <button type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-tools me-1"></i> Controles Admin
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="{{ url_for('ponto.lancamento_rapido') }}">
+                            <i class="fas fa-bolt me-2 text-warning"></i>Lançamento Rápido
+                        </a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('ponto.acertos_pendentes') }}">
+                            <i class="fas fa-exclamation-triangle me-2 text-danger"></i>Acertos Pendentes
+                        </a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{{ url_for('ponto.criar') }}">
+                            <i class="fas fa-plus me-2 text-success"></i>Criar Ponto Individual
+                        </a></li>
+                    </ul>
+                </div>
+                {% endif %}
                 <a href="{{ url_for('ponto.admin_view') }}" class="btn btn-info me-2">
                     <i class="fas fa-users me-1"></i> Visão Geral
                 </a>
@@ -28,6 +47,19 @@
                         <i class="fas fa-ellipsis-v"></i>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end">
+                        {% if current_user.is_admin() %}
+                        <li><h6 class="dropdown-header">Controles Admin</h6></li>
+                        <li><a class="dropdown-item" href="{{ url_for('ponto.lancamento_rapido') }}">
+                            <i class="fas fa-bolt me-2 text-warning"></i>Lançamento Rápido
+                        </a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('ponto.acertos_pendentes') }}">
+                            <i class="fas fa-exclamation-triangle me-2 text-danger"></i>Acertos Pendentes
+                        </a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('ponto.criar') }}">
+                            <i class="fas fa-plus me-2 text-success"></i>Criar Ponto Individual
+                        </a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        {% endif %}
                         <li><a class="dropdown-item" href="{{ url_for('ponto.admin_view') }}">
                             <i class="fas fa-users me-2"></i>Visão Geral
                         </a></li>
@@ -120,6 +152,43 @@
                 </div>
             </div>
         </div>
+
+        <!-- Admin Alert Section -->
+        {% if current_user.is_admin() %}
+        {% set pontos_sem_saida = pontos|selectattr('hora_saida', 'none')|list %}
+        {% set pontos_problematicos = pontos|rejectattr('hora_saida', 'none')|selectattr('horas_trabalhadas', '>', 12)|list %}
+        {% if pontos_sem_saida|length > 0 or pontos_problematicos|length > 0 %}
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                    <h5 class="alert-heading"><i class="fas fa-shield-alt me-2"></i>Painel Administrativo</h5>
+                    {% if pontos_sem_saida|length > 0 %}
+                    <p class="mb-2">
+                        <i class="fas fa-exclamation-triangle me-2 text-danger"></i>
+                        <strong>{{ pontos_sem_saida|length }} ponto(s) sem hora de saída</strong> registrada para este funcionário.
+                    </p>
+                    {% endif %}
+                    {% if pontos_problematicos|length > 0 %}
+                    <p class="mb-2">
+                        <i class="fas fa-clock me-2 text-warning"></i>
+                        <strong>{{ pontos_problematicos|length }} ponto(s) com mais de 12 horas</strong> trabalhadas detectados.
+                    </p>
+                    {% endif %}
+                    <hr class="my-2">
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="{{ url_for('ponto.acertos_pendentes') }}" class="btn btn-sm btn-outline-danger">
+                            <i class="fas fa-wrench me-1"></i>Ver Todos os Acertos
+                        </a>
+                        <a href="{{ url_for('ponto.lancamento_rapido') }}" class="btn btn-sm btn-outline-success">
+                            <i class="fas fa-bolt me-1"></i>Lançamento Rápido
+                        </a>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% endif %}
 
         <!-- Histórico de Registros -->
         <div class="row">

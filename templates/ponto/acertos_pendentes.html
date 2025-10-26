@@ -1,0 +1,340 @@
+{% extends "base.html" %}
+
+{% block title %}Acertos Pendentes - Controle de Ponto{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-exclamation-triangle"></i> Acertos Pendentes
+        </h1>
+        <a href="{{ url_for('ponto.admin_view') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Voltar
+        </a>
+    </div>
+
+    <!-- Estatísticas -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-6">
+            <div class="small-box bg-warning">
+                <div class="inner">
+                    <h3>{{ pontos_sem_saida|length }}</h3>
+                    <p>Pontos sem Saída</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-sign-out-alt"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-6">
+            <div class="small-box bg-danger">
+                <div class="inner">
+                    <h3>{{ pontos_inconsistentes|length }}</h3>
+                    <p>Horários Inconsistentes</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-exclamation-circle"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-6">
+            <div class="small-box bg-info">
+                <div class="inner">
+                    <h3>{{ funcionarios_sem_ponto|length }}</h3>
+                    <p>Funcionários sem Ponto</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-user-times"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-6">
+            <div class="small-box bg-success">
+                <div class="inner">
+                    <h3>{{ (pontos_sem_saida|length + pontos_inconsistentes|length + funcionarios_sem_ponto|length) }}</h3>
+                    <p>Total de Pendências</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-clipboard-list"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pontos sem Saída -->
+    {% if pontos_sem_saida %}
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-warning">
+                <i class="fas fa-sign-out-alt"></i> Pontos sem Saída ({{ pontos_sem_saida|length }})
+            </h6>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('ponto.corrigir_batch') }}" id="formSemSaida">
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Ação:</label>
+                        <select name="acao" class="form-control" required>
+                            <option value="">Selecione uma ação</option>
+                            <option value="adicionar_saida">Adicionar Saída Padrão</option>
+                            <option value="excluir">Excluir Registros</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Hora Padrão de Saída:</label>
+                        <input type="time" name="hora_padrao" class="form-control" value="18:00">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Senha Admin:</label>
+                        <input type="password" name="senha_admin" class="form-control" required>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">&nbsp;</label><br>
+                        <button type="submit" class="btn btn-warning">
+                            <i class="fas fa-tools"></i> Corrigir
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th width="50">
+                                    <input type="checkbox" id="selectAllSemSaida" class="form-check-input">
+                                </th>
+                                <th>Funcionário</th>
+                                <th>Data</th>
+                                <th>Entrada</th>
+                                <th>Tempo Trabalhado</th>
+                                <th>Observação</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ponto, usuario in pontos_sem_saida %}
+                            <tr>
+                                <td>
+                                    <input type="checkbox" name="pontos_selecionados[]" 
+                                           value="{{ ponto.id }}" class="form-check-input checkbox-sem-saida">
+                                </td>
+                                <td>
+                                    <strong>{{ usuario.name }}</strong><br>
+                                    <small class="text-muted">{{ usuario.email }}</small>
+                                </td>
+                                <td>{{ ponto.data.strftime('%d/%m/%Y') }}</td>
+                                <td>
+                                    <span class="badge bg-success">
+                                        {{ ponto.hora_entrada.strftime('%H:%M') }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% set tempo_atual = (moment().replace(hour=0, minute=0, second=0) - ponto.hora_entrada.replace(hour=0, minute=0, second=0)).total_seconds() / 3600 %}
+                                    <span class="text-danger">
+                                        <i class="fas fa-clock"></i>
+                                        Aberto há {{ "%.1f"|format(tempo_atual) }}h
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if ponto.observacao %}
+                                    <small>{{ ponto.observacao[:50] }}{% if ponto.observacao|length > 50 %}...{% endif %}</small>
+                                    {% else %}
+                                    <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('ponto.editar_ponto', ponto_id=ponto.id) }}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Pontos com Horários Inconsistentes -->
+    {% if pontos_inconsistentes %}
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-danger">
+                <i class="fas fa-exclamation-circle"></i> Horários Inconsistentes ({{ pontos_inconsistentes|length }})
+            </h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Funcionário</th>
+                            <th>Data</th>
+                            <th>Entrada</th>
+                            <th>Saída</th>
+                            <th>Problema</th>
+                            <th>Observação</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ponto, usuario in pontos_inconsistentes %}
+                        <tr>
+                            <td>
+                                <strong>{{ usuario.name }}</strong><br>
+                                <small class="text-muted">{{ usuario.email }}</small>
+                            </td>
+                            <td>{{ ponto.data.strftime('%d/%m/%Y') }}</td>
+                            <td>
+                                <span class="badge bg-success">
+                                    {{ ponto.hora_entrada.strftime('%H:%M') }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge bg-danger">
+                                    {{ ponto.hora_saida.strftime('%H:%M') }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="text-danger">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    Saída antes da entrada
+                                </span>
+                            </td>
+                            <td>
+                                {% if ponto.observacao %}
+                                <small>{{ ponto.observacao[:50] }}{% if ponto.observacao|length > 50 %}...{% endif %}</small>
+                                {% else %}
+                                <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('ponto.editar_ponto', ponto_id=ponto.id) }}" 
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-edit"></i> Corrigir
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Funcionários sem Ponto -->
+    {% if funcionarios_sem_ponto %}
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-info">
+                <i class="fas fa-user-times"></i> Funcionários sem Ponto Recente ({{ funcionarios_sem_ponto|length }})
+            </h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Funcionário</th>
+                            <th>Data Sem Ponto</th>
+                            <th>Dias Sem Registrar</th>
+                            <th>Última Atividade</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in funcionarios_sem_ponto %}
+                        <tr>
+                            <td>
+                                <strong>{{ item.usuario.name }}</strong><br>
+                                <small class="text-muted">{{ item.usuario.email }}</small>
+                            </td>
+                            <td>{{ item.data.strftime('%d/%m/%Y') }}</td>
+                            <td>
+                                {% if item.dias_sem_ponto >= 3 %}
+                                <span class="badge bg-danger">{{ item.dias_sem_ponto }} dias</span>
+                                {% elif item.dias_sem_ponto == 2 %}
+                                <span class="badge bg-warning">{{ item.dias_sem_ponto }} dias</span>
+                                {% else %}
+                                <span class="badge bg-info">{{ item.dias_sem_ponto }} dia</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% set ultimo_ponto = item.usuario.pontos.order_by(item.usuario.pontos.data.desc()).first() %}
+                                {% if ultimo_ponto %}
+                                {{ ultimo_ponto.data.strftime('%d/%m/%Y') }}
+                                {% else %}
+                                <span class="text-muted">Nunca registrou</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('ponto.criar_ponto') }}?user_id={{ item.usuario.id }}&data={{ item.data.strftime('%Y-%m-%d') }}" 
+                                   class="btn btn-sm btn-outline-success">
+                                    <i class="fas fa-plus"></i> Criar Ponto
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Mensagem se não há pendências -->
+    {% if not pontos_sem_saida and not pontos_inconsistentes and not funcionarios_sem_ponto %}
+    <div class="card shadow">
+        <div class="card-body text-center py-5">
+            <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+            <h4 class="text-success">Parabéns!</h4>
+            <p class="text-muted">Não há acertos pendentes no momento.</p>
+            <a href="{{ url_for('ponto.admin_view') }}" class="btn btn-primary">
+                <i class="fas fa-arrow-left"></i> Voltar à Visão Geral
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Selecionar todos - pontos sem saída
+    document.getElementById('selectAllSemSaida').addEventListener('change', function() {
+        const checkboxes = document.querySelectorAll('.checkbox-sem-saida');
+        checkboxes.forEach(cb => cb.checked = this.checked);
+    });
+    
+    // Confirmação antes de enviar correções
+    document.getElementById('formSemSaida').addEventListener('submit', function(e) {
+        const checkboxes = document.querySelectorAll('.checkbox-sem-saida:checked');
+        const acao = document.querySelector('select[name="acao"]').value;
+        
+        if (checkboxes.length === 0) {
+            e.preventDefault();
+            alert('Selecione pelo menos um ponto para corrigir!');
+            return;
+        }
+        
+        if (!acao) {
+            e.preventDefault();
+            alert('Selecione uma ação!');
+            return;
+        }
+        
+        let mensagem = `Confirma a correção de ${checkboxes.length} ponto(s)?`;
+        if (acao === 'excluir') {
+            mensagem = `ATENÇÃO: Isso irá EXCLUIR ${checkboxes.length} registro(s) permanentemente. Confirma?`;
+        }
+        
+        if (!confirm(mensagem)) {
+            e.preventDefault();
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -19,6 +19,11 @@
     <!-- CSS do Modal de Perfil do Usuário -->
     {% if current_user.is_authenticated %}
     <link href="{{ url_for('static', filename='css/user-profile-modal.css') }}?v={{ cache_buster }}" rel="stylesheet">
+    
+    <!-- CSS dos Controles Administrativos -->
+    {% if current_user.is_admin() %}
+    <link href="{{ url_for('static', filename='css/admin-controls.css') }}?v={{ cache_buster }}" rel="stylesheet">
+    {% endif %}
     {% endif %}
     
     <!-- CSS FALLBACK - Caso o bundle tenha problemas -->
