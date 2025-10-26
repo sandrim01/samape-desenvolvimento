@@ -265,6 +265,13 @@ def register_routes(app):
             
             app.logger.info("=== DASHBOARD DEBUG - INICIANDO ===")
             
+            # TESTE RÁPIDO DE CONECTIVIDADE DO BANCO
+            try:
+                test_count = db.session.execute("SELECT COUNT(*) FROM service_order").scalar()
+                app.logger.info(f"TESTE DIRETO SQL - Ordens no banco: {test_count}")
+            except Exception as sql_test:
+                app.logger.error(f"ERRO NO TESTE SQL: {sql_test}")
+            
             # DADOS REAIS DO SISTEMA
             try:
                 app.logger.info("Tentando contar ordens de serviço...")
@@ -347,6 +354,39 @@ def register_routes(app):
                 total_clients = monthly_revenue = 0
                 fleet_total = fleet_active = fleet_maintenance = fleet_inactive = 0
                 recent_orders = []
+
+    # Rota de teste para diagnóstico 
+    @app.route('/dashboard-test')
+    @login_required
+    def dashboard_test():
+        """Rota de teste para verificar dados do dashboard"""
+        try:
+            # Teste básico das tabelas
+            service_orders_count = ServiceOrder.query.count()
+            clients_count = Client.query.count()
+            
+            # Verificar se há ordens no banco
+            sample_orders = ServiceOrder.query.limit(3).all()
+            orders_info = []
+            for order in sample_orders:
+                orders_info.append({
+                    'id': order.id,
+                    'status': str(order.status),
+                    'client_id': order.client_id,
+                    'created_at': str(order.created_at)
+                })
+            
+            return jsonify({
+                'service_orders_count': service_orders_count,
+                'clients_count': clients_count,
+                'sample_orders': orders_info,
+                'status': 'OK'
+            })
+        except Exception as e:
+            return jsonify({
+                'error': str(e),
+                'status': 'ERROR'
+            })
 
             # USAR TEMPLATE BONITO com dados REAIS
             metrics_data = {
