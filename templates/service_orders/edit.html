@@ -108,8 +108,8 @@
                     <h6 class="mb-0"><i class="fas fa-tachometer-alt me-1"></i> Controle de Kilometragem</h6>
                 </div>
                 <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-4">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
                             <label for="km_inicial" class="form-label">Kilometragem Inicial</label>
                             {{ form.km_inicial(class="form-control", id="km_inicial", onchange="calculateKmTotal()") }}
                             {% if form.km_inicial.errors %}
@@ -121,7 +121,7 @@
                             {% endif %}
                         </div>
                         
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <label for="km_final" class="form-label">Kilometragem Final</label>
                             {{ form.km_final(class="form-control", id="km_final", onchange="calculateKmTotal()") }}
                             {% if form.km_final.errors %}
@@ -132,7 +132,9 @@
                                 </div>
                             {% endif %}
                         </div>
-                        
+                    </div>
+                    
+                    <div class="row mb-3">
                         <div class="col-md-4">
                             <label for="km_total" class="form-label">Total Percorrido (KM)</label>
                             {{ form.km_total(class="form-control bg-light", id="km_total") }}
@@ -140,6 +142,80 @@
                             {% if form.km_total.errors %}
                                 <div class="invalid-feedback d-block">
                                     {% for error in form.km_total.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label for="km_rate" class="form-label">Valor por KM (R$)</label>
+                            {{ form.km_rate(class="form-control", id="km_rate", onchange="calculateKmValue()") }}
+                            {% if form.km_rate.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.km_rate.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label for="km_value" class="form-label">Valor Total KM (R$)</label>
+                            {{ form.km_value(class="form-control bg-light", id="km_value") }}
+                            <small class="form-text text-muted">Calculado automaticamente</small>
+                            {% if form.km_value.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.km_value.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Seção de Valores do Serviço -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-dollar-sign me-1"></i> Valores do Serviço</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="labor_value" class="form-label">Valor da Mão de Obra (R$)</label>
+                            {{ form.labor_value(class="form-control", id="labor_value", onchange="calculateTotalValue()") }}
+                            {% if form.labor_value.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.labor_value.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="parts_value" class="form-label">Valor das Peças (R$)</label>
+                            {{ form.parts_value(class="form-control", id="parts_value", onchange="calculateTotalValue()") }}
+                            {% if form.parts_value.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.parts_value.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <label for="total_value" class="form-label">Valor Total do Serviço (R$)</label>
+                            {{ form.total_value(class="form-control bg-light", id="total_value") }}
+                            <small class="form-text text-muted">Calculado automaticamente (KM + Mão de Obra + Peças)</small>
+                            {% if form.total_value.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.total_value.errors %}
                                         {{ error }}
                                     {% endfor %}
                                 </div>
@@ -260,6 +336,9 @@ function calculateKmTotal() {
             kmTotalField.value = total;
             kmTotalField.classList.remove('is-invalid');
             kmTotalField.classList.add('is-valid');
+            
+            // Calcular valor do KM se houver taxa
+            calculateKmValue();
         } else if (final < inicial) {
             kmTotalField.value = '';
             kmTotalField.classList.remove('is-valid');
@@ -276,6 +355,9 @@ function calculateKmTotal() {
         } else {
             kmTotalField.value = '0.00';
             kmTotalField.classList.remove('is-invalid', 'is-valid');
+            
+            // Calcular valor do KM
+            calculateKmValue();
         }
     } else {
         kmTotalField.value = '';
@@ -286,12 +368,60 @@ function calculateKmTotal() {
         if (errorDiv && errorDiv.textContent.includes('kilometragem final')) {
             errorDiv.remove();
         }
+        
+        // Calcular valor do KM
+        calculateKmValue();
+    }
+}
+
+function calculateKmValue() {
+    const kmTotal = document.getElementById('km_total').value;
+    const kmRate = document.getElementById('km_rate').value;
+    const kmValueField = document.getElementById('km_value');
+    
+    if (kmTotal && kmRate) {
+        const total = parseFloat(kmTotal);
+        const rate = parseFloat(kmRate);
+        const value = (total * rate).toFixed(2);
+        kmValueField.value = value;
+    } else {
+        kmValueField.value = '';
+    }
+    
+    // Recalcular total geral
+    calculateTotalValue();
+}
+
+function calculateTotalValue() {
+    const kmValue = document.getElementById('km_value').value;
+    const laborValue = document.getElementById('labor_value').value;
+    const partsValue = document.getElementById('parts_value').value;
+    const totalValueField = document.getElementById('total_value');
+    
+    let total = 0.0;
+    
+    if (kmValue) {
+        total += parseFloat(kmValue);
+    }
+    if (laborValue) {
+        total += parseFloat(laborValue);
+    }
+    if (partsValue) {
+        total += parseFloat(partsValue);
+    }
+    
+    if (total > 0) {
+        totalValueField.value = total.toFixed(2);
+    } else {
+        totalValueField.value = '';
     }
 }
 
 // Calcular km_total quando a página carrega (para edição)
 document.addEventListener('DOMContentLoaded', function() {
     calculateKmTotal();
+    calculateKmValue();
+    calculateTotalValue();
 });
 </script>
 {% endblock %}

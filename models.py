@@ -154,6 +154,13 @@ class ServiceOrder(db.Model):
     km_inicial = db.Column(db.Numeric(10, 2), nullable=True)  # Kilometragem inicial
     km_final = db.Column(db.Numeric(10, 2), nullable=True)    # Kilometragem final
     km_total = db.Column(db.Numeric(10, 2), nullable=True)    # Total percorrido (calculado)
+    km_rate = db.Column(db.Numeric(10, 2), nullable=True)     # Valor cobrado por km
+    km_value = db.Column(db.Numeric(10, 2), nullable=True)    # Valor total da kilometragem (calculado)
+    
+    # Valores do serviço
+    labor_value = db.Column(db.Numeric(10, 2), nullable=True) # Valor da mão de obra
+    parts_value = db.Column(db.Numeric(10, 2), nullable=True) # Valor das peças
+    total_value = db.Column(db.Numeric(10, 2), nullable=True) # Valor total (calculado)
     
     # Relations
     financial_entries = db.relationship('FinancialEntry', backref='service_order', lazy=True)
@@ -170,6 +177,35 @@ class ServiceOrder(db.Model):
         calculated_total = self.calculate_km_total()
         if calculated_total is not None:
             self.km_total = calculated_total
+    
+    def calculate_km_value(self):
+        """Calcula o valor total da kilometragem"""
+        if self.km_total is not None and self.km_rate is not None:
+            return float(self.km_total) * float(self.km_rate)
+        return None
+    
+    def update_km_value(self):
+        """Atualiza o campo km_value com o valor calculado"""
+        calculated_value = self.calculate_km_value()
+        if calculated_value is not None:
+            self.km_value = calculated_value
+    
+    def calculate_total_value(self):
+        """Calcula o valor total da OS"""
+        total = 0.0
+        if self.km_value is not None:
+            total += float(self.km_value)
+        if self.labor_value is not None:
+            total += float(self.labor_value)
+        if self.parts_value is not None:
+            total += float(self.parts_value)
+        return total if total > 0 else None
+    
+    def update_total_value(self):
+        """Atualiza o campo total_value com o valor calculado"""
+        calculated_total = self.calculate_total_value()
+        if calculated_total is not None:
+            self.total_value = calculated_total
 
 class ServiceOrderImage(db.Model):
     id = db.Column(db.Integer, primary_key=True)

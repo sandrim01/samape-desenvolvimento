@@ -145,6 +145,18 @@ class ServiceOrderForm(FlaskForm):
                            render_kw={"placeholder": "Ex: 12450.75", "step": "0.01"})
     km_total = DecimalField('Total Percorrido (KM)', validators=[Optional()], places=2, 
                            render_kw={"readonly": True, "placeholder": "Calculado automaticamente"})
+    km_rate = DecimalField('Valor por KM (R$)', validators=[Optional()], places=2, 
+                          render_kw={"placeholder": "Ex: 2.50", "step": "0.01"})
+    km_value = DecimalField('Valor Total KM (R$)', validators=[Optional()], places=2, 
+                           render_kw={"readonly": True, "placeholder": "Calculado automaticamente"})
+    
+    # Campos de valores do serviço
+    labor_value = DecimalField('Valor da Mão de Obra (R$)', validators=[Optional()], places=2, 
+                              render_kw={"placeholder": "Ex: 150.00", "step": "0.01"})
+    parts_value = DecimalField('Valor das Peças (R$)', validators=[Optional()], places=2, 
+                              render_kw={"placeholder": "Ex: 200.00", "step": "0.01"})
+    total_value = DecimalField('Valor Total (R$)', validators=[Optional()], places=2, 
+                              render_kw={"readonly": True, "placeholder": "Calculado automaticamente"})
     images = FileField('Imagens do Equipamento (máx. 500KB por imagem)', validators=[
         Optional(),
         FileAllowed(['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'], 'Apenas imagens são permitidas!'),

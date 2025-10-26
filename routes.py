@@ -815,11 +815,20 @@ def register_routes(app):
                 estimated_value=form.estimated_value.data,
                 status=ServiceOrderStatus[form.status.data],
                 km_inicial=form.km_inicial.data,
-                km_final=form.km_final.data
+                km_final=form.km_final.data,
+                km_rate=form.km_rate.data,
+                labor_value=form.labor_value.data,
+                parts_value=form.parts_value.data
             )
             
             # Calculate km_total if both values are provided
             service_order.update_km_total()
+            
+            # Calculate km_value if km_total and km_rate are provided
+            service_order.update_km_value()
+            
+            # Calculate total_value
+            service_order.update_total_value()
             
             # Add equipment relationships if selected
             if form.equipment_ids.data:
@@ -1130,9 +1139,18 @@ def register_routes(app):
             service_order.status = ServiceOrderStatus[form.status.data]
             service_order.km_inicial = form.km_inicial.data
             service_order.km_final = form.km_final.data
+            service_order.km_rate = form.km_rate.data
+            service_order.labor_value = form.labor_value.data
+            service_order.parts_value = form.parts_value.data
             
             # Update km_total calculation
             service_order.update_km_total()
+            
+            # Update km_value calculation
+            service_order.update_km_value()
+            
+            # Update total_value calculation
+            service_order.update_total_value()
             
             # Update equipment relationships
             service_order.equipment = []
