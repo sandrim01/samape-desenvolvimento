@@ -267,15 +267,13 @@ def register_routes(app):
             
             # TESTE RÁPIDO DE CONECTIVIDADE DO BANCO
             try:
-                # Primeiro teste: verificar se a tabela existe
-                tables_test = db.session.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()
-                app.logger.info(f"TABELAS NO BANCO: {[t[0] for t in tables_test]}")
-                
-                test_count = db.session.execute("SELECT COUNT(*) FROM service_order").scalar()
+                from sqlalchemy import text
+                # Usar text() para SQLAlchemy 2.x
+                test_count = db.session.execute(text("SELECT COUNT(*) FROM service_order")).scalar()
                 app.logger.info(f"TESTE DIRETO SQL - Ordens no banco: {test_count}")
                 
                 # Testar clientes também
-                client_count = db.session.execute("SELECT COUNT(*) FROM client").scalar()
+                client_count = db.session.execute(text("SELECT COUNT(*) FROM client")).scalar()
                 app.logger.info(f"TESTE DIRETO SQL - Clientes no banco: {client_count}")
                 
             except Exception as sql_test:
@@ -293,11 +291,14 @@ def register_routes(app):
                 status_list = [s[0] for s in existing_statuses if s[0]]
                 app.logger.info(f"Status únicos encontrados: {status_list}")
                 
-                # Contar por status que realmente existe
+                # Contar por status usando enums corretamente
                 app.logger.info("Contando ordens por status...")
-                open_orders = ServiceOrder.query.filter(ServiceOrder.status.in_(['Aberto', 'Pendente', 'Novo', 'Criado', 'pending', 'aberta'])).count()
-                in_progress_orders = ServiceOrder.query.filter(ServiceOrder.status.in_(['Em Andamento', 'Andamento', 'Executando', 'em_andamento', 'in_progress'])).count()
-                closed_orders = ServiceOrder.query.filter(ServiceOrder.status.in_(['Fechado', 'Concluído', 'Finalizado', 'Completo', 'fechada', 'closed'])).count()
+                
+                # Usar os enums diretamente
+                open_orders = ServiceOrder.query.filter(ServiceOrder.status == ServiceOrderStatus.aberta).count()
+                in_progress_orders = ServiceOrder.query.filter(ServiceOrder.status == ServiceOrderStatus.em_andamento).count()
+                closed_orders = ServiceOrder.query.filter(ServiceOrder.status == ServiceOrderStatus.fechada).count()
+                
                 app.logger.info(f"Abertas: {open_orders}, Em andamento: {in_progress_orders}, Fechadas: {closed_orders}")
                 
                 # Buscar clientes reais
@@ -312,8 +313,9 @@ def register_routes(app):
                 # Se ORM retornou zero, tentar SQL direto como backup
                 if total_orders == 0:
                     app.logger.info("ORM retornou 0, tentando SQL direto...")
-                    total_orders_sql = db.session.execute("SELECT COUNT(*) FROM service_order").scalar() or 0
-                    total_clients_sql = db.session.execute("SELECT COUNT(*) FROM client").scalar() or 0
+                    from sqlalchemy import text
+                    total_orders_sql = db.session.execute(text("SELECT COUNT(*) FROM service_order")).scalar() or 0
+                    total_clients_sql = db.session.execute(text("SELECT COUNT(*) FROM client")).scalar() or 0
                     app.logger.info(f"SQL direto - Ordens: {total_orders_sql}, Clientes: {total_clients_sql}")
                     
                     if total_orders_sql > 0:
@@ -566,6 +568,58 @@ def register_routes(app):
                 'database_info': db_info,
                 'status': 'OK'
             })
+        except Exception as e:
+            return jsonify({
+                'error': str(e),
+                'status': 'ERROR'
+            })
+
+    @app.route('/check-data')
+    def check_data():
+        """Rota pública para verificar se os dados estão funcionando"""
+        try:
+            # Teste básico com enums
+            total_orders = ServiceOrder.query.count()
+            orders_aberta = ServiceOrder.query.filter(ServiceOrder.status == ServiceOrderStatus.aberta).count()
+            orders_andamento = ServiceOrder.query.filter(ServiceOrder.status == ServiceOrderStatus.em_andamento).count()
+            orders_fechada = ServiceOrder.query.filter(ServiceOrder.status == ServiceOrderStatus.fechada).count()
+            total_clients = Client.query.count()
+            
+            return jsonify({
+                'total_orders': total_orders,
+                'orders_aberta': orders_aberta,
+                'orders_andamento': orders_andamento,
+                'orders_fechada': orders_fechada,
+                'total_clients': total_clients,
+                'status': 'SUCCESS',
+                'message': 'Dados carregados com sucesso usando enums!'
+            })
+        except Exception as e:
+            return jsonify({
+                'error': str(e),
+                'status': 'ERROR'
+            })
+
+    @app.route('/create-test-user')
+    def create_test_user():
+        """Cria usuário de teste se não existir"""
+        try:
+            from models import User, UserRole
+            admin = User.query.filter_by(username="admin").first()
+            if not admin:
+                admin = User(
+                    username="admin",
+                    name="Administrador",
+                    email="admin@samape.com",
+                    role=UserRole.admin,
+                    active=True
+                )
+                admin.set_password("admin123")
+                db.session.add(admin)
+                db.session.commit()
+                return jsonify({'message': 'Usuário admin criado com sucesso!', 'status': 'CREATED'})
+            else:
+                return jsonify({'message': 'Usuário admin já existe!', 'status': 'EXISTS'})
         except Exception as e:
             return jsonify({
                 'error': str(e),
