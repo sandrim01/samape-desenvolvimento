@@ -1,0 +1,69 @@
+{% if current_user.is_admin() and admin_ponto_alerts %}
+<div class="card compact-card">
+    <div class="card-header bg-warning text-dark">
+        <h5 class="card-title mb-0">
+            <i class="fas fa-shield-alt me-2"></i>Alertas de Ponto
+        </h5>
+    </div>
+    <div class="card-body">
+        {% if admin_ponto_alerts.total_problemas > 0 %}
+        <div class="alert alert-warning p-2 mb-3" role="alert">
+            <small>
+                <i class="fas fa-exclamation-triangle me-1"></i>
+                <strong>{{ admin_ponto_alerts.total_problemas }} problema(s)</strong> detectado(s)
+            </small>
+        </div>
+        
+        <div class="status-indicator">
+            <div class="indicator-label">Pontos sem Saída</div>
+            <div class="indicator-value text-danger">{{ admin_ponto_alerts.pontos_sem_saida }}</div>
+        </div>
+        <div class="status-indicator">
+            <div class="indicator-label">Excesso de Horas</div>
+            <div class="indicator-value text-warning">{{ admin_ponto_alerts.pontos_excesso_horas }}</div>
+        </div>
+        <div class="status-indicator">
+            <div class="indicator-label">Funcionários Afetados</div>
+            <div class="indicator-value text-info">{{ admin_ponto_alerts.funcionarios_afetados }}</div>
+        </div>
+        
+        {% if admin_ponto_alerts.funcionarios_detalhes %}
+        <div class="mt-3">
+            <small class="text-muted">Problemas Recentes:</small>
+            <div class="list-group list-group-flush mt-2">
+                {% for funcionario in admin_ponto_alerts.funcionarios_detalhes %}
+                <div class="list-group-item px-0 py-1 border-0">
+                    <small>
+                        <strong>{{ funcionario.nome }}</strong><br>
+                        <span class="text-muted">{{ funcionario.data }} - {{ funcionario.entrada }} - {{ funcionario.tipo_problema }}</span>
+                    </small>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+        <div class="d-grid gap-1 mt-3">
+            <a href="{{ url_for('ponto.acertos_pendentes') }}" class="btn btn-sm btn-outline-danger">
+                <i class="fas fa-wrench me-1"></i>Ver Acertos
+            </a>
+            <a href="{{ url_for('ponto.lancamento_rapido') }}" class="btn btn-sm btn-outline-success">
+                <i class="fas fa-bolt me-1"></i>Lançamento Rápido
+            </a>
+        </div>
+        {% else %}
+        <div class="text-center py-3">
+            <i class="fas fa-check-circle text-success fs-2"></i>
+            <p class="text-success mt-2 mb-0">
+                <small><strong>Nenhum problema detectado</strong></small>
+            </p>
+            <small class="text-muted">Todos os pontos estão OK</small>
+        </div>
+        
+        <a href="{{ url_for('ponto.admin_view') }}" class="btn btn-sm btn-outline-success mt-2 w-100">
+            <i class="fas fa-users me-1"></i>Visão Geral
+        </a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}

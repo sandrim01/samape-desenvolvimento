@@ -181,6 +181,62 @@
             </div>
         </div>
 
+        <!-- Card: Alertas Administrativos de Ponto -->
+        {% if current_user.is_admin() and admin_ponto_alerts %}
+        <div class="card-modern card-admin-alerts" style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);">
+            <div class="card-modern-header">
+                <div class="card-modern-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h3 class="card-modern-title">Alertas de Ponto</h3>
+            </div>
+            <div class="card-modern-value">{{ admin_ponto_alerts.total_problemas }}</div>
+            <div class="card-modern-label">Problema(s) Detectado(s)</div>
+            
+            {% if admin_ponto_alerts.total_problemas > 0 %}
+            <div class="mt-3">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-white opacity-75">
+                        <i class="fas fa-clock me-1"></i> Sem saída
+                    </span>
+                    <span class="fw-bold text-white">{{ admin_ponto_alerts.pontos_sem_saida }}</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-white opacity-75">
+                        <i class="fas fa-exclamation-triangle me-1"></i> Excesso horas
+                    </span>
+                    <span class="fw-bold text-white">{{ admin_ponto_alerts.pontos_excesso_horas }}</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="text-white opacity-75">
+                        <i class="fas fa-users me-1"></i> Funcionários
+                    </span>
+                    <span class="fw-bold text-white">{{ admin_ponto_alerts.funcionarios_afetados }}</span>
+                </div>
+            </div>
+            
+            <div class="mt-3 d-grid gap-2">
+                <a href="{{ url_for('ponto.acertos_pendentes') }}" class="btn btn-light btn-sm">
+                    <i class="fas fa-wrench me-1"></i>Ver Acertos
+                </a>
+                <a href="{{ url_for('ponto.lancamento_rapido') }}" class="btn btn-outline-light btn-sm">
+                    <i class="fas fa-bolt me-1"></i>Lançamento Rápido
+                </a>
+            </div>
+            {% else %}
+            <div class="mt-3 text-center">
+                <i class="fas fa-check-circle text-white opacity-75 fs-3"></i>
+                <p class="text-white opacity-75 mt-2 mb-0">
+                    <small>Todos os pontos OK</small>
+                </p>
+                <a href="{{ url_for('ponto.admin_view') }}" class="btn btn-light btn-sm mt-2">
+                    <i class="fas fa-users me-1"></i>Visão Geral
+                </a>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
         <!-- Card: Ordens Recentes -->
         <div class="card-modern card-orders" style="grid-column: 1 / -1;">
             <div class="card-modern-header">

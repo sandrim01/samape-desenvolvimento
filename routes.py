@@ -424,6 +424,63 @@ def register_routes(app):
             app.logger.info(f"Enviando para template - metrics_data: {metrics_data}")
             app.logger.info(f"Recent orders para template: {[{'id': o.id, 'client': o.client.name if o.client else 'N/A'} for o in recent_orders] if recent_orders else 'Nenhuma'}")
             
+            # DADOS DE PONTO PARA ADMINISTRADORES
+            admin_ponto_alerts = {}
+            if current_user.is_admin():
+                try:
+                    from models import Ponto, User
+                    from datetime import datetime, timedelta
+                    
+                    # Pontos sem saída (abertos)
+                    pontos_sem_saida = Ponto.query.filter(
+                        Ponto.hora_saida.is_(None)
+                    ).join(User).all()
+                    
+                    # Pontos com mais de 12 horas trabalhadas nos últimos 30 dias
+                    data_limite = datetime.now() - timedelta(days=30)
+                    pontos_excesso = Ponto.query.filter(
+                        Ponto.hora_saida.isnot(None),
+                        Ponto.data >= data_limite.date()
+                    ).all()
+                    
+                    # Filtrar pontos com mais de 12 horas
+                    pontos_problema = []
+                    for ponto in pontos_excesso:
+                        if ponto.horas_trabalhadas and ponto.horas_trabalhadas > 12:
+                            pontos_problema.append(ponto)
+                    
+                    # Funcionários com pontos problemáticos
+                    funcionarios_problemas = set()
+                    for ponto in pontos_sem_saida + pontos_problema:
+                        funcionarios_problemas.add(ponto.usuario_id)
+                    
+                    admin_ponto_alerts = {
+                        'pontos_sem_saida': len(pontos_sem_saida),
+                        'pontos_excesso_horas': len(pontos_problema),
+                        'funcionarios_afetados': len(funcionarios_problemas),
+                        'total_problemas': len(pontos_sem_saida) + len(pontos_problema),
+                        'funcionarios_detalhes': [
+                            {
+                                'nome': ponto.usuario.nome,
+                                'data': ponto.data.strftime('%d/%m'),
+                                'entrada': ponto.hora_entrada.strftime('%H:%M') if ponto.hora_entrada else '--',
+                                'tipo_problema': 'Sem saída' if not ponto.hora_saida else 'Excesso de horas'
+                            }
+                            for ponto in (pontos_sem_saida + pontos_problema)[:5]  # Últimos 5
+                        ]
+                    }
+                    app.logger.info(f"Admin ponto alerts: {admin_ponto_alerts}")
+                    
+                except Exception as ponto_error:
+                    app.logger.error(f"Erro ao buscar dados de ponto: {ponto_error}")
+                    admin_ponto_alerts = {
+                        'pontos_sem_saida': 0,
+                        'pontos_excesso_horas': 0,
+                        'funcionarios_afetados': 0,
+                        'total_problemas': 0,
+                        'funcionarios_detalhes': []
+                    }
+            
             return render_template('dashboard-beautiful.html',
                 metrics=metrics_data,
                 so_stats={
@@ -439,6 +496,7 @@ def register_routes(app):
                 },
                 recent_orders=recent_orders, 
                 recent_logs=[], 
+                admin_ponto_alerts=admin_ponto_alerts,
                 now=time.time()
             )
         except Exception as e:
