@@ -6,6 +6,9 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2"><i class="fas fa-list-alt me-2"></i>Listagem {{ parts_list.list_number }}</h1>
     <div>
+        <button onclick="shareWhatsApp()" class="btn btn-success me-2">
+            <i class="fab fa-whatsapp"></i> Compartilhar
+        </button>
         <a href="{{ url_for('print_parts_list', id=parts_list.id) }}" class="btn btn-secondary" target="_blank">
             <i class="fas fa-print"></i> Imprimir
         </a>
@@ -110,4 +113,62 @@
         </table>
     </div>
 </div>
+
+<script>
+function shareWhatsApp() {
+    // Dados da listagem
+    const listNumber = '{{ parts_list.list_number }}';
+    const osNumber = '#{{ parts_list.service_order_id }}';
+    const clientName = '{{ parts_list.service_order.client.name if parts_list.service_order.client else "-" }}';
+    const status = '{{ parts_list.status.value }}';
+    const createdAt = '{{ parts_list.created_at.strftime("%d/%m/%Y %H:%M") }}';
+    const totalValue = 'R$ {{ "%.2f"|format(parts_list.total_value) }}';
+    
+    // Montar texto da mensagem
+    let message = `*SAMAPE - LISTAGEM DE PEÇAS*\n\n`;
+    message += `📋 *Listagem:* ${listNumber}\n`;
+    message += `🔧 *Ordem de Serviço:* ${osNumber}\n`;
+    message += `👤 *Cliente:* ${clientName}\n`;
+    message += `📅 *Data:* ${createdAt}\n`;
+    message += `📊 *Status:* ${status}\n\n`;
+    
+    message += `*PEÇAS SOLICITADAS:*\n`;
+    message += `━━━━━━━━━━━━━━━━━━━━\n\n`;
+    
+    // Adicionar itens
+    {% for item in parts_list.items %}
+    message += `*{{ loop.index }}. {{ item.part_name }}*\n`;
+    {% if item.part_number %}
+    message += `   Código: {{ item.part_number }}\n`;
+    {% endif %}
+    {% if item.manufacturer %}
+    message += `   Fabricante: {{ item.manufacturer }}\n`;
+    {% endif %}
+    {% if item.equipment_model %}
+    message += `   Modelo: {{ item.equipment_model }}\n`;
+    {% endif %}
+    {% if item.description %}
+    message += `   Descrição: {{ item.description }}\n`;
+    {% endif %}
+    message += `   Quantidade: {{ item.quantity }}\n`;
+    message += `   Preço Unit.: R$ {{ "%.2f"|format(item.unit_price) }}\n`;
+    message += `   Total: R$ {{ "%.2f"|format(item.total_price) }}\n\n`;
+    {% endfor %}
+    
+    message += `━━━━━━━━━━━━━━━━━━━━\n`;
+    message += `*TOTAL GERAL: ${totalValue}*\n\n`;
+    
+    {% if parts_list.notes %}
+    message += `📝 *Observações:*\n{{ parts_list.notes }}\n\n`;
+    {% endif %}
+    
+    message += `_Enviado via SAMAPE - Sistema de Gestão_`;
+    
+    // Codificar URL e abrir WhatsApp
+    const encodedMessage = encodeURIComponent(message);
+    const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
+    
+    window.open(whatsappUrl, '_blank');
+}
+</script>
 {% endblock %}
