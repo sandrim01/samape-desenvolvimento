@@ -53,6 +53,8 @@
                 <th>Item</th>
                 <th>Peça</th>
                 <th>Código</th>
+                <th>Fabricante</th>
+                <th>Modelo/Maquinário</th>
                 <th class="text-center">Qtd</th>
                 <th class="text-right">Preço Unit.</th>
                 <th class="text-right">Total</th>
@@ -62,8 +64,10 @@
             {% for item in parts_list.items %}
             <tr>
                 <td class="text-center">{{ loop.index }}</td>
-                <td>{{ item.part.name }}</td>
-                <td>{{ item.part.part_number or '-' }}</td>
+                <td>{{ item.part_name }}</td>
+                <td>{{ item.part_number or '-' }}</td>
+                <td>{{ item.manufacturer or '-' }}</td>
+                <td>{{ item.equipment_model or '-' }}</td>
                 <td class="text-center">{{ item.quantity }}</td>
                 <td class="text-right">R$ {{ "%.2f"|format(item.unit_price) }}</td>
                 <td class="text-right">R$ {{ "%.2f"|format(item.total_price) }}</td>
@@ -72,7 +76,7 @@
         </tbody>
         <tfoot>
             <tr class="total-row">
-                <td colspan="5" class="text-right">TOTAL GERAL:</td>
+                <td colspan="7" class="text-right">TOTAL GERAL:</td>
                 <td class="text-right">R$ {{ "%.2f"|format(parts_list.total_value) }}</td>
             </tr>
         </tfoot>
