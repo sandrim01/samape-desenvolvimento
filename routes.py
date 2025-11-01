@@ -5102,10 +5102,9 @@ def register_routes(app):
     def generate_parts_list_pdf(id):
         """Gerar PDF da listagem de peças"""
         from models import PartsList
-        from weasyprint import HTML
-        from flask import send_file
-        import tempfile
-        import os
+        from xhtml2pdf import pisa
+        from flask import make_response
+        from io import BytesIO
         
         parts_list = PartsList.query.get_or_404(id)
         
@@ -5113,30 +5112,27 @@ def register_routes(app):
             # Renderizar HTML
             html = render_template('parts_list/print.html', parts_list=parts_list)
             
-            # Criar arquivo temporário
-            temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.pdf')
+            # Criar buffer para o PDF
+            pdf_buffer = BytesIO()
             
-            # Gerar PDF com WeasyPrint
-            HTML(string=html).write_pdf(temp_file.name)
+            # Gerar PDF com xhtml2pdf
+            pisa_status = pisa.CreatePDF(
+                html.encode('utf-8'),
+                dest=pdf_buffer
+            )
+            
+            if pisa_status.err:
+                flash('Erro ao gerar PDF', 'danger')
+                return redirect(url_for('view_parts_list', id=id))
             
             # Nome do arquivo
             filename = f"Listagem_{parts_list.list_number.replace('/', '-')}.pdf"
             
-            # Enviar arquivo
-            response = send_file(
-                temp_file.name,
-                mimetype='application/pdf',
-                as_attachment=True,
-                download_name=filename
-            )
-            
-            # Agendar remoção do arquivo temporário após envio
-            @response.call_on_close
-            def cleanup():
-                try:
-                    os.unlink(temp_file.name)
-                except Exception:
-                    pass
+            # Retornar PDF
+            pdf_buffer.seek(0)
+            response = make_response(pdf_buffer.getvalue())
+            response.headers['Content-Type'] = 'application/pdf'
+            response.headers['Content-Disposition'] = f'attachment; filename="{filename}"'
             
             return response
             
