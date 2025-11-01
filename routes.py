@@ -5100,43 +5100,105 @@ def register_routes(app):
     @app.route('/lista-pecas/<int:id>/pdf')
     @login_required
     def generate_parts_list_pdf(id):
-        """Gerar PDF da listagem de peças"""
+        """Gerar PDF da listagem de peças usando ReportLab"""
         from models import PartsList
-        from xhtml2pdf import pisa
-        from flask import make_response
+        from reportlab.lib.pagesizes import A4
+        from reportlab.lib import colors
+        from reportlab.lib.units import mm
+        from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+        from reportlab.lib.enums import TA_CENTER, TA_LEFT
         from io import BytesIO
         
         parts_list = PartsList.query.get_or_404(id)
         
         try:
-            # Renderizar HTML
-            html = render_template('parts_list/print.html', parts_list=parts_list)
-            
             # Criar buffer para o PDF
-            pdf_buffer = BytesIO()
+            buffer = BytesIO()
             
-            # Gerar PDF com xhtml2pdf
-            pisa_status = pisa.CreatePDF(
-                html.encode('utf-8'),
-                dest=pdf_buffer
+            # Criar documento
+            doc = SimpleDocTemplate(
+                buffer,
+                pagesize=A4,
+                rightMargin=15*mm,
+                leftMargin=15*mm,
+                topMargin=15*mm,
+                bottomMargin=15*mm
             )
             
-            if pisa_status.err:
-                flash('Erro ao gerar PDF', 'danger')
-                return redirect(url_for('view_parts_list', id=id))
+            # Estilos
+            styles = getSampleStyleSheet()
+            title_style = ParagraphStyle(
+                'CustomTitle',
+                parent=styles['Heading1'],
+                fontSize=16,
+                textColor=colors.HexColor('#2c3e50'),
+                spaceAfter=12,
+                alignment=TA_CENTER
+            )
+            
+            # Elementos do PDF
+            elements = []
+            
+            # Título
+            elements.append(Paragraph(f"LISTAGEM DE PEÇAS", title_style))
+            elements.append(Paragraph(f"Nº {parts_list.list_number}", styles['Normal']))
+            elements.append(Spacer(1, 10*mm))
+            
+            # Dados da tabela
+            data = [['Item', 'Peça', 'Código', 'Fabricante', 'Modelo', 'Qtd', 'Preço Un.', 'Total']]
+            
+            for idx, item in enumerate(parts_list.items, 1):
+                data.append([
+                    str(idx),
+                    item.part_name or '-',
+                    item.part_number or '-',
+                    item.manufacturer or '-',
+                    item.equipment_model or '-',
+                    str(item.quantity),
+                    f"R$ {item.unit_price:.2f}" if item.unit_price else '-',
+                    f"R$ {(item.quantity * item.unit_price):.2f}" if item.unit_price else '-'
+                ])
+            
+            # Linha de total
+            total = sum(item.quantity * item.unit_price for item in parts_list.items if item.unit_price)
+            data.append(['', '', '', '', '', '', 'TOTAL:', f"R$ {total:.2f}"])
+            
+            # Criar tabela
+            table = Table(data, colWidths=[15*mm, 40*mm, 30*mm, 30*mm, 30*mm, 15*mm, 25*mm, 25*mm])
+            
+            # Estilo da tabela
+            table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#3498db')),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, 0), 10),
+                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                ('BACKGROUND', (0, -1), (-1, -1), colors.HexColor('#ecf0f1')),
+                ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
+                ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ]))
+            
+            elements.append(table)
+            
+            # Gerar PDF
+            doc.build(elements)
             
             # Nome do arquivo
             filename = f"Listagem_{parts_list.list_number.replace('/', '-')}.pdf"
             
             # Retornar PDF
-            pdf_buffer.seek(0)
-            response = make_response(pdf_buffer.getvalue())
+            buffer.seek(0)
+            response = make_response(buffer.getvalue())
             response.headers['Content-Type'] = 'application/pdf'
             response.headers['Content-Disposition'] = f'attachment; filename="{filename}"'
             
             return response
             
         except Exception as e:
+            app.logger.error(f"Erro ao gerar PDF: {str(e)}")
             flash(f'Erro ao gerar PDF: {str(e)}', 'danger')
             return redirect(url_for('view_parts_list', id=id))
     
