@@ -12,6 +12,9 @@
             <a href="{{ url_for('export_service_order_pdf', id=order.id) }}" class="btn btn-success" target="_blank">
                 <i class="fas fa-file-pdf"></i> PDF
             </a>
+            <a href="{{ url_for('export_service_order_pdf', id=order.id) }}" class="btn btn-success" id="btnDownloadOSPDF" onclick="openWhatsAppAfterOSDownload(event)">
+                <i class="fab fa-whatsapp"></i> WhatsApp
+            </a>
             <a href="{{ url_for('print_service_order', id=order.id) }}" class="btn btn-outline-success" target="_blank">
                 <i class="fas fa-print"></i> Imprimir
             </a>
@@ -605,6 +608,35 @@ function saveServiceOrder() {
             $('#saveOrderBtn').prop('disabled', false).html('<i class="fas fa-save me-1"></i>Salvar Alterações');
         }
     });
+}
+
+// Função para abrir o WhatsApp após baixar o PDF da OS
+function openWhatsAppAfterOSDownload(event) {
+    // Não previne o comportamento padrão - deixa o PDF baixar
+    
+    // Aguarda 1 segundo para o download iniciar
+    setTimeout(function() {
+        // Mostra alerta de sucesso
+        const alertHtml = `
+            <div class="alert alert-success alert-dismissible fade show" role="alert" style="position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;">
+                <i class="fas fa-check-circle me-2"></i>
+                <strong>PDF baixado com sucesso!</strong> Abrindo WhatsApp...
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        `;
+        $('body').append(alertHtml);
+        
+        // Aguarda mais 500ms e abre o WhatsApp
+        setTimeout(function() {
+            // Tenta abrir o aplicativo do WhatsApp primeiro (desktop/mobile)
+            window.location.href = 'whatsapp://';
+            
+            // Fallback para WhatsApp Web após 2 segundos se o app não abrir
+            setTimeout(function() {
+                window.open('https://web.whatsapp.com/', '_blank');
+            }, 2000);
+        }, 500);
+    }, 1000);
 }
 </script>
 {% endblock %}

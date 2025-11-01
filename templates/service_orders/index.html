@@ -286,6 +286,9 @@
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                     <i class="fas fa-times me-1"></i>Fechar
                 </button>
+                <a href="#" class="btn btn-success" id="pdfWhatsAppBtn" onclick="openWhatsAppAfterOSDownload(event)">
+                    <i class="fab fa-whatsapp me-1"></i>Enviar PDF
+                </a>
                 <button type="button" class="btn btn-primary" id="editOrderBtn" onclick="editCurrentOrder()">
                     <i class="fas fa-edit me-1"></i>Editar
                 </button>
@@ -442,6 +445,7 @@ function viewServiceOrder(orderId) {
             // Configurar botões do modal
             $('#editOrderBtn').show();
             $('#fullViewBtn').attr('href', '/os/' + orderId).show();
+            $('#pdfWhatsAppBtn').attr('href', '/os/' + orderId + '/pdf').show();
         },
         error: function(xhr, status, error) {
             console.error('Erro na requisição AJAX:', {
@@ -682,6 +686,35 @@ function openWhatsAppAfterDownload(event) {
                 window.open('https://web.whatsapp.com/', '_blank');
             }
         }, 2000);
+    }, 1000);
+}
+
+// Função para abrir o WhatsApp após baixar o PDF da OS
+function openWhatsAppAfterOSDownload(event) {
+    // Não previne o comportamento padrão - deixa o PDF baixar
+    
+    // Aguarda 1 segundo para o download iniciar
+    setTimeout(function() {
+        // Mostra alerta de sucesso
+        const alertHtml = `
+            <div class="alert alert-success alert-dismissible fade show" role="alert" style="position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;">
+                <i class="fas fa-check-circle me-2"></i>
+                <strong>PDF da OS baixado com sucesso!</strong> Abrindo WhatsApp...
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        `;
+        $('body').append(alertHtml);
+        
+        // Aguarda mais 500ms e abre o WhatsApp
+        setTimeout(function() {
+            // Tenta abrir o aplicativo do WhatsApp primeiro (desktop/mobile)
+            window.location.href = 'whatsapp://';
+            
+            // Fallback para WhatsApp Web após 2 segundos se o app não abrir
+            setTimeout(function() {
+                window.open('https://web.whatsapp.com/', '_blank');
+            }, 2000);
+        }, 500);
     }, 1000);
 }
 
