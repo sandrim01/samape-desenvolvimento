@@ -769,26 +769,93 @@ function renderEditModal(data) {
                 
                 <div class="col-md-4">
                     <div class="mb-3">
-                        <label for="edit_km_inicial" class="form-label">KM Inicial</label>
-                        <input type="number" class="form-control" id="edit_km_inicial" step="0.01" value="${data.km_inicial}">
-                    </div>
-                </div>
-                
-                <div class="col-md-4">
-                    <div class="mb-3">
-                        <label for="edit_km_final" class="form-label">KM Final</label>
-                        <input type="number" class="form-control" id="edit_km_final" step="0.01" value="${data.km_final}">
-                    </div>
-                </div>
-                
-                <div class="col-md-6">
-                    <div class="mb-3">
                         <label for="edit_status" class="form-label">Status</label>
                         <select class="form-select" id="edit_status">
                             <option value="aberta" ${data.status === 'aberta' ? 'selected' : ''}>Aberta</option>
                             <option value="em_andamento" ${data.status === 'em_andamento' ? 'selected' : ''}>Em Andamento</option>
                             <option value="fechada" ${data.status === 'fechada' ? 'selected' : ''}>Fechada</option>
                         </select>
+                    </div>
+                </div>
+                
+                <!-- Card de Kilometragem -->
+                <div class="col-12">
+                    <div class="card mb-3">
+                        <div class="card-header bg-primary text-white">
+                            <h6 class="mb-0"><i class="fas fa-tachometer-alt me-2"></i>Kilometragem</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <label for="edit_km_inicial" class="form-label">KM Inicial</label>
+                                        <input type="number" class="form-control" id="edit_km_inicial" step="0.01" value="${data.km_inicial}" onchange="calculateEditKmTotal()">
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <label for="edit_km_final" class="form-label">KM Final</label>
+                                        <input type="number" class="form-control" id="edit_km_final" step="0.01" value="${data.km_final}" onchange="calculateEditKmTotal()">
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <label for="edit_km_total" class="form-label">KM Total</label>
+                                        <input type="number" class="form-control" id="edit_km_total" step="0.01" value="${data.km_total}" readonly>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <label for="edit_km_rate" class="form-label">Valor por KM (R$)</label>
+                                        <input type="number" class="form-control" id="edit_km_rate" step="0.01" value="${data.km_rate}" onchange="calculateEditKmValue()">
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-12">
+                                    <div class="mb-0">
+                                        <label for="edit_km_value" class="form-label">Valor Total KM (R$)</label>
+                                        <input type="number" class="form-control" id="edit_km_value" step="0.01" value="${data.km_value}" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Card de Valores -->
+                <div class="col-12">
+                    <div class="card mb-3">
+                        <div class="card-header bg-success text-white">
+                            <h6 class="mb-0"><i class="fas fa-dollar-sign me-2"></i>Valores</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="edit_labor_value" class="form-label">Mão de Obra (R$)</label>
+                                        <input type="number" class="form-control" id="edit_labor_value" step="0.01" value="${data.labor_value}" onchange="calculateEditTotalValue()">
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="edit_parts_value" class="form-label">Peças (R$)</label>
+                                        <input type="number" class="form-control" id="edit_parts_value" step="0.01" value="${data.parts_value}" onchange="calculateEditTotalValue()">
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <div class="mb-0">
+                                        <label for="edit_total_value" class="form-label">Valor Total (R$)</label>
+                                        <input type="number" class="form-control bg-light fw-bold" id="edit_total_value" step="0.01" value="${data.total_value}" readonly>
+                                        <small class="text-muted">Calculado: KM + Mão de Obra + Peças</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
@@ -830,6 +897,12 @@ function saveServiceOrder() {
     const estimatedValue = $('#edit_estimated_value').val();
     const kmInicialValue = $('#edit_km_inicial').val();
     const kmFinalValue = $('#edit_km_final').val();
+    const kmTotalValue = $('#edit_km_total').val();
+    const kmRateValue = $('#edit_km_rate').val();
+    const kmValueField = $('#edit_km_value').val();
+    const laborValueField = $('#edit_labor_value').val();
+    const partsValueField = $('#edit_parts_value').val();
+    const totalValueField = $('#edit_total_value').val();
     const statusValue = $('#edit_status').val();
     const serviceDetailsValue = $('#edit_service_details').val();
     
@@ -840,6 +913,12 @@ function saveServiceOrder() {
         estimatedValue,
         kmInicialValue,
         kmFinalValue,
+        kmTotalValue,
+        kmRateValue,
+        kmValueField,
+        laborValueField,
+        partsValueField,
+        totalValueField,
         statusValue,
         serviceDetailsValue
     });
@@ -849,8 +928,14 @@ function saveServiceOrder() {
         responsible_id: responsibleIdValue ? parseInt(responsibleIdValue) : 0,
         description: descriptionValue || '',
         estimated_value: estimatedValue ? parseFloat(estimatedValue) : null,
-        km_inicial: kmInicialValue ? parseFloat(kmInicialValue) : null,
-        km_final: kmFinalValue ? parseFloat(kmFinalValue) : null,
+        km_inicial: kmInicialValue ? parseFloat(kmInicialValue) : 0,
+        km_final: kmFinalValue ? parseFloat(kmFinalValue) : 0,
+        km_total: kmTotalValue ? parseFloat(kmTotalValue) : 0,
+        km_rate: kmRateValue ? parseFloat(kmRateValue) : 0,
+        km_value: kmValueField ? parseFloat(kmValueField) : 0,
+        labor_value: laborValueField ? parseFloat(laborValueField) : 0,
+        parts_value: partsValueField ? parseFloat(partsValueField) : 0,
+        total_value: totalValueField ? parseFloat(totalValueField) : 0,
         status: statusValue || 'aberta',
         service_details: serviceDetailsValue || '',
         equipment_ids: []
@@ -976,6 +1061,71 @@ function calculateModalTotalValue() {
     const laborValue = $('#create_labor_value').val();
     const partsValue = $('#create_parts_value').val();
     const totalValueField = $('#create_total_value');
+    
+    let total = 0.0;
+    
+    if (kmValue) total += parseFloat(kmValue);
+    if (laborValue) total += parseFloat(laborValue);
+    if (partsValue) total += parseFloat(partsValue);
+    
+    if (total > 0) {
+        totalValueField.val(total.toFixed(2));
+    } else {
+        totalValueField.val('');
+    }
+}
+
+// ============================================
+// Funções de Cálculo Automático do Modal de EDIÇÃO
+// ============================================
+
+function calculateEditKmTotal() {
+    const kmInicial = $('#edit_km_inicial').val();
+    const kmFinal = $('#edit_km_final').val();
+    const kmTotalField = $('#edit_km_total');
+    
+    if (kmInicial && kmFinal) {
+        const inicial = parseFloat(kmInicial);
+        const final = parseFloat(kmFinal);
+        
+        if (final > inicial) {
+            const total = (final - inicial).toFixed(2);
+            kmTotalField.val(total);
+            calculateEditKmValue();
+        } else if (final < inicial) {
+            kmTotalField.val('');
+        } else {
+            kmTotalField.val('0.00');
+            calculateEditKmValue();
+        }
+    } else {
+        kmTotalField.val('');
+        calculateEditKmValue();
+    }
+}
+
+function calculateEditKmValue() {
+    const kmTotal = $('#edit_km_total').val();
+    const kmRate = $('#edit_km_rate').val();
+    const kmValueField = $('#edit_km_value');
+    
+    if (kmTotal && kmRate) {
+        const total = parseFloat(kmTotal);
+        const rate = parseFloat(kmRate);
+        const value = (total * rate).toFixed(2);
+        kmValueField.val(value);
+    } else {
+        kmValueField.val('');
+    }
+    
+    calculateEditTotalValue();
+}
+
+function calculateEditTotalValue() {
+    const kmValue = $('#edit_km_value').val();
+    const laborValue = $('#edit_labor_value').val();
+    const partsValue = $('#edit_parts_value').val();
+    const totalValueField = $('#edit_total_value');
     
     let total = 0.0;
     

@@ -1099,8 +1099,14 @@ def register_routes(app):
                 'description': service_order.description or '',
                 'estimated_value': float(service_order.estimated_value) if service_order.estimated_value else 0,
                 'status': service_order.status.value if service_order.status else 'aberta',
-                'km_inicial': float(service_order.km_inicial) if service_order.km_inicial else 0,
-                'km_final': float(service_order.km_final) if service_order.km_final else 0,
+                'km_inicial': float(service_order.km_inicial) if service_order.km_inicial is not None else 0,
+                'km_final': float(service_order.km_final) if service_order.km_final is not None else 0,
+                'km_total': float(service_order.km_total) if service_order.km_total is not None else 0,
+                'km_rate': float(service_order.km_rate) if service_order.km_rate is not None else 0,
+                'km_value': float(service_order.km_value) if service_order.km_value is not None else 0,
+                'labor_value': float(service_order.labor_value) if service_order.labor_value is not None else 0,
+                'parts_value': float(service_order.parts_value) if service_order.parts_value is not None else 0,
+                'total_value': float(service_order.total_value) if service_order.total_value is not None else 0,
                 'service_details': service_order.service_details or '',
                 'equipment_ids': [eq.id for eq in service_order.equipment],
                 'clients': [{'id': c.id, 'name': c.name} for c in clients],
@@ -1309,13 +1315,22 @@ def register_routes(app):
                 print(f"DEBUG: Status inválido: {status_value}, usando 'aberta'")
                 service_order.status = ServiceOrderStatus.aberta
             
-            service_order.km_inicial = data.get('km_inicial') if data.get('km_inicial') else None
-            service_order.km_final = data.get('km_final') if data.get('km_final') else None
+            # Atualizar campos de kilometragem
+            service_order.km_inicial = data.get('km_inicial', 0) if data.get('km_inicial') is not None else 0
+            service_order.km_final = data.get('km_final', 0) if data.get('km_final') is not None else 0
+            service_order.km_rate = data.get('km_rate', 0) if data.get('km_rate') is not None else 0
+            
+            # Atualizar campos de valores
+            service_order.labor_value = data.get('labor_value', 0) if data.get('labor_value') is not None else 0
+            service_order.parts_value = data.get('parts_value', 0) if data.get('parts_value') is not None else 0
+            
             service_order.service_details = data.get('service_details', '')
             
             print(f"DEBUG: Atualizando cálculo de km_total")
-            # Atualizar cálculo de km_total
+            # Atualizar cálculos automáticos
             service_order.update_km_total()
+            service_order.update_km_value()
+            service_order.update_total_value()
             
             print(f"DEBUG: Atualizando equipamentos")
             # Atualizar equipamentos
