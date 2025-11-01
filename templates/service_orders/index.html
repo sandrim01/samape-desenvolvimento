@@ -540,12 +540,42 @@ function renderOrderModal(order) {
                         <h6 class="mb-0"><i class="fas fa-dollar-sign me-2"></i>Valores e Kilometragem</h6>
                     </div>
                     <div class="card-body">
-                        <p><strong>Valor Estimado:</strong> ${order.estimated_value}</p>
-                        <p><strong>Valor da Nota:</strong> ${order.invoice_amount}</p>
-                        <p><strong>KM Inicial:</strong> ${order.km_inicial}</p>
-                        <p><strong>KM Final:</strong> ${order.km_final}</p>
-                        ${order.km_total && order.km_total !== 'N/A' ? 
-                            `<p><strong>KM Total:</strong> ${order.km_total}</p>` : ''
+                        ${(order.km_inicial !== 'Não informado' || order.km_final !== 'Não informado') ? `
+                            <h6 class="text-primary mb-2"><i class="fas fa-tachometer-alt me-1"></i> Kilometragem</h6>
+                            ${order.km_inicial !== 'Não informado' ? `<p class="mb-1"><strong>KM Inicial:</strong> ${order.km_inicial}</p>` : ''}
+                            ${order.km_final !== 'Não informado' ? `<p class="mb-1"><strong>KM Final:</strong> ${order.km_final}</p>` : ''}
+                            ${order.km_total && order.km_total !== 'Não informado' ? 
+                                `<p class="mb-1"><strong>KM Total:</strong> ${order.km_total}</p>` : ''
+                            }
+                            ${order.km_rate && order.km_rate !== 'Não informado' ? 
+                                `<p class="mb-1"><strong>Taxa por KM:</strong> R$ ${order.km_rate}</p>` : ''
+                            }
+                            ${order.km_value && order.km_value !== 'Não informado' ? 
+                                `<p class="mb-2"><strong>Valor KM:</strong> <span class="text-success">R$ ${order.km_value}</span></p>` : ''
+                            }
+                            <hr class="my-2">
+                        ` : ''}
+                        
+                        <h6 class="text-success mb-2"><i class="fas fa-calculator me-1"></i> Valores</h6>
+                        ${order.estimated_value !== 'Não informado' ? 
+                            `<p class="mb-1"><strong>Valor Estimado:</strong> ${order.estimated_value}</p>` : ''
+                        }
+                        ${order.labor_value && order.labor_value !== 'Não informado' ? 
+                            `<p class="mb-1"><strong>Mão de Obra:</strong> R$ ${order.labor_value}</p>` : ''
+                        }
+                        ${order.parts_value && order.parts_value !== 'Não informado' ? 
+                            `<p class="mb-1"><strong>Peças:</strong> R$ ${order.parts_value}</p>` : ''
+                        }
+                        ${order.total_value && order.total_value !== 'Não informado' ? 
+                            `<p class="mb-2"><strong>TOTAL CALCULADO:</strong> <span class="text-primary fw-bold">R$ ${order.total_value}</span></p>` : ''
+                        }
+                        ${(order.labor_value && order.labor_value !== 'Não informado') || 
+                          (order.parts_value && order.parts_value !== 'Não informado') || 
+                          (order.km_value && order.km_value !== 'Não informado') ? 
+                            `<hr class="my-2">` : ''
+                        }
+                        ${order.invoice_amount !== 'Não informado' ? 
+                            `<p class="mb-0"><strong>Valor da Nota:</strong> ${order.invoice_amount}</p>` : ''
                         }
                     </div>
                 </div>
