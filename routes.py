@@ -952,7 +952,9 @@ def register_routes(app):
             'total_value': f"{service_order.total_value:.2f}" if service_order.total_value is not None else 'Não informado',
             'service_details': service_order.service_details if service_order.service_details else 'Nenhum detalhe informado',
             'invoice_number': service_order.invoice_number if service_order.invoice_number else 'Não informado',
-            'financial_entries_count': len(service_order.financial_entries) if service_order.financial_entries else 0
+            'financial_entries_count': len(service_order.financial_entries) if service_order.financial_entries else 0,
+            'parts_list_number': service_order.parts_list_number if service_order.parts_list_number else None,
+            'parts_list_id': service_order.parts_lists[0].id if service_order.parts_lists else None
         }
         
         return jsonify(order_data)
@@ -1111,7 +1113,9 @@ def register_routes(app):
                 'equipment_ids': [eq.id for eq in service_order.equipment],
                 'clients': [{'id': c.id, 'name': c.name} for c in clients],
                 'users': [{'id': u.id, 'name': u.name} for u in users],
-                'equipment': [{'id': e.id, 'model': e.model, 'brand': e.brand} for e in equipment_all]
+                'equipment': [{'id': e.id, 'model': e.model, 'brand': e.brand} for e in equipment_all],
+                'parts_list_number': service_order.parts_list_number if service_order.parts_list_number else None,
+                'parts_list_id': service_order.parts_lists[0].id if service_order.parts_lists else None
             }
             
             print(f"DEBUG EDIT-MODAL: Dados preparados com sucesso para OS {id}")

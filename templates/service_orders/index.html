@@ -593,6 +593,27 @@ function renderOrderModal(order) {
                 </div>
             </div>
             
+            <!-- Listagem de Peças (se houver) -->
+            ${order.parts_list_number ? `
+            <div class="col-12">
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="fas fa-list-alt me-2"></i>Listagem de Peças</h6>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-0">
+                            <span class="badge bg-info">${order.parts_list_number}</span>
+                            ${order.parts_list_id ? `
+                                <a href="/lista-pecas/${order.parts_list_id}" target="_blank" class="btn btn-sm btn-outline-primary ms-2">
+                                    <i class="fas fa-eye"></i> Ver Listagem
+                                </a>
+                            ` : ''}
+                        </p>
+                    </div>
+                </div>
+            </div>
+            ` : ''}
+            
             <!-- Detalhes do Serviço -->
             ${order.service_details && order.service_details !== 'Nenhum detalhe informado' ? `
             <div class="col-12">
@@ -759,6 +780,23 @@ function renderEditModal(data) {
                         <textarea class="form-control" id="edit_description" rows="3" required>${data.description}</textarea>
                     </div>
                 </div>
+                
+                <!-- Listagem de Peças (se houver) -->
+                ${data.parts_list_number ? `
+                <div class="col-12">
+                    <div class="alert alert-info" role="alert">
+                        <h6 class="alert-heading mb-2"><i class="fas fa-list-alt me-2"></i>Listagem de Peças Vinculada</h6>
+                        <p class="mb-2">
+                            <span class="badge bg-info">${data.parts_list_number}</span>
+                        </p>
+                        ${data.parts_list_id ? `
+                            <a href="/lista-pecas/${data.parts_list_id}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-external-link-alt"></i> Abrir em Nova Aba
+                            </a>
+                        ` : ''}
+                    </div>
+                </div>
+                ` : ''}
                 
                 <div class="col-md-4">
                     <div class="mb-3">
