@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}Catálogo Interno - SAMAPE{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-book me-2"></i>Catálogo Interno de Peças</h1>
+</div>
+
+<div class="row mb-3">
+    <div class="col-md-6">
+        <form method="GET" action="{{ url_for('catalog') }}" class="d-flex">
+            <input type="text" name="search" class="form-control me-2" placeholder="Buscar por nome, código ou descrição..." value="{{ search }}">
+            <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i></button>
+        </form>
+    </div>
+    <div class="col-md-6 text-end">
+        <div class="btn-group">
+            <a href="{{ url_for('catalog', sort='times_used') }}" class="btn btn-sm btn-outline-primary {% if sort_by == 'times_used' %}active{% endif %}">
+                <i class="fas fa-chart-line me-1"></i>Mais Usadas
+            </a>
+            <a href="{{ url_for('catalog', sort='last_used') }}" class="btn btn-sm btn-outline-primary {% if sort_by == 'last_used' %}active{% endif %}">
+                <i class="fas fa-clock me-1"></i>Recentes
+            </a>
+            <a href="{{ url_for('catalog', sort='name') }}" class="btn btn-sm btn-outline-primary {% if sort_by == 'name' %}active{% endif %}">
+                <i class="fas fa-sort-alpha-down me-1"></i>A-Z
+            </a>
+            <a href="{{ url_for('catalog', sort='price') }}" class="btn btn-sm btn-outline-primary {% if sort_by == 'price' %}active{% endif %}">
+                <i class="fas fa-dollar-sign me-1"></i>Preço
+            </a>
+        </div>
+    </div>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-table me-1"></i> Peças do Catálogo
+        <span class="badge bg-primary ms-2">{{ items|length }} itens</span>
+    </div>
+    <div class="card-body">
+        {% if items %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Nome da Peça</th>
+                            <th>Código/Ref</th>
+                            <th>Descrição</th>
+                            <th>Último Preço</th>
+                            <th>Vezes Usada</th>
+                            <th>Última Utilização</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in items %}
+                        <tr>
+                            <td><strong>{{ item.name }}</strong></td>
+                            <td>
+                                {% if item.part_number %}
+                                    <span class="badge bg-secondary">{{ item.part_number }}</span>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.description %}
+                                    {{ item.description[:50] }}{% if item.description|length > 50 %}...{% endif %}
+                                {% else %}
+                                    <span class="text-muted">Sem descrição</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.last_price %}
+                                    R$ {{ "%.2f"|format(item.last_price) }}
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge bg-info">{{ item.times_used }}x</span>
+                            </td>
+                            <td>{{ item.last_used_at.strftime('%d/%m/%Y') if item.last_used_at else '-' }}</td>
+                            <td>
+                                <a href="{{ url_for('view_catalog_item', id=item.id) }}" class="btn btn-sm btn-info" title="Ver Detalhes">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{{ url_for('edit_catalog_item', id=item.id) }}" class="btn btn-sm btn-warning" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                <p class="text-muted">
+                    {% if search %}
+                        Nenhuma peça encontrada para "{{ search }}"
+                    {% else %}
+                        O catálogo ainda está vazio.<br>
+                        As peças serão adicionadas automaticamente ao criar listagens de peças.
+                    {% endif %}
+                </p>
+                {% if search %}
+                    <a href="{{ url_for('catalog') }}" class="btn btn-primary">Ver Todas</a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="mt-3">
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle me-2"></i>
+        <strong>Como funciona o Catálogo Interno:</strong><br>
+        Este catálogo é alimentado automaticamente pelas peças adicionadas nas listagens de peças das OS.<br>
+        Quando você criar uma listagem, as peças informadas serão registradas aqui para consultas futuras.
+    </div>
+</div>
+{% endblock %}

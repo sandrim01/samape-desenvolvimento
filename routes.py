@@ -4911,8 +4911,8 @@ def register_routes(app):
     @app.route('/lista-pecas/nova-modal', methods=['POST'])
     @login_required
     def create_parts_list_modal():
-        """Criar nova listagem de peças via modal"""
-        from models import PartsList, PartsListItem, ServiceOrder, Part
+        """Criar nova listagem de peças via modal (entrada livre)"""
+        from models import PartsList, PartsListItem, ServiceOrder, CatalogItem
         
         try:
             service_order_id = request.form.get('service_order_id')
@@ -4934,16 +4934,29 @@ def register_routes(app):
             db.session.add(parts_list)
             db.session.flush()  # Para obter o ID
             
-            # Processar itens da listagem
+            # Processar itens da listagem (entrada livre)
             items_data = request.form.get('items_json')
             if items_data:
                 import json
                 items = json.loads(items_data)
                 
                 for item in items:
+                    # Adicionar ou atualizar no catálogo interno
+                    catalog_item = CatalogItem.add_or_update(
+                        name=item['part_name'],
+                        part_number=item.get('part_number'),
+                        description=item.get('description'),
+                        price=item['unit_price']
+                    )
+                    db.session.flush()  # Para obter o catalog_item.id
+                    
+                    # Criar item da listagem
                     list_item = PartsListItem(
                         parts_list_id=parts_list.id,
-                        part_id=item['part_id'],
+                        catalog_item_id=catalog_item.id,
+                        part_name=item['part_name'],
+                        part_number=item.get('part_number'),
+                        description=item.get('description'),
                         quantity=item['quantity'],
                         unit_price=item['unit_price'],
                         notes=item.get('notes', '')
@@ -5185,6 +5198,142 @@ def register_routes(app):
             'client_name': os.client.name if os.client else 'Sem cliente',
             'description': os.description[:50] + '...' if len(os.description) > 50 else os.description
         } for os in service_orders]
+        
+        return jsonify(results)
+    
+    # ========== ROTAS DO CATÁLOGO INTERNO ==========
+    
+    @app.route('/catalogo')
+    @login_required
+    def catalog():
+        """Página principal do catálogo interno"""
+        from models import CatalogItem
+        
+        # Filtros
+        search = request.args.get('search', '')
+        sort_by = request.args.get('sort', 'times_used')  # Padrão: mais utilizadas
+        
+        query = CatalogItem.query.filter_by(is_active=True)
+        
+        if search:
+            query = query.filter(
+                db.or_(
+                    CatalogItem.name.ilike(f'%{search}%'),
+                    CatalogItem.part_number.ilike(f'%{search}%'),
+                    CatalogItem.description.ilike(f'%{search}%')
+                )
+            )
+        
+        # Ordenação
+        if sort_by == 'name':
+            query = query.order_by(CatalogItem.name)
+        elif sort_by == 'times_used':
+            query = query.order_by(CatalogItem.times_used.desc())
+        elif sort_by == 'last_used':
+            query = query.order_by(CatalogItem.last_used_at.desc())
+        elif sort_by == 'price':
+            query = query.order_by(CatalogItem.last_price.desc())
+        
+        items = query.all()
+        
+        return render_template('catalog/index.html', items=items, search=search, sort_by=sort_by)
+    
+    @app.route('/catalogo/<int:id>')
+    @login_required
+    def view_catalog_item(id):
+        """Ver detalhes de um item do catálogo"""
+        from models import CatalogItem, PartsListItem
+        
+        item = CatalogItem.query.get_or_404(id)
+        
+        # Buscar histórico de uso (últimas 20 listagens)
+        usage_history = PartsListItem.query.filter_by(catalog_item_id=id).order_by(
+            PartsListItem.id.desc()
+        ).limit(20).all()
+        
+        return render_template('catalog/view.html', item=item, usage_history=usage_history)
+    
+    @app.route('/catalogo/<int:id>/editar', methods=['GET', 'POST'])
+    @login_required
+    def edit_catalog_item(id):
+        """Editar item do catálogo"""
+        from models import CatalogItem
+        
+        item = CatalogItem.query.get_or_404(id)
+        
+        if request.method == 'POST':
+            item.name = request.form.get('name')
+            item.part_number = request.form.get('part_number')
+            item.description = request.form.get('description')
+            last_price = request.form.get('last_price')
+            
+            if last_price:
+                try:
+                    item.last_price = float(last_price)
+                except ValueError:
+                    flash('Preço inválido', 'error')
+                    return redirect(url_for('edit_catalog_item', id=id))
+            
+            db.session.commit()
+            
+            log_action(
+                'Edição de Item do Catálogo',
+                'catalog_item',
+                item.id,
+                f"Item {item.name} editado"
+            )
+            
+            flash(f'Item {item.name} atualizado com sucesso!', 'success')
+            return redirect(url_for('view_catalog_item', id=id))
+        
+        return render_template('catalog/edit.html', item=item)
+    
+    @app.route('/catalogo/<int:id>/desativar', methods=['POST'])
+    @login_required
+    def deactivate_catalog_item(id):
+        """Desativar item do catálogo"""
+        from models import CatalogItem
+        
+        item = CatalogItem.query.get_or_404(id)
+        item.is_active = False
+        db.session.commit()
+        
+        log_action(
+            'Desativação de Item do Catálogo',
+            'catalog_item',
+            item.id,
+            f"Item {item.name} desativado"
+        )
+        
+        flash(f'Item {item.name} desativado do catálogo.', 'info')
+        return redirect(url_for('catalog'))
+    
+    @app.route('/api/catalog/search')
+    @login_required
+    def search_catalog():
+        """API para buscar itens do catálogo (autocomplete)"""
+        from models import CatalogItem
+        query = request.args.get('q', '')
+        
+        if len(query) < 2:
+            return jsonify([])
+        
+        items = CatalogItem.query.filter(
+            CatalogItem.is_active == True,
+            db.or_(
+                CatalogItem.name.ilike(f'%{query}%'),
+                CatalogItem.part_number.ilike(f'%{query}%')
+            )
+        ).order_by(CatalogItem.times_used.desc()).limit(20).all()
+        
+        results = [{
+            'id': item.id,
+            'name': item.name,
+            'part_number': item.part_number or '',
+            'description': item.description or '',
+            'last_price': float(item.last_price) if item.last_price else 0,
+            'times_used': item.times_used
+        } for item in items]
         
         return jsonify(results)
 

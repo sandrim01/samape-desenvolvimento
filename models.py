@@ -739,20 +739,76 @@ class PartsList(db.Model):
     def __repr__(self):
         return f'<PartsList {self.list_number}>'
 
+class CatalogItem(db.Model):
+    """Modelo para Catálogo Interno de Peças (alimentado pelas listagens)"""
+    __tablename__ = 'catalog_item'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(200), nullable=False)  # Nome da peça
+    part_number = db.Column(db.String(100))  # Código/Referência da peça
+    description = db.Column(db.Text)  # Descrição detalhada
+    last_price = db.Column(db.Numeric(10, 2))  # Último preço registrado
+    times_used = db.Column(db.Integer, default=1)  # Quantas vezes foi utilizada
+    first_used_at = db.Column(db.DateTime, default=datetime.utcnow)  # Primeira vez que apareceu
+    last_used_at = db.Column(db.DateTime, default=datetime.utcnow)  # Última vez que foi usada
+    is_active = db.Column(db.Boolean, default=True)  # Se está ativo no catálogo
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationship para rastrear em quais listagens a peça apareceu
+    list_items = db.relationship('PartsListItem', backref='catalog_item', lazy=True)
+    
+    @staticmethod
+    def add_or_update(name, part_number=None, description=None, price=None):
+        """Adiciona uma nova peça ao catálogo ou atualiza uma existente"""
+        # Buscar se já existe (case-insensitive)
+        catalog_item = CatalogItem.query.filter(
+            db.func.lower(CatalogItem.name) == db.func.lower(name)
+        ).first()
+        
+        if catalog_item:
+            # Atualizar item existente
+            catalog_item.times_used += 1
+            catalog_item.last_used_at = datetime.utcnow()
+            if price:
+                catalog_item.last_price = price
+            if part_number:
+                catalog_item.part_number = part_number
+            if description:
+                catalog_item.description = description
+        else:
+            # Criar novo item no catálogo
+            catalog_item = CatalogItem(
+                name=name,
+                part_number=part_number,
+                description=description,
+                last_price=price,
+                times_used=1
+            )
+            db.session.add(catalog_item)
+        
+        return catalog_item
+    
+    def __repr__(self):
+        return f'<CatalogItem {self.id} - {self.name}>'
+
 class PartsListItem(db.Model):
     """Modelo para itens individuais de uma Listagem de Peças"""
     __tablename__ = 'parts_list_item'
     
     id = db.Column(db.Integer, primary_key=True)
     parts_list_id = db.Column(db.Integer, db.ForeignKey('parts_list.id'), nullable=False)
-    part_id = db.Column(db.Integer, db.ForeignKey('part.id'), nullable=False)
+    catalog_item_id = db.Column(db.Integer, db.ForeignKey('catalog_item.id'))  # Referência ao catálogo (opcional)
+    
+    # Campos de entrada livre (não depende mais do estoque)
+    part_name = db.Column(db.String(200), nullable=False)  # Nome da peça (entrada livre)
+    part_number = db.Column(db.String(100))  # Código/Referência (entrada livre)
+    description = db.Column(db.Text)  # Descrição (entrada livre)
+    
     quantity = db.Column(db.Integer, nullable=False, default=1)
     unit_price = db.Column(db.Numeric(10, 2), nullable=False)  # Preço unitário no momento da listagem
     total_price = db.Column(db.Numeric(10, 2), nullable=False)  # Quantidade × Preço unitário
     notes = db.Column(db.Text)  # Observações específicas do item
-    
-    # Relationship
-    part = db.relationship('Part', backref='parts_list_items')
     
     def calculate_total_price(self):
         """Calcula o preço total do item"""
@@ -763,4 +819,4 @@ class PartsListItem(db.Model):
         return self.total_price
     
     def __repr__(self):
-        return f'<PartsListItem {self.id} - Part {self.part_id}>'
+        return f'<PartsListItem {self.id} - {self.part_name}>'

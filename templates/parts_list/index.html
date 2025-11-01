@@ -123,14 +123,22 @@
                         </button>
                     </div>
                     
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Entrada Livre:</strong> Digite o nome da peça livremente. 
+                        Se a peça já estiver no catálogo interno, ela aparecerá na sugestão com o último preço registrado.
+                    </div>
+                    
                     <div class="table-responsive">
                         <table class="table table-sm">
                             <thead>
                                 <tr>
-                                    <th width="40%">Peça</th>
-                                    <th width="15%">Qtd</th>
-                                    <th width="20%">Preço Unit.</th>
-                                    <th width="20%">Total</th>
+                                    <th width="30%">Nome da Peça</th>
+                                    <th width="15%">Código/Ref</th>
+                                    <th width="10%">Qtd</th>
+                                    <th width="15%">Preço Unit.</th>
+                                    <th width="15%">Total</th>
+                                    <th width="10%">Descrição</th>
                                     <th width="5%"></th>
                                 </tr>
                             </thead>
@@ -158,12 +166,12 @@
 </div>
 
 <script>
-let allParts = [];
+let catalogItems = [];
 
-// Carregar OSs abertas ao abrir o modal
+// Carregar dados ao abrir o modal
 document.getElementById('createPartsListModal').addEventListener('show.bs.modal', function() {
     loadOpenServiceOrders();
-    loadAllParts();
+    loadCatalogItems();
     // Adicionar primeira linha
     if (document.getElementById('modalPartsList').rows.length === 0) {
         addModalPartRow();
@@ -185,14 +193,14 @@ function loadOpenServiceOrders() {
         });
 }
 
-function loadAllParts() {
-    fetch('/api/parts/all')
+function loadCatalogItems() {
+    fetch('/api/catalog/search?q=')
         .then(response => response.json())
         .then(data => {
-            allParts = data;
+            catalogItems = data;
         })
         .catch(error => {
-            console.error('Erro ao carregar peças:', error);
+            console.error('Erro ao carregar catálogo:', error);
         });
 }
 
@@ -201,39 +209,73 @@ function addModalPartRow() {
     const row = tbody.insertRow();
     const index = tbody.rows.length - 1;
     
-    let partsOptions = '<option value="">Selecione...</option>';
-    allParts.forEach(p => {
-        partsOptions += `<option value="${p.id}" data-price="${p.selling_price}">${p.name}${p.part_number ? ' (' + p.part_number + ')' : ''}</option>`;
-    });
-    
     row.innerHTML = `
         <td>
-            <select class="form-control form-control-sm part-select" onchange="updateModalRow(${index})">
-                ${partsOptions}
-            </select>
+            <input type="text" class="form-control form-control-sm part-name" 
+                   placeholder="Nome da peça..." 
+                   list="catalogList${index}"
+                   onchange="fillFromCatalog(${index})">
+            <datalist id="catalogList${index}"></datalist>
         </td>
+        <td><input type="text" class="form-control form-control-sm part-number" placeholder="Código"></td>
         <td><input type="number" class="form-control form-control-sm qty" value="1" min="1" onchange="updateModalRow(${index})"></td>
         <td><input type="number" class="form-control form-control-sm price" value="0" step="0.01" onchange="updateModalRow(${index})"></td>
         <td><input type="text" class="form-control form-control-sm total" readonly value="0.00"></td>
+        <td><input type="text" class="form-control form-control-sm description" placeholder="Descrição"></td>
         <td><button type="button" class="btn btn-sm btn-danger" onclick="removeModalRow(this)"><i class="fas fa-trash"></i></button></td>
     `;
+    
+    // Adicionar event listener para autocomplete
+    const nameInput = row.cells[0].querySelector('.part-name');
+    nameInput.addEventListener('input', function() {
+        updateDatalist(index, this.value);
+    });
+}
+
+function updateDatalist(index, query) {
+    const datalist = document.getElementById(`catalogList${index}`);
+    datalist.innerHTML = '';
+    
+    if (query.length < 2) return;
+    
+    const filtered = catalogItems.filter(item => 
+        item.name.toLowerCase().includes(query.toLowerCase()) ||
+        (item.part_number && item.part_number.toLowerCase().includes(query.toLowerCase()))
+    ).slice(0, 10);
+    
+    filtered.forEach(item => {
+        const option = document.createElement('option');
+        option.value = item.name;
+        option.setAttribute('data-id', item.id);
+        option.setAttribute('data-number', item.part_number || '');
+        option.setAttribute('data-price', item.last_price || 0);
+        option.setAttribute('data-description', item.description || '');
+        option.textContent = `${item.name}${item.part_number ? ' (' + item.part_number + ')' : ''} - R$ ${item.last_price ? item.last_price.toFixed(2) : '0.00'}`;
+        datalist.appendChild(option);
+    });
+}
+
+function fillFromCatalog(index) {
+    const row = document.getElementById('modalPartsList').rows[index];
+    const nameInput = row.cells[0].querySelector('.part-name');
+    const datalist = document.getElementById(`catalogList${index}`);
+    
+    // Procurar no catálogo
+    const item = catalogItems.find(i => i.name === nameInput.value);
+    
+    if (item) {
+        row.cells[1].querySelector('.part-number').value = item.part_number || '';
+        row.cells[3].querySelector('.price').value = item.last_price ? item.last_price.toFixed(2) : '0.00';
+        row.cells[5].querySelector('.description').value = item.description || '';
+        updateModalRow(index);
+    }
 }
 
 function updateModalRow(index) {
     const row = document.getElementById('modalPartsList').rows[index];
-    const select = row.cells[0].querySelector('.part-select');
-    const qtyInput = row.cells[1].querySelector('.qty');
-    const priceInput = row.cells[2].querySelector('.price');
-    const totalInput = row.cells[3].querySelector('.total');
-    
-    // Auto-fill price from part
-    if (select.selectedIndex > 0) {
-        const option = select.options[select.selectedIndex];
-        const partPrice = parseFloat(option.dataset.price) || 0;
-        if (priceInput.value == 0 || priceInput.value == '') {
-            priceInput.value = partPrice.toFixed(2);
-        }
-    }
+    const qtyInput = row.cells[2].querySelector('.qty');
+    const priceInput = row.cells[3].querySelector('.price');
+    const totalInput = row.cells[4].querySelector('.total');
     
     const qty = parseFloat(qtyInput.value) || 0;
     const price = parseFloat(priceInput.value) || 0;
@@ -252,7 +294,7 @@ function updateModalGrandTotal() {
     const rows = document.getElementById('modalPartsList').rows;
     let total = 0;
     for (let row of rows) {
-        total += parseFloat(row.cells[3].querySelector('.total').value) || 0;
+        total += parseFloat(row.cells[4].querySelector('.total').value) || 0;
     }
     document.getElementById('modalGrandTotal').textContent = total.toFixed(2);
 }
@@ -270,13 +312,15 @@ function savePartsList() {
     const items = [];
     
     for (let row of rows) {
-        const partId = row.cells[0].querySelector('.part-select').value;
-        if (!partId) continue;
+        const partName = row.cells[0].querySelector('.part-name').value.trim();
+        if (!partName) continue;
         
         items.push({
-            part_id: parseInt(partId),
-            quantity: parseInt(row.cells[1].querySelector('.qty').value),
-            unit_price: parseFloat(row.cells[2].querySelector('.price').value)
+            part_name: partName,
+            part_number: row.cells[1].querySelector('.part-number').value.trim(),
+            quantity: parseInt(row.cells[2].querySelector('.qty').value),
+            unit_price: parseFloat(row.cells[3].querySelector('.price').value),
+            description: row.cells[5].querySelector('.description').value.trim()
         });
     }
     

@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Editar {{ item.name }} - Catálogo - SAMAPE{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-edit me-2"></i>Editar Item do Catálogo</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('view_catalog_item', id=item.id) }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Cancelar
+        </a>
+    </div>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <i class="fas fa-info-circle me-1"></i>Informações da Peça
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('edit_catalog_item', id=item.id) }}">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Nome da Peça <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="name" name="name" value="{{ item.name }}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="part_number" class="form-label">Código/Referência</label>
+                        <input type="text" class="form-control" id="part_number" name="part_number" value="{{ item.part_number if item.part_number else '' }}">
+                        <small class="form-text text-muted">Código, referência ou número de catálogo externo</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Descrição</label>
+                        <textarea class="form-control" id="description" name="description" rows="3">{{ item.description if item.description else '' }}</textarea>
+                        <small class="form-text text-muted">Descrição detalhada da peça</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="last_price" class="form-label">Último Preço</label>
+                        <div class="input-group">
+                            <span class="input-group-text">R$</span>
+                            <input type="number" class="form-control" id="last_price" name="last_price" value="{{ item.last_price if item.last_price else '' }}" step="0.01" min="0">
+                        </div>
+                        <small class="form-text text-muted">Preço de referência (será atualizado automaticamente nas próximas listagens)</small>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Estatísticas:</strong><br>
+                        Esta peça foi utilizada <strong>{{ item.times_used }}</strong> vez(es).<br>
+                        Primeira vez: {{ item.first_used_at.strftime('%d/%m/%Y') if item.first_used_at else '-' }}<br>
+                        Última vez: {{ item.last_used_at.strftime('%d/%m/%Y') if item.last_used_at else '-' }}
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>Salvar Alterações
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
