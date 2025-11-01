@@ -286,7 +286,7 @@
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                     <i class="fas fa-times me-1"></i>Fechar
                 </button>
-                <a href="#" class="btn btn-success" id="pdfWhatsAppBtn" onclick="openWhatsAppAfterOSDownload(event)">
+                <a href="#" class="btn btn-success" id="pdfWhatsAppBtn" onclick="openWhatsAppAfterOSDownload(event, this)">
                     <i class="fab fa-whatsapp me-1"></i>Enviar PDF
                 </a>
                 <button type="button" class="btn btn-primary" id="editOrderBtn" onclick="editCurrentOrder()">
@@ -445,7 +445,15 @@ function viewServiceOrder(orderId) {
             // Configurar botões do modal
             $('#editOrderBtn').show();
             $('#fullViewBtn').attr('href', '/os/' + orderId).show();
-            $('#pdfWhatsAppBtn').attr('href', '/os/' + orderId + '/pdf').show();
+            
+            // Configurar botão WhatsApp com dados da OS
+            const pdfBtn = $('#pdfWhatsAppBtn');
+            pdfBtn.attr('href', '/os/' + orderId + '/pdf');
+            pdfBtn.attr('data-order-id', orderId);
+            pdfBtn.attr('data-client-name', data.client.name || 'Cliente');
+            pdfBtn.attr('data-client-phone', data.client.phone || '');
+            pdfBtn.attr('data-description', (data.description || data.service_details || 'Ordem de Serviço').substring(0, 50));
+            pdfBtn.show();
         },
         error: function(xhr, status, error) {
             console.error('Erro na requisição AJAX:', {
@@ -690,33 +698,75 @@ function openWhatsAppAfterDownload(event) {
 }
 
 // Função para abrir o WhatsApp após baixar o PDF da OS
-function openWhatsAppAfterOSDownload(event) {
+function openWhatsAppAfterOSDownload(event, buttonElement) {
     // Não previne o comportamento padrão - deixa o PDF baixar
+    
+    // Pega os dados do botão
+    const orderId = buttonElement.dataset.orderId || buttonElement.getAttribute('data-order-id');
+    const clientName = buttonElement.dataset.clientName || buttonElement.getAttribute('data-client-name') || 'Cliente';
+    const clientPhone = buttonElement.dataset.clientPhone || buttonElement.getAttribute('data-client-phone') || '';
+    const description = buttonElement.dataset.description || buttonElement.getAttribute('data-description') || '';
     
     // Aguarda 1 segundo para o download iniciar
     setTimeout(function() {
-        // Mostra alerta de sucesso
+        // Mostra alerta de sucesso com instruções
         const alertHtml = `
-            <div class="alert alert-success alert-dismissible fade show" role="alert" style="position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;">
-                <i class="fas fa-check-circle me-2"></i>
-                <strong>PDF da OS baixado com sucesso!</strong> Abrindo WhatsApp...
+            <div class="alert alert-info alert-dismissible fade show" role="alert" style="position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 350px; max-width: 400px;">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>PDF baixado!</strong><br>
+                <small>Abrindo WhatsApp... Clique no ícone de anexo (📎) e selecione o PDF da OS #${orderId} que foi baixado.</small>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         `;
         $('body').append(alertHtml);
         
-        // Aguarda mais 500ms e abre o WhatsApp
+        // Cria mensagem personalizada para o WhatsApp
+        const fileName = `OS_${orderId}_${clientName.replace(/\s+/g, '_')}.pdf`;
+        let whatsappMessage = `Olá! Segue em anexo a Ordem de Serviço #${orderId}`;
+        
+        if (description) {
+            whatsappMessage += ` - ${description}`;
+        }
+        
+        whatsappMessage += `\n\n📄 Arquivo: ${fileName}\n\nAtenciosamente,\nSAMAPE`;
+        
+        // Codifica a mensagem para URL
+        const encodedMessage = encodeURIComponent(whatsappMessage);
+        
+        // Aguarda mais 800ms e abre o WhatsApp
         setTimeout(function() {
-            // Tenta abrir o aplicativo do WhatsApp usando window.open
-            const whatsappWindow = window.open('whatsapp://', '_blank');
+            let whatsappUrl;
             
-            // Fallback para WhatsApp Web se não conseguir abrir o app
-            setTimeout(function() {
-                if (!whatsappWindow || whatsappWindow.closed || typeof whatsappWindow.closed === 'undefined') {
-                    window.open('https://web.whatsapp.com/', '_blank');
-                }
-            }, 1500);
-        }, 500);
+            // Se tem telefone do cliente, abre direto para ele
+            if (clientPhone && clientPhone.trim() !== '') {
+                // Remove caracteres não numéricos do telefone
+                const phoneNumber = clientPhone.replace(/\D/g, '');
+                
+                // Tenta abrir o WhatsApp com número e mensagem (app)
+                whatsappUrl = `whatsapp://send?phone=55${phoneNumber}&text=${encodedMessage}`;
+                const whatsappWindow = window.open(whatsappUrl, '_blank');
+                
+                // Fallback para WhatsApp Web
+                setTimeout(function() {
+                    if (!whatsappWindow || whatsappWindow.closed || typeof whatsappWindow.closed === 'undefined') {
+                        whatsappUrl = `https://web.whatsapp.com/send?phone=55${phoneNumber}&text=${encodedMessage}`;
+                        window.open(whatsappUrl, '_blank');
+                    }
+                }, 1500);
+            } else {
+                // Se não tem telefone, abre WhatsApp com mensagem genérica
+                whatsappUrl = `whatsapp://send?text=${encodedMessage}`;
+                const whatsappWindow = window.open(whatsappUrl, '_blank');
+                
+                // Fallback para WhatsApp Web
+                setTimeout(function() {
+                    if (!whatsappWindow || whatsappWindow.closed || typeof whatsappWindow.closed === 'undefined') {
+                        whatsappUrl = `https://web.whatsapp.com/send?text=${encodedMessage}`;
+                        window.open(whatsappUrl, '_blank');
+                    }
+                }, 1500);
+            }
+        }, 800);
     }, 1000);
 }
 
