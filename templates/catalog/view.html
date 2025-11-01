@@ -48,6 +48,26 @@
                     </div>
                 </div>
                 <div class="row mb-2">
+                    <div class="col-sm-4"><strong>Fabricante:</strong></div>
+                    <div class="col-sm-8">
+                        {% if item.manufacturer %}
+                            {{ item.manufacturer }}
+                        {% else %}
+                            <span class="text-muted">Não informado</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-sm-4"><strong>Modelo/Maquinário:</strong></div>
+                    <div class="col-sm-8">
+                        {% if item.equipment_model %}
+                            {{ item.equipment_model }}
+                        {% else %}
+                            <span class="text-muted">Não informado</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row mb-2">
                     <div class="col-sm-4"><strong>Descrição:</strong></div>
                     <div class="col-sm-8">
                         {% if item.description %}

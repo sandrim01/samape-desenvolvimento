@@ -4945,6 +4945,8 @@ def register_routes(app):
                     catalog_item = CatalogItem.add_or_update(
                         name=item['part_name'],
                         part_number=item.get('part_number'),
+                        manufacturer=item.get('manufacturer'),
+                        equipment_model=item.get('equipment_model'),
                         description=item.get('description'),
                         price=item['unit_price']
                     )
@@ -4956,6 +4958,8 @@ def register_routes(app):
                         catalog_item_id=catalog_item.id,
                         part_name=item['part_name'],
                         part_number=item.get('part_number'),
+                        manufacturer=item.get('manufacturer'),
+                        equipment_model=item.get('equipment_model'),
                         description=item.get('description'),
                         quantity=item['quantity'],
                         unit_price=item['unit_price'],
@@ -5264,6 +5268,8 @@ def register_routes(app):
         if request.method == 'POST':
             item.name = request.form.get('name')
             item.part_number = request.form.get('part_number')
+            item.manufacturer = request.form.get('manufacturer')
+            item.equipment_model = request.form.get('equipment_model')
             item.description = request.form.get('description')
             last_price = request.form.get('last_price')
             
@@ -5322,7 +5328,9 @@ def register_routes(app):
             CatalogItem.is_active == True,
             db.or_(
                 CatalogItem.name.ilike(f'%{query}%'),
-                CatalogItem.part_number.ilike(f'%{query}%')
+                CatalogItem.part_number.ilike(f'%{query}%'),
+                CatalogItem.manufacturer.ilike(f'%{query}%'),
+                CatalogItem.equipment_model.ilike(f'%{query}%')
             )
         ).order_by(CatalogItem.times_used.desc()).limit(20).all()
         
@@ -5330,6 +5338,8 @@ def register_routes(app):
             'id': item.id,
             'name': item.name,
             'part_number': item.part_number or '',
+            'manufacturer': item.manufacturer or '',
+            'equipment_model': item.equipment_model or '',
             'description': item.description or '',
             'last_price': float(item.last_price) if item.last_price else 0,
             'times_used': item.times_used

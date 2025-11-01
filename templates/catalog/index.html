@@ -56,6 +56,8 @@
                         <tr>
                             <th>Nome da Peça</th>
                             <th>Código/Ref</th>
+                            <th>Fabricante</th>
+                            <th>Modelo/Maquinário</th>
                             <th>Descrição</th>
                             <th>Último Preço</th>
                             <th>Vezes Usada</th>
@@ -74,6 +76,8 @@
                                     <span class="text-muted">-</span>
                                 {% endif %}
                             </td>
+                            <td>{{ item.manufacturer or '-' }}</td>
+                            <td>{{ item.equipment_model or '-' }}</td>
                             <td>
                                 {% if item.description %}
                                     {{ item.description[:50] }}{% if item.description|length > 50 %}...{% endif %}

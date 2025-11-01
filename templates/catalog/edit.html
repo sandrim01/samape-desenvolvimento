@@ -43,6 +43,18 @@
                     </div>
                     
                     <div class="mb-3">
+                        <label for="manufacturer" class="form-label">Fabricante</label>
+                        <input type="text" class="form-control" id="manufacturer" name="manufacturer" value="{{ item.manufacturer if item.manufacturer else '' }}">
+                        <small class="form-text text-muted">Nome do fabricante da peça</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="equipment_model" class="form-label">Modelo/Maquinário</label>
+                        <input type="text" class="form-control" id="equipment_model" name="equipment_model" value="{{ item.equipment_model if item.equipment_model else '' }}">
+                        <small class="form-text text-muted">Modelo ou tipo de maquinário compatível</small>
+                    </div>
+                    
+                    <div class="mb-3">
                         <label for="description" class="form-label">Descrição</label>
                         <textarea class="form-control" id="description" name="description" rows="3">{{ item.description if item.description else '' }}</textarea>
                         <small class="form-text text-muted">Descrição detalhada da peça</small>

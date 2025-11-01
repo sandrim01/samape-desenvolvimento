@@ -79,6 +79,8 @@
                 <tr>
                     <th>Peça</th>
                     <th>Código</th>
+                    <th>Fabricante</th>
+                    <th>Modelo/Maquinário</th>
                     <th>Descrição</th>
                     <th class="text-center">Quantidade</th>
                     <th class="text-end">Preço Unit.</th>
@@ -90,6 +92,8 @@
                 <tr>
                     <td>{{ item.part_name }}</td>
                     <td>{{ item.part_number or '-' }}</td>
+                    <td>{{ item.manufacturer or '-' }}</td>
+                    <td>{{ item.equipment_model or '-' }}</td>
                     <td>{{ item.description or '-' }}</td>
                     <td class="text-center">{{ item.quantity }}</td>
                     <td class="text-end">R$ {{ "%.2f"|format(item.unit_price) }}</td>
@@ -99,7 +103,7 @@
             </tbody>
             <tfoot>
                 <tr class="table-primary">
-                    <th colspan="5" class="text-end">TOTAL GERAL:</th>
+                    <th colspan="7" class="text-end">TOTAL GERAL:</th>
                     <th class="text-end">R$ {{ "%.2f"|format(parts_list.total_value) }}</th>
                 </tr>
             </tfoot>

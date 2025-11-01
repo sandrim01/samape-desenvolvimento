@@ -746,6 +746,8 @@ class CatalogItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(200), nullable=False)  # Nome da peça
     part_number = db.Column(db.String(100))  # Código/Referência da peça
+    manufacturer = db.Column(db.String(100))  # Fabricante da peça
+    equipment_model = db.Column(db.String(150))  # Modelo/maquinário compatível
     description = db.Column(db.Text)  # Descrição detalhada
     last_price = db.Column(db.Numeric(10, 2))  # Último preço registrado
     times_used = db.Column(db.Integer, default=1)  # Quantas vezes foi utilizada
@@ -759,7 +761,7 @@ class CatalogItem(db.Model):
     list_items = db.relationship('PartsListItem', backref='catalog_item', lazy=True)
     
     @staticmethod
-    def add_or_update(name, part_number=None, description=None, price=None):
+    def add_or_update(name, part_number=None, manufacturer=None, equipment_model=None, description=None, price=None):
         """Adiciona uma nova peça ao catálogo ou atualiza uma existente"""
         # Buscar se já existe (case-insensitive)
         catalog_item = CatalogItem.query.filter(
@@ -774,6 +776,10 @@ class CatalogItem(db.Model):
                 catalog_item.last_price = price
             if part_number:
                 catalog_item.part_number = part_number
+            if manufacturer:
+                catalog_item.manufacturer = manufacturer
+            if equipment_model:
+                catalog_item.equipment_model = equipment_model
             if description:
                 catalog_item.description = description
         else:
@@ -781,6 +787,8 @@ class CatalogItem(db.Model):
             catalog_item = CatalogItem(
                 name=name,
                 part_number=part_number,
+                manufacturer=manufacturer,
+                equipment_model=equipment_model,
                 description=description,
                 last_price=price,
                 times_used=1
@@ -803,6 +811,8 @@ class PartsListItem(db.Model):
     # Campos de entrada livre (não depende mais do estoque)
     part_name = db.Column(db.String(200), nullable=False)  # Nome da peça (entrada livre)
     part_number = db.Column(db.String(100))  # Código/Referência (entrada livre)
+    manufacturer = db.Column(db.String(100))  # Fabricante (entrada livre)
+    equipment_model = db.Column(db.String(150))  # Modelo/maquinário compatível (entrada livre)
     description = db.Column(db.Text)  # Descrição (entrada livre)
     
     quantity = db.Column(db.Integer, nullable=False, default=1)
