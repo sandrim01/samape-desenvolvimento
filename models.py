@@ -21,6 +21,7 @@ class FinancialEntryType(enum.Enum):
     saida = "saida"
 
 class FinancialCategory(enum.Enum):
+    fechamento_os = "Fechamento de OS"
     servicos = "Serviços"
     pecas = "Peças"
     combustivel = "Combustível"

@@ -178,8 +178,8 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {% if '/notas-fiscais' in request.path %}active{% endif %}" href="{{ url_for('invoices') }}">
-                                <i class="fas fa-file-invoice"></i> Notas Fiscais
+                            <a class="nav-link {% if '/fechamento-os' in request.path %}active{% endif %}" href="{{ url_for('invoices') }}">
+                                <i class="fas fa-check-circle"></i> Fechamento de OS
                             </a>
                         </li>
                         {% endif %}
@@ -331,11 +331,11 @@
                         </a>
                         
                         <!-- Quarta linha - Admin/Gerente -->
-                        <a href="{{ url_for('invoices') }}" class="menu-grid-item {% if '/notas-fiscais' in request.path %}active{% endif %}">
+                        <a href="{{ url_for('invoices') }}" class="menu-grid-item {% if '/fechamento-os' in request.path %}active{% endif %}">
                             <div class="menu-icon">
-                                <i class="fas fa-file-invoice"></i>
+                                <i class="fas fa-check-circle"></i>
                             </div>
-                            <span class="menu-label">Notas Fiscais</span>
+                            <span class="menu-label">Fechamento de OS</span>
                         </a>
                         {% endif %}
                         

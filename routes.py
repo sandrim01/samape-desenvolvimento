@@ -1431,10 +1431,15 @@ def register_routes(app):
             # Create financial entry
             financial_entry = FinancialEntry(
                 service_order_id=service_order.id,
-                description=f"Pagamento OS #{service_order.id} - {service_order.client.name}",
+                description=f"Fechamento de OS #{service_order.id} - {service_order.client.name}",
                 amount=form.invoice_amount.data,
                 type=FinancialEntryType.entrada,
-                created_by=current_user.id
+                category=FinancialCategory.fechamento_os,  # Categoria específica para fechamento de OS
+                status=FinancialStatus.pago,  # OS fechada = pagamento realizado
+                date=datetime.utcnow(),
+                payment_date=datetime.utcnow(),
+                created_by=current_user.id,
+                notes=f"Lançamento automático gerado pelo fechamento da OS #{service_order.id}"
             )
             
             db.session.add(financial_entry)
@@ -1444,10 +1449,10 @@ def register_routes(app):
                 'Fechamento de OS',
                 'service_order',
                 service_order.id,
-                f"OS {id} fechada com NF-e {form.invoice_number.data}"
+                f"OS {id} fechada com valor R$ {form.invoice_amount.data:.2f} - Lançamento financeiro #{financial_entry.id} criado"
             )
             
-            flash('Ordem de serviÃ§o fechada com sucesso!', 'success')
+            flash('Ordem de serviço fechada com sucesso! Lançamento financeiro gerado automaticamente.', 'success')
             return redirect(url_for('view_service_order', id=id))
             
         return render_template(
@@ -2672,7 +2677,7 @@ def register_routes(app):
         return render_template('profile/index.html', form=form)
 
     # Invoice/NF-e routes
-    @app.route('/notas-fiscais')
+    @app.route('/fechamento-os')
     @login_required
     def invoices():
         page = request.args.get('page', 1, type=int)
@@ -2850,7 +2855,7 @@ def register_routes(app):
     #         return redirect(url_for('invoices'))
         
     
-    @app.route('/os/<int:id>/nfe')
+    @app.route('/os/<int:id>/fechamento')
     @login_required
     def view_invoice(id):
         from decimal import Decimal
