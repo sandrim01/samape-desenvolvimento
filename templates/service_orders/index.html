@@ -892,6 +892,82 @@ function saveServiceOrder() {
 }
 
 // Função para abrir modal de criação de nova OS
+    });
+}
+
+// ============================================
+// Funções de Cálculo Automático do Modal
+// ============================================
+
+function calculateModalKmTotal() {
+    const kmInicial = $('#create_km_inicial').val();
+    const kmFinal = $('#create_km_final').val();
+    const kmTotalField = $('#create_km_total');
+    
+    if (kmInicial && kmFinal) {
+        const inicial = parseFloat(kmInicial);
+        const final = parseFloat(kmFinal);
+        
+        if (final > inicial) {
+            const total = (final - inicial).toFixed(2);
+            kmTotalField.val(total);
+            kmTotalField.removeClass('is-invalid').addClass('is-valid');
+            calculateModalKmValue();
+        } else if (final < inicial) {
+            kmTotalField.val('');
+            kmTotalField.removeClass('is-valid').addClass('is-invalid');
+        } else {
+            kmTotalField.val('0.00');
+            kmTotalField.removeClass('is-invalid is-valid');
+            calculateModalKmValue();
+        }
+    } else {
+        kmTotalField.val('');
+        kmTotalField.removeClass('is-invalid is-valid');
+        calculateModalKmValue();
+    }
+}
+
+function calculateModalKmValue() {
+    const kmTotal = $('#create_km_total').val();
+    const kmRate = $('#create_km_rate').val();
+    const kmValueField = $('#create_km_value');
+    
+    if (kmTotal && kmRate) {
+        const total = parseFloat(kmTotal);
+        const rate = parseFloat(kmRate);
+        const value = (total * rate).toFixed(2);
+        kmValueField.val(value);
+    } else {
+        kmValueField.val('');
+    }
+    
+    calculateModalTotalValue();
+}
+
+function calculateModalTotalValue() {
+    const kmValue = $('#create_km_value').val();
+    const laborValue = $('#create_labor_value').val();
+    const partsValue = $('#create_parts_value').val();
+    const totalValueField = $('#create_total_value');
+    
+    let total = 0.0;
+    
+    if (kmValue) total += parseFloat(kmValue);
+    if (laborValue) total += parseFloat(laborValue);
+    if (partsValue) total += parseFloat(partsValue);
+    
+    if (total > 0) {
+        totalValueField.val(total.toFixed(2));
+    } else {
+        totalValueField.val('');
+    }
+}
+
+// ============================================
+// Função para abrir modal de criação
+// ============================================
+
 function openCreateModal(preselectedClientId = null) {
     console.log('openCreateModal chamado com cliente:', preselectedClientId);
     
@@ -994,24 +1070,88 @@ function renderCreateModal(data, preselectedClientId = null) {
                     </div>
                 </div>
                 
-                <div class="col-md-4">
+                <div class="col-12">
                     <div class="mb-3">
-                        <label for="create_estimated_value" class="form-label">Valor Estimado</label>
-                        <input type="number" class="form-control" id="create_estimated_value" step="0.01" value="0">
+                        <label class="form-label">Equipamentos</label>
+                        <div class="equipment-checkboxes-create" style="max-height: 200px; overflow-y: auto;">
+                            <p class="text-muted">Selecione um cliente para ver os equipamentos disponíveis.</p>
+                        </div>
                     </div>
                 </div>
-                
-                <div class="col-md-4">
-                    <div class="mb-3">
-                        <label for="create_km_inicial" class="form-label">KM Inicial</label>
-                        <input type="number" class="form-control" id="create_km_inicial" step="0.01" value="0">
+            </div>
+            
+            <!-- Seção de Kilometragem -->
+            <div class="card mb-3">
+                <div class="card-header bg-primary text-white">
+                    <h6 class="mb-0"><i class="fas fa-tachometer-alt me-1"></i> Controle de Kilometragem</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="create_km_inicial" class="form-label">Kilometragem Inicial</label>
+                            <input type="number" class="form-control" id="create_km_inicial" step="0.01" 
+                                   placeholder="Ex: 12345.50" onchange="calculateModalKmTotal()">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="create_km_final" class="form-label">Kilometragem Final</label>
+                            <input type="number" class="form-control" id="create_km_final" step="0.01" 
+                                   placeholder="Ex: 12450.75" onchange="calculateModalKmTotal()">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="create_km_total" class="form-label">Total Percorrido (KM)</label>
+                            <input type="number" class="form-control bg-light" id="create_km_total" step="0.01" readonly>
+                            <small class="form-text text-muted">Calculado automaticamente</small>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="create_km_rate" class="form-label">Valor por KM (R$)</label>
+                            <input type="number" class="form-control" id="create_km_rate" step="0.01" 
+                                   placeholder="Ex: 2.50" onchange="calculateModalKmValue()">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="create_km_value" class="form-label">Valor Total KM (R$)</label>
+                            <input type="number" class="form-control bg-light" id="create_km_value" step="0.01" readonly>
+                            <small class="form-text text-muted">Calculado automaticamente</small>
+                        </div>
                     </div>
                 </div>
-                
-                <div class="col-md-4">
+            </div>
+            
+            <!-- Seção de Valores do Serviço -->
+            <div class="card mb-3">
+                <div class="card-header bg-success text-white">
+                    <h6 class="mb-0"><i class="fas fa-dollar-sign me-1"></i> Valores do Serviço</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="create_labor_value" class="form-label">Valor da Mão de Obra (R$)</label>
+                            <input type="number" class="form-control" id="create_labor_value" step="0.01" 
+                                   placeholder="Ex: 150.00" onchange="calculateModalTotalValue()">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="create_parts_value" class="form-label">Valor das Peças (R$)</label>
+                            <input type="number" class="form-control" id="create_parts_value" step="0.01" 
+                                   placeholder="Ex: 200.00" onchange="calculateModalTotalValue()">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <label for="create_total_value" class="form-label">Valor Total do Serviço (R$)</label>
+                            <input type="number" class="form-control bg-light fw-bold" id="create_total_value" step="0.01" readonly>
+                            <small class="form-text text-muted">Calculado automaticamente (KM + Mão de Obra + Peças)</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
                     <div class="mb-3">
-                        <label for="create_km_final" class="form-label">KM Final</label>
-                        <input type="number" class="form-control" id="create_km_final" step="0.01" value="0">
+                        <label for="create_estimated_value" class="form-label">Valor Estimado (R$)</label>
+                        <input type="number" class="form-control" id="create_estimated_value" step="0.01" 
+                               placeholder="Ex: 500.00">
                     </div>
                 </div>
                 
@@ -1023,15 +1163,6 @@ function renderCreateModal(data, preselectedClientId = null) {
                             <option value="em_andamento">Em Andamento</option>
                             <option value="fechada">Fechada</option>
                         </select>
-                    </div>
-                </div>
-                
-                <div class="col-12">
-                    <div class="mb-3">
-                        <label class="form-label">Equipamentos</label>
-                        <div class="equipment-checkboxes-create" style="max-height: 200px; overflow-y: auto;">
-                            <p class="text-muted">Selecione um cliente para ver os equipamentos disponíveis.</p>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -1090,6 +1221,9 @@ function createServiceOrder() {
     const estimatedValue = $('#create_estimated_value').val();
     const kmInicialValue = $('#create_km_inicial').val();
     const kmFinalValue = $('#create_km_final').val();
+    const kmRateValue = $('#create_km_rate').val();
+    const laborValue = $('#create_labor_value').val();
+    const partsValue = $('#create_parts_value').val();
     const statusValue = $('#create_status').val();
     
     console.log('Valores coletados do formulário:', {
@@ -1099,6 +1233,9 @@ function createServiceOrder() {
         estimatedValue,
         kmInicialValue,
         kmFinalValue,
+        kmRateValue,
+        laborValue,
+        partsValue,
         statusValue
     });
     
@@ -1109,6 +1246,9 @@ function createServiceOrder() {
         estimated_value: estimatedValue ? parseFloat(estimatedValue) : 0,
         km_inicial: kmInicialValue ? parseFloat(kmInicialValue) : 0,
         km_final: kmFinalValue ? parseFloat(kmFinalValue) : 0,
+        km_rate: kmRateValue ? parseFloat(kmRateValue) : 0,
+        labor_value: laborValue ? parseFloat(laborValue) : 0,
+        parts_value: partsValue ? parseFloat(partsValue) : 0,
         status: statusValue || 'aberta',
         equipment_ids: []
     };
