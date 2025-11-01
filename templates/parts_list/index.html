@@ -6,9 +6,9 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2"><i class="fas fa-list-alt me-2"></i>Listagens de Peças</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
-        <a href="{{ url_for('new_parts_list') }}" class="btn btn-primary">
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createPartsListModal">
             <i class="fas fa-plus me-1"></i> Nova Listagem
-        </a>
+        </button>
     </div>
 </div>
 
@@ -90,4 +90,223 @@
         </div>
     </div>
 </div>
+
+<!-- Modal de Criar Listagem -->
+<div class="modal fade" id="createPartsListModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-plus me-2"></i>Nova Listagem de Peças</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createPartsListForm">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Ordem de Serviço *</label>
+                            <select class="form-control" id="modal_service_order_id" required>
+                                <option value="">Selecione uma OS...</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Observações</label>
+                            <textarea class="form-control" id="modal_notes" rows="2"></textarea>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6>Peças da Listagem</h6>
+                        <button type="button" class="btn btn-sm btn-secondary" onclick="addModalPartRow()">
+                            <i class="fas fa-plus"></i> Adicionar Peça
+                        </button>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th width="40%">Peça</th>
+                                    <th width="15%">Qtd</th>
+                                    <th width="20%">Preço Unit.</th>
+                                    <th width="20%">Total</th>
+                                    <th width="5%"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="modalPartsList"></tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-6 offset-md-6 text-end">
+                            <h5>Total: R$ <span id="modalGrandTotal">0.00</span></h5>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+                <button type="button" class="btn btn-primary" onclick="savePartsList()">
+                    <i class="fas fa-save"></i> Salvar Listagem
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let allParts = [];
+
+// Carregar OSs abertas ao abrir o modal
+document.getElementById('createPartsListModal').addEventListener('show.bs.modal', function() {
+    loadOpenServiceOrders();
+    loadAllParts();
+    // Adicionar primeira linha
+    if (document.getElementById('modalPartsList').rows.length === 0) {
+        addModalPartRow();
+    }
+});
+
+function loadOpenServiceOrders() {
+    fetch('/os/abertas')
+        .then(response => response.json())
+        .then(data => {
+            const select = document.getElementById('modal_service_order_id');
+            select.innerHTML = '<option value="">Selecione uma OS...</option>';
+            data.forEach(os => {
+                select.innerHTML += `<option value="${os.id}">OS #${os.id} - ${os.client_name}</option>`;
+            });
+        })
+        .catch(error => {
+            console.error('Erro ao carregar OSs:', error);
+        });
+}
+
+function loadAllParts() {
+    fetch('/api/parts/all')
+        .then(response => response.json())
+        .then(data => {
+            allParts = data;
+        })
+        .catch(error => {
+            console.error('Erro ao carregar peças:', error);
+        });
+}
+
+function addModalPartRow() {
+    const tbody = document.getElementById('modalPartsList');
+    const row = tbody.insertRow();
+    const index = tbody.rows.length - 1;
+    
+    let partsOptions = '<option value="">Selecione...</option>';
+    allParts.forEach(p => {
+        partsOptions += `<option value="${p.id}" data-price="${p.selling_price}">${p.name}${p.part_number ? ' (' + p.part_number + ')' : ''}</option>`;
+    });
+    
+    row.innerHTML = `
+        <td>
+            <select class="form-control form-control-sm part-select" onchange="updateModalRow(${index})">
+                ${partsOptions}
+            </select>
+        </td>
+        <td><input type="number" class="form-control form-control-sm qty" value="1" min="1" onchange="updateModalRow(${index})"></td>
+        <td><input type="number" class="form-control form-control-sm price" value="0" step="0.01" onchange="updateModalRow(${index})"></td>
+        <td><input type="text" class="form-control form-control-sm total" readonly value="0.00"></td>
+        <td><button type="button" class="btn btn-sm btn-danger" onclick="removeModalRow(this)"><i class="fas fa-trash"></i></button></td>
+    `;
+}
+
+function updateModalRow(index) {
+    const row = document.getElementById('modalPartsList').rows[index];
+    const select = row.cells[0].querySelector('.part-select');
+    const qtyInput = row.cells[1].querySelector('.qty');
+    const priceInput = row.cells[2].querySelector('.price');
+    const totalInput = row.cells[3].querySelector('.total');
+    
+    // Auto-fill price from part
+    if (select.selectedIndex > 0) {
+        const option = select.options[select.selectedIndex];
+        const partPrice = parseFloat(option.dataset.price) || 0;
+        if (priceInput.value == 0 || priceInput.value == '') {
+            priceInput.value = partPrice.toFixed(2);
+        }
+    }
+    
+    const qty = parseFloat(qtyInput.value) || 0;
+    const price = parseFloat(priceInput.value) || 0;
+    const total = qty * price;
+    totalInput.value = total.toFixed(2);
+    
+    updateModalGrandTotal();
+}
+
+function removeModalRow(btn) {
+    btn.closest('tr').remove();
+    updateModalGrandTotal();
+}
+
+function updateModalGrandTotal() {
+    const rows = document.getElementById('modalPartsList').rows;
+    let total = 0;
+    for (let row of rows) {
+        total += parseFloat(row.cells[3].querySelector('.total').value) || 0;
+    }
+    document.getElementById('modalGrandTotal').textContent = total.toFixed(2);
+}
+
+function savePartsList() {
+    const serviceOrderId = document.getElementById('modal_service_order_id').value;
+    const notes = document.getElementById('modal_notes').value;
+    
+    if (!serviceOrderId) {
+        alert('Selecione uma Ordem de Serviço!');
+        return;
+    }
+    
+    const rows = document.getElementById('modalPartsList').rows;
+    const items = [];
+    
+    for (let row of rows) {
+        const partId = row.cells[0].querySelector('.part-select').value;
+        if (!partId) continue;
+        
+        items.push({
+            part_id: parseInt(partId),
+            quantity: parseInt(row.cells[1].querySelector('.qty').value),
+            unit_price: parseFloat(row.cells[2].querySelector('.price').value)
+        });
+    }
+    
+    if (items.length === 0) {
+        alert('Adicione pelo menos uma peça à listagem!');
+        return;
+    }
+    
+    // Enviar dados
+    const formData = new FormData();
+    formData.append('service_order_id', serviceOrderId);
+    formData.append('notes', notes);
+    formData.append('items_json', JSON.stringify(items));
+    
+    fetch('/lista-pecas/nova-modal', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            location.reload();
+        } else {
+            alert('Erro: ' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('Erro ao salvar listagem: ' + error);
+    });
+}
+</script>
 {% endblock %}

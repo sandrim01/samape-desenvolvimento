@@ -4908,6 +4908,78 @@ def register_routes(app):
         lists = PartsList.query.order_by(PartsList.created_at.desc()).all()
         return render_template('parts_list/index.html', lists=lists)
     
+    @app.route('/lista-pecas/nova-modal', methods=['POST'])
+    @login_required
+    def create_parts_list_modal():
+        """Criar nova listagem de peças via modal"""
+        from models import PartsList, PartsListItem, ServiceOrder, Part
+        
+        try:
+            service_order_id = request.form.get('service_order_id')
+            notes = request.form.get('notes', '')
+            
+            if not service_order_id:
+                return jsonify({'success': False, 'message': 'OS não informada'}), 400
+            
+            # Criar nova listagem
+            parts_list = PartsList(
+                service_order_id=int(service_order_id),
+                notes=notes,
+                created_by=current_user.id
+            )
+            
+            # Gerar número único da listagem
+            parts_list.generate_list_number()
+            
+            db.session.add(parts_list)
+            db.session.flush()  # Para obter o ID
+            
+            # Processar itens da listagem
+            items_data = request.form.get('items_json')
+            if items_data:
+                import json
+                items = json.loads(items_data)
+                
+                for item in items:
+                    list_item = PartsListItem(
+                        parts_list_id=parts_list.id,
+                        part_id=item['part_id'],
+                        quantity=item['quantity'],
+                        unit_price=item['unit_price'],
+                        notes=item.get('notes', '')
+                    )
+                    list_item.calculate_total_price()
+                    db.session.add(list_item)
+            
+            # Calcular total da listagem
+            db.session.flush()
+            parts_list.calculate_total()
+            
+            # Atualizar a OS com o número da listagem
+            service_order = ServiceOrder.query.get(int(service_order_id))
+            if service_order:
+                service_order.parts_list_number = parts_list.list_number
+            
+            db.session.commit()
+            
+            log_action(
+                'Criação de Listagem de Peças',
+                'parts_list',
+                parts_list.id,
+                f"Listagem {parts_list.list_number} criada para OS #{service_order_id}"
+            )
+            
+            return jsonify({
+                'success': True,
+                'message': f'Listagem {parts_list.list_number} criada com sucesso!',
+                'list_number': parts_list.list_number,
+                'list_id': parts_list.id
+            })
+            
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'success': False, 'message': f'Erro: {str(e)}'}), 500
+    
     @app.route('/lista-pecas/nova', methods=['GET', 'POST'])
     @login_required
     def new_parts_list():
@@ -4978,7 +5050,15 @@ def register_routes(app):
         from models import Part
         parts = Part.query.filter_by(is_active=True).order_by(Part.name).all()
         
-        return render_template('parts_list/create.html', form=form, parts=parts)
+        # Converter peças para dicionário para serialização JSON
+        parts_dict = [{
+            'id': p.id,
+            'name': p.name,
+            'part_number': p.part_number or '',
+            'selling_price': float(p.selling_price) if p.selling_price else 0
+        } for p in parts]
+        
+        return render_template('parts_list/create.html', form=form, parts=parts_dict)
     
     @app.route('/lista-pecas/<int:id>')
     @login_required
@@ -5071,6 +5151,40 @@ def register_routes(app):
             'selling_price': float(p.selling_price) if p.selling_price else 0,
             'stock_quantity': p.stock_quantity
         } for p in parts]
+        
+        return jsonify(results)
+    
+    @app.route('/api/parts/all')
+    @login_required
+    def get_all_parts():
+        """API para buscar todas as peças ativas"""
+        from models import Part
+        parts = Part.query.filter_by(is_active=True).order_by(Part.name).all()
+        
+        results = [{
+            'id': p.id,
+            'name': p.name,
+            'part_number': p.part_number or '',
+            'selling_price': float(p.selling_price) if p.selling_price else 0,
+            'stock_quantity': p.stock_quantity
+        } for p in parts]
+        
+        return jsonify(results)
+    
+    @app.route('/os/abertas')
+    @login_required
+    def get_open_service_orders():
+        """API para buscar OSs abertas ou em andamento"""
+        from models import ServiceOrder, ServiceOrderStatus
+        service_orders = ServiceOrder.query.filter(
+            ServiceOrder.status.in_([ServiceOrderStatus.aberta, ServiceOrderStatus.em_andamento])
+        ).order_by(ServiceOrder.id.desc()).all()
+        
+        results = [{
+            'id': os.id,
+            'client_name': os.client.name if os.client else 'Sem cliente',
+            'description': os.description[:50] + '...' if len(os.description) > 50 else os.description
+        } for os in service_orders]
         
         return jsonify(results)
 
