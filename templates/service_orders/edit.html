@@ -61,6 +61,23 @@
                 {% endif %}
             </div>
             
+            {% if service_order.parts_list_number %}
+            <div class="mb-3">
+                <div class="alert alert-info">
+                    <h6 class="alert-heading mb-2"><i class="fas fa-list-alt me-1"></i> Listagem de Peças Vinculada</h6>
+                    <p class="mb-2">Esta OS possui uma listagem de peças associada:</p>
+                    <div class="d-flex align-items-center">
+                        <span class="badge bg-info fs-6 me-2">{{ service_order.parts_list_number }}</span>
+                        {% if service_order.parts_lists %}
+                            <a href="{{ url_for('view_parts_list', id=service_order.parts_lists[0].id) }}" class="btn btn-sm btn-primary" target="_blank">
+                                <i class="fas fa-external-link-alt me-1"></i> Visualizar Listagem
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
             <div class="row mb-3">
                 <div class="col-md-4">
                     <label for="estimated_value" class="form-label">Valor Estimado (R$)</label>

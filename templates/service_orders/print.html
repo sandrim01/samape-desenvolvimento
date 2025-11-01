@@ -379,6 +379,24 @@
             </div>
         </div>
 
+        <!-- Listagem de Peças (se existir) -->
+        {% if service_order.parts_list_number %}
+        <div class="info-block">
+            <div class="block-title">LISTAGEM DE PEÇAS VINCULADA</div>
+            <div class="block-content">
+                <div class="info-item">
+                    <span class="info-label">Número da Listagem:</span>
+                    <strong>{{ service_order.parts_list_number }}</strong>
+                </div>
+                {% if service_order.parts_lists and service_order.parts_lists[0].items %}
+                <div style="margin-top: 10px; font-size: 8pt;">
+                    <em>Esta OS possui uma listagem de peças com {{ service_order.parts_lists[0].items|length }} item(ns).</em>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
         <!-- Kilometragem (se informada) -->
         {% if service_order.km_inicial is not none or service_order.km_final is not none %}
         <div class="info-block">
