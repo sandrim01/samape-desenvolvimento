@@ -31,15 +31,9 @@
 </div>
 
 <!-- Alert informativo -->
-<div class="alert alert-info alert-dismissible fade show" role="alert" id="alertInfo" style="display:none;">
-    <i class="fas fa-info-circle me-2"></i>
-    <strong>PDF baixado com sucesso!</strong> Agora você pode compartilhá-lo no WhatsApp:
-    <ol class="mb-0 mt-2">
-        <li>Abra o WhatsApp no seu celular ou WhatsApp Web</li>
-        <li>Selecione o contato ou grupo</li>
-        <li>Clique no ícone de anexo (📎)</li>
-        <li>Selecione "Documento" e envie o PDF baixado</li>
-    </ol>
+<div class="alert alert-success alert-dismissible fade show" role="alert" id="alertInfo" style="display:none;">
+    <i class="fab fa-whatsapp me-2"></i>
+    <strong>PDF baixado!</strong> O WhatsApp será aberto. Selecione o contato e envie o arquivo PDF que foi baixado.
     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
 </div>
 
@@ -133,11 +127,25 @@ document.addEventListener('DOMContentLoaded', function() {
     const alertInfo = document.getElementById('alertInfo');
     
     btnDownload.addEventListener('click', function(e) {
-        // Aguardar um pouco para o download iniciar
+        // Aguardar 1 segundo para o download iniciar
         setTimeout(function() {
+            // Mostrar alerta
             alertInfo.style.display = 'block';
-            // Scroll suave até o alerta
             alertInfo.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            
+            // Aguardar mais 500ms e abrir o WhatsApp
+            setTimeout(function() {
+                // Detectar se é mobile ou desktop
+                const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                
+                if (isMobile) {
+                    // No mobile, abre o app do WhatsApp
+                    window.location.href = 'whatsapp://';
+                } else {
+                    // No desktop, abre o WhatsApp Web
+                    window.open('https://web.whatsapp.com/', '_blank');
+                }
+            }, 500);
         }, 1000);
     });
 });
