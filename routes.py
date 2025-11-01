@@ -5098,44 +5098,44 @@ def register_routes(app):
     def generate_parts_list_pdf(id):
         """Gerar PDF da listagem de peças"""
         from models import PartsList
-        import pdfkit
+        from weasyprint import HTML
         from flask import send_file
         import tempfile
+        import os
         
         parts_list = PartsList.query.get_or_404(id)
         
-        # Renderizar HTML
-        html = render_template('parts_list/print.html', parts_list=parts_list)
-        
-        # Configurar opções do PDF
-        options = {
-            'page-size': 'A4',
-            'margin-top': '0.75in',
-            'margin-right': '0.75in',
-            'margin-bottom': '0.75in',
-            'margin-left': '0.75in',
-            'encoding': 'UTF-8',
-            'no-outline': None,
-            'enable-local-file-access': None
-        }
-        
         try:
+            # Renderizar HTML
+            html = render_template('parts_list/print.html', parts_list=parts_list)
+            
             # Criar arquivo temporário
             temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.pdf')
             
-            # Gerar PDF
-            pdfkit.from_string(html, temp_file.name, options=options)
+            # Gerar PDF com WeasyPrint
+            HTML(string=html).write_pdf(temp_file.name)
             
             # Nome do arquivo
             filename = f"Listagem_{parts_list.list_number.replace('/', '-')}.pdf"
             
             # Enviar arquivo
-            return send_file(
+            response = send_file(
                 temp_file.name,
                 mimetype='application/pdf',
                 as_attachment=True,
                 download_name=filename
             )
+            
+            # Agendar remoção do arquivo temporário após envio
+            @response.call_on_close
+            def cleanup():
+                try:
+                    os.unlink(temp_file.name)
+                except Exception:
+                    pass
+            
+            return response
+            
         except Exception as e:
             flash(f'Erro ao gerar PDF: {str(e)}', 'danger')
             return redirect(url_for('view_parts_list', id=id))
