@@ -286,7 +286,7 @@
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                     <i class="fas fa-times me-1"></i>Fechar
                 </button>
-                <a href="#" class="btn btn-success" id="pdfWhatsAppBtn" onclick="openWhatsAppAfterOSDownload(event, this)">
+                <a href="#" class="btn btn-success" id="pdfWhatsAppBtn" onclick="event.preventDefault(); openWhatsAppAfterOSDownload(event, this);">
                     <i class="fab fa-whatsapp me-1"></i>Enviar PDF
                 </a>
                 <button type="button" class="btn btn-primary" id="editOrderBtn" onclick="editCurrentOrder()">
@@ -692,58 +692,64 @@ function openWhatsAppAfterDownload(event) {
 
 // Função para abrir o WhatsApp após baixar o PDF da OS
 function openWhatsAppAfterOSDownload(event, buttonElement) {
-    // Não previne o comportamento padrão - deixa o PDF baixar
-    
     // Pega os dados do botão
     const orderId = buttonElement.dataset.orderId || buttonElement.getAttribute('data-order-id');
     const clientName = buttonElement.dataset.clientName || buttonElement.getAttribute('data-client-name') || 'Cliente';
     const clientPhone = buttonElement.dataset.clientPhone || buttonElement.getAttribute('data-client-phone') || '';
     const description = buttonElement.dataset.description || buttonElement.getAttribute('data-description') || '';
+    const pdfUrl = buttonElement.getAttribute('href');
     
-    // Aguarda 1 segundo para o download iniciar
+    // Inicia o download do PDF
+    if (pdfUrl && pdfUrl !== '#') {
+        const downloadLink = document.createElement('a');
+        downloadLink.href = pdfUrl;
+        downloadLink.download = `OS_${orderId}_${clientName.replace(/\s+/g, '_')}.pdf`;
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+    }
+    
+    // Mostra alerta de sucesso com instruções
+    const alertHtml = `
+        <div class="alert alert-info alert-dismissible fade show" role="alert" style="position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 350px; max-width: 400px;">
+            <i class="fas fa-info-circle me-2"></i>
+            <strong>PDF baixado!</strong><br>
+            <small>Abrindo WhatsApp... Clique no ícone de anexo (📎) e selecione o PDF da OS #${orderId} que foi baixado.</small>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    `;
+    $('body').append(alertHtml);
+    
+    // Cria mensagem personalizada para o WhatsApp
+    const fileName = `OS_${orderId}_${clientName.replace(/\s+/g, '_')}.pdf`;
+    let whatsappMessage = `Olá! Segue em anexo a Ordem de Serviço #${orderId}`;
+    
+    if (description) {
+        whatsappMessage += ` - ${description}`;
+    }
+    
+    whatsappMessage += `\n\n📄 Arquivo: ${fileName}\n\nAtenciosamente,\nSAMAPE`;
+    
+    // Codifica a mensagem para URL
+    const encodedMessage = encodeURIComponent(whatsappMessage);
+    
+    // Aguarda 1 segundo e abre o WhatsApp Web
     setTimeout(function() {
-        // Mostra alerta de sucesso com instruções
-        const alertHtml = `
-            <div class="alert alert-info alert-dismissible fade show" role="alert" style="position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 350px; max-width: 400px;">
-                <i class="fas fa-info-circle me-2"></i>
-                <strong>PDF baixado!</strong><br>
-                <small>Abrindo WhatsApp... Clique no ícone de anexo (📎) e selecione o PDF da OS #${orderId} que foi baixado.</small>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        `;
-        $('body').append(alertHtml);
+        let whatsappUrl;
         
-        // Cria mensagem personalizada para o WhatsApp
-        const fileName = `OS_${orderId}_${clientName.replace(/\s+/g, '_')}.pdf`;
-        let whatsappMessage = `Olá! Segue em anexo a Ordem de Serviço #${orderId}`;
-        
-        if (description) {
-            whatsappMessage += ` - ${description}`;
-        }
-        
-        whatsappMessage += `\n\n📄 Arquivo: ${fileName}\n\nAtenciosamente,\nSAMAPE`;
-        
-        // Codifica a mensagem para URL
-        const encodedMessage = encodeURIComponent(whatsappMessage);
-        
-        // Aguarda mais 800ms e abre o WhatsApp Web diretamente
-        setTimeout(function() {
-            let whatsappUrl;
+        // Se tem telefone do cliente, abre direto para ele no WhatsApp Web
+        if (clientPhone && clientPhone.trim() !== '') {
+            // Remove caracteres não numéricos do telefone
+            const phoneNumber = clientPhone.replace(/\D/g, '');
             
-            // Se tem telefone do cliente, abre direto para ele no WhatsApp Web
-            if (clientPhone && clientPhone.trim() !== '') {
-                // Remove caracteres não numéricos do telefone
-                const phoneNumber = clientPhone.replace(/\D/g, '');
-                
-                // Abre WhatsApp Web com número e mensagem
-                whatsappUrl = `https://web.whatsapp.com/send?phone=55${phoneNumber}&text=${encodedMessage}`;
-                window.open(whatsappUrl, '_blank');
-            } else {
-                // Se não tem telefone, abre WhatsApp Web com mensagem genérica
-                whatsappUrl = `https://web.whatsapp.com/send?text=${encodedMessage}`;
-                window.open(whatsappUrl, '_blank');
-            }
-        }, 800);
+            // Abre WhatsApp Web com número e mensagem
+            whatsappUrl = `https://web.whatsapp.com/send?phone=55${phoneNumber}&text=${encodedMessage}`;
+            window.open(whatsappUrl, '_blank');
+        } else {
+            // Se não tem telefone, abre WhatsApp Web com mensagem genérica
+            whatsappUrl = `https://web.whatsapp.com/send?text=${encodedMessage}`;
+            window.open(whatsappUrl, '_blank');
+        }
     }, 1000);
 }
 
