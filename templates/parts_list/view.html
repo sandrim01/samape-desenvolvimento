@@ -135,18 +135,17 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Aguardar mais 500ms e abrir o WhatsApp
             setTimeout(function() {
-                // Tentar abrir o aplicativo WhatsApp (funciona em mobile e desktop se tiver o app instalado)
-                window.location.href = 'whatsapp://';
+                // Tentar abrir o aplicativo WhatsApp usando window.open
+                // Isso funciona melhor em navegadores modernos
+                const whatsappWindow = window.open('whatsapp://', '_blank');
                 
-                // Fallback: se após 2 segundos não abriu, tenta WhatsApp Web
+                // Fallback para WhatsApp Web se não conseguir abrir o app
                 setTimeout(function() {
-                    // Este código só executa se o whatsapp:// não funcionou
-                    const opened = document.hasFocus();
-                    if (opened) {
-                        // Se ainda está com foco na página, significa que não abriu o app
+                    // Se não conseguiu abrir o app, abre o WhatsApp Web
+                    if (!whatsappWindow || whatsappWindow.closed || typeof whatsappWindow.closed === 'undefined') {
                         window.open('https://web.whatsapp.com/', '_blank');
                     }
-                }, 2000);
+                }, 1500);
             }, 500);
         }, 1000);
     });

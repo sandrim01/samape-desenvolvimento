@@ -677,15 +677,15 @@ function openWhatsAppAfterDownload(event) {
     
     // Aguardar 1 segundo para o download iniciar
     setTimeout(function() {
-        // Tentar abrir o aplicativo WhatsApp
-        window.location.href = 'whatsapp://';
+        // Tentar abrir o aplicativo WhatsApp usando window.open
+        const whatsappWindow = window.open('whatsapp://', '_blank');
         
-        // Fallback: se após 2 segundos não abriu, tenta WhatsApp Web
+        // Fallback para WhatsApp Web se não conseguir abrir o app
         setTimeout(function() {
-            if (document.hasFocus()) {
+            if (!whatsappWindow || whatsappWindow.closed || typeof whatsappWindow.closed === 'undefined') {
                 window.open('https://web.whatsapp.com/', '_blank');
             }
-        }, 2000);
+        }, 1500);
     }, 1000);
 }
 
@@ -707,13 +707,15 @@ function openWhatsAppAfterOSDownload(event) {
         
         // Aguarda mais 500ms e abre o WhatsApp
         setTimeout(function() {
-            // Tenta abrir o aplicativo do WhatsApp primeiro (desktop/mobile)
-            window.location.href = 'whatsapp://';
+            // Tenta abrir o aplicativo do WhatsApp usando window.open
+            const whatsappWindow = window.open('whatsapp://', '_blank');
             
-            // Fallback para WhatsApp Web após 2 segundos se o app não abrir
+            // Fallback para WhatsApp Web se não conseguir abrir o app
             setTimeout(function() {
-                window.open('https://web.whatsapp.com/', '_blank');
-            }, 2000);
+                if (!whatsappWindow || whatsappWindow.closed || typeof whatsappWindow.closed === 'undefined') {
+                    window.open('https://web.whatsapp.com/', '_blank');
+                }
+            }, 1500);
         }, 500);
     }, 1000);
 }
