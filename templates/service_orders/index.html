@@ -601,14 +601,19 @@ function renderOrderModal(order) {
                         <h6 class="mb-0"><i class="fas fa-list-alt me-2"></i>Listagem de Peças</h6>
                     </div>
                     <div class="card-body">
-                        <p class="mb-0">
+                        <p class="mb-2">
                             <span class="badge bg-info">${order.parts_list_number}</span>
+                        </p>
+                        <div class="d-flex gap-2">
                             ${order.parts_list_id ? `
-                                <a href="/lista-pecas/${order.parts_list_id}" target="_blank" class="btn btn-sm btn-outline-primary ms-2">
+                                <a href="/lista-pecas/${order.parts_list_id}" target="_blank" class="btn btn-sm btn-outline-primary">
                                     <i class="fas fa-eye"></i> Ver Listagem
                                 </a>
+                                <a href="/lista-pecas/${order.parts_list_id}/pdf" class="btn btn-sm btn-success" onclick="openWhatsAppAfterDownload(event)">
+                                    <i class="fab fa-whatsapp"></i> Baixar PDF
+                                </a>
                             ` : ''}
-                        </p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -660,6 +665,24 @@ function editCurrentOrder() {
     if (currentOrderId) {
         openEditModal(currentOrderId);
     }
+}
+
+// Função para abrir WhatsApp após download do PDF
+function openWhatsAppAfterDownload(event) {
+    // Não prevenir o comportamento padrão - deixar o download acontecer
+    
+    // Aguardar 1 segundo para o download iniciar
+    setTimeout(function() {
+        // Tentar abrir o aplicativo WhatsApp
+        window.location.href = 'whatsapp://';
+        
+        // Fallback: se após 2 segundos não abriu, tenta WhatsApp Web
+        setTimeout(function() {
+            if (document.hasFocus()) {
+                window.open('https://web.whatsapp.com/', '_blank');
+            }
+        }, 2000);
+    }, 1000);
 }
 
 // Função para abrir modal de edição
