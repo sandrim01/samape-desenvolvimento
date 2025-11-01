@@ -133,22 +133,14 @@ document.addEventListener('DOMContentLoaded', function() {
             alertInfo.style.display = 'block';
             alertInfo.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             
-            // Aguardar mais 500ms e abrir o WhatsApp
+            // Aguardar mais 500ms e abrir o WhatsApp Web diretamente
             setTimeout(function() {
-                // Tentar abrir o aplicativo WhatsApp usando window.open
-                // Isso funciona melhor em navegadores modernos
-                const whatsappWindow = window.open('whatsapp://', '_blank');
-                
-                // Fallback para WhatsApp Web se não conseguir abrir o app
-                setTimeout(function() {
-                    // Se não conseguiu abrir o app, abre o WhatsApp Web
-                    if (!whatsappWindow || whatsappWindow.closed || typeof whatsappWindow.closed === 'undefined') {
-                        window.open('https://web.whatsapp.com/', '_blank');
-                    }
-                }, 1500);
+                // Abre WhatsApp Web diretamente (funciona em todos os navegadores)
+                window.open('https://web.whatsapp.com/', '_blank');
             }, 500);
         }, 1000);
     });
 });
 </script>
 {% endblock %}
+

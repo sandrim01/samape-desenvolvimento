@@ -685,15 +685,8 @@ function openWhatsAppAfterDownload(event) {
     
     // Aguardar 1 segundo para o download iniciar
     setTimeout(function() {
-        // Tentar abrir o aplicativo WhatsApp usando window.open
-        const whatsappWindow = window.open('whatsapp://', '_blank');
-        
-        // Fallback para WhatsApp Web se não conseguir abrir o app
-        setTimeout(function() {
-            if (!whatsappWindow || whatsappWindow.closed || typeof whatsappWindow.closed === 'undefined') {
-                window.open('https://web.whatsapp.com/', '_blank');
-            }
-        }, 1500);
+        // Abre WhatsApp Web diretamente (evita bloqueio do protocolo whatsapp://)
+        window.open('https://web.whatsapp.com/', '_blank');
     }, 1000);
 }
 
@@ -733,38 +726,22 @@ function openWhatsAppAfterOSDownload(event, buttonElement) {
         // Codifica a mensagem para URL
         const encodedMessage = encodeURIComponent(whatsappMessage);
         
-        // Aguarda mais 800ms e abre o WhatsApp
+        // Aguarda mais 800ms e abre o WhatsApp Web diretamente
         setTimeout(function() {
             let whatsappUrl;
             
-            // Se tem telefone do cliente, abre direto para ele
+            // Se tem telefone do cliente, abre direto para ele no WhatsApp Web
             if (clientPhone && clientPhone.trim() !== '') {
                 // Remove caracteres não numéricos do telefone
                 const phoneNumber = clientPhone.replace(/\D/g, '');
                 
-                // Tenta abrir o WhatsApp com número e mensagem (app)
-                whatsappUrl = `whatsapp://send?phone=55${phoneNumber}&text=${encodedMessage}`;
-                const whatsappWindow = window.open(whatsappUrl, '_blank');
-                
-                // Fallback para WhatsApp Web
-                setTimeout(function() {
-                    if (!whatsappWindow || whatsappWindow.closed || typeof whatsappWindow.closed === 'undefined') {
-                        whatsappUrl = `https://web.whatsapp.com/send?phone=55${phoneNumber}&text=${encodedMessage}`;
-                        window.open(whatsappUrl, '_blank');
-                    }
-                }, 1500);
+                // Abre WhatsApp Web com número e mensagem
+                whatsappUrl = `https://web.whatsapp.com/send?phone=55${phoneNumber}&text=${encodedMessage}`;
+                window.open(whatsappUrl, '_blank');
             } else {
-                // Se não tem telefone, abre WhatsApp com mensagem genérica
-                whatsappUrl = `whatsapp://send?text=${encodedMessage}`;
-                const whatsappWindow = window.open(whatsappUrl, '_blank');
-                
-                // Fallback para WhatsApp Web
-                setTimeout(function() {
-                    if (!whatsappWindow || whatsappWindow.closed || typeof whatsappWindow.closed === 'undefined') {
-                        whatsappUrl = `https://web.whatsapp.com/send?text=${encodedMessage}`;
-                        window.open(whatsappUrl, '_blank');
-                    }
-                }, 1500);
+                // Se não tem telefone, abre WhatsApp Web com mensagem genérica
+                whatsappUrl = `https://web.whatsapp.com/send?text=${encodedMessage}`;
+                window.open(whatsappUrl, '_blank');
             }
         }, 800);
     }, 1000);
