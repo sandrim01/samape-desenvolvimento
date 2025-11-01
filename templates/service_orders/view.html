@@ -80,27 +80,93 @@
                     {% if order.invoice_amount %}
                         <p class="fw-bold text-success">Faturado: R$ {{ '%.2f'|format(order.invoice_amount) }}</p>
                     {% endif %}
-                    {% if order.estimated_value %}
-                        <p class="fw-bold text-primary">Estimado: R$ {{ '%.2f'|format(order.estimated_value) }}</p>
+                    {% if order.total_value is not none %}
+                        <p class="fw-bold text-primary">Total Calculado: R$ {{ '%.2f'|format(order.total_value) }}</p>
                     {% endif %}
-                    {% if not order.invoice_amount and not order.estimated_value %}
+                    {% if order.estimated_value %}
+                        <p class="fw-bold text-info">Estimado: R$ {{ '%.2f'|format(order.estimated_value) }}</p>
+                    {% endif %}
+                    {% if not order.invoice_amount and order.total_value is none and not order.estimated_value %}
                         <p class="text-muted">Valor não definido</p>
                     {% endif %}
                 </div>
                 
-                <!-- Kilometragem -->
-                {% if order.km_inicial or order.km_final %}
-                <div class="mb-3">
-                    <h6 class="fw-bold">Kilometragem</h6>
-                    {% if order.km_inicial %}
-                        <p><strong>KM Inicial:</strong> {{ '%.2f'|format(order.km_inicial) }} km</p>
-                    {% endif %}
-                    {% if order.km_final %}
-                        <p><strong>KM Final:</strong> {{ '%.2f'|format(order.km_final) }} km</p>
-                    {% endif %}
-                    {% if order.km_total %}
-                        <p><strong>Total Percorrido:</strong> <span class="text-primary fw-bold">{{ '%.2f'|format(order.km_total) }} km</span></p>
-                    {% endif %}
+                <!-- Kilometragem e Valores Detalhados -->
+                {% if order.km_inicial is not none or order.km_final is not none or order.labor_value is not none or order.parts_value is not none %}
+                <div class="card bg-light mb-3">
+                    <div class="card-body">
+                        <h6 class="fw-bold mb-3"><i class="fas fa-calculator me-1"></i> Detalhamento de Valores</h6>
+                        
+                        <!-- Kilometragem -->
+                        {% if order.km_inicial is not none or order.km_final is not none %}
+                        <div class="mb-3 pb-3 border-bottom">
+                            <h6 class="text-primary mb-2"><i class="fas fa-tachometer-alt me-1"></i> Kilometragem</h6>
+                            <div class="row">
+                                {% if order.km_inicial is not none %}
+                                <div class="col-6">
+                                    <small class="text-muted">KM Inicial</small>
+                                    <p class="mb-1">{{ '%.2f'|format(order.km_inicial) }} km</p>
+                                </div>
+                                {% endif %}
+                                {% if order.km_final is not none %}
+                                <div class="col-6">
+                                    <small class="text-muted">KM Final</small>
+                                    <p class="mb-1">{{ '%.2f'|format(order.km_final) }} km</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% if order.km_total is not none and order.km_total > 0 %}
+                            <div class="row mt-2">
+                                <div class="col-6">
+                                    <small class="text-muted">Total Percorrido</small>
+                                    <p class="mb-1 fw-bold text-primary">{{ '%.2f'|format(order.km_total) }} km</p>
+                                </div>
+                                {% if order.km_rate is not none %}
+                                <div class="col-6">
+                                    <small class="text-muted">Valor por KM</small>
+                                    <p class="mb-1">R$ {{ '%.2f'|format(order.km_rate) }}</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                            {% if order.km_value is not none %}
+                            <div class="row mt-2 pt-2 border-top">
+                                <div class="col-12">
+                                    <small class="text-muted">Valor Total KM</small>
+                                    <p class="mb-0 fw-bold text-success">R$ {{ '%.2f'|format(order.km_value) }}</p>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Valores do Serviço -->
+                        {% if order.labor_value is not none or order.parts_value is not none or order.km_value is not none %}
+                        <div class="mb-2">
+                            <h6 class="text-success mb-2"><i class="fas fa-dollar-sign me-1"></i> Composição de Valores</h6>
+                            <div class="row">
+                                {% if order.km_value is not none %}
+                                <div class="col-6 mb-2">
+                                    <small class="text-muted">Valor KM</small>
+                                    <p class="mb-0">R$ {{ '%.2f'|format(order.km_value) }}</p>
+                                </div>
+                                {% endif %}
+                                {% if order.labor_value is not none %}
+                                <div class="col-6 mb-2">
+                                    <small class="text-muted">Mão de Obra</small>
+                                    <p class="mb-0">R$ {{ '%.2f'|format(order.labor_value) }}</p>
+                                </div>
+                                {% endif %}
+                                {% if order.parts_value is not none %}
+                                <div class="col-6 mb-2">
+                                    <small class="text-muted">Peças</small>
+                                    <p class="mb-0">R$ {{ '%.2f'|format(order.parts_value) }}</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
                 </div>
                 {% endif %}
                 

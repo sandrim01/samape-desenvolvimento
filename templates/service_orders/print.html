@@ -380,12 +380,12 @@
         </div>
 
         <!-- Kilometragem (se informada) -->
-        {% if service_order.km_inicial or service_order.km_final %}
+        {% if service_order.km_inicial is not none or service_order.km_final is not none %}
         <div class="info-block">
             <div class="block-title">CONTROLE DE KILOMETRAGEM</div>
             <div class="block-content">
                 <div class="cliente-info">
-                    {% if service_order.km_inicial %}
+                    {% if service_order.km_inicial is not none %}
                     <div class="cliente-col">
                         <div class="info-item">
                             <span class="info-label">KM Inicial:</span>
@@ -393,7 +393,7 @@
                         </div>
                     </div>
                     {% endif %}
-                    {% if service_order.km_final %}
+                    {% if service_order.km_final is not none %}
                     <div class="cliente-col">
                         <div class="info-item">
                             <span class="info-label">KM Final:</span>
@@ -402,9 +402,9 @@
                     </div>
                     {% endif %}
                 </div>
-                {% if service_order.km_total or service_order.km_rate or service_order.km_value %}
+                {% if service_order.km_total is not none or service_order.km_rate is not none or service_order.km_value is not none %}
                 <div class="cliente-info" style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e2e8f0;">
-                    {% if service_order.km_total %}
+                    {% if service_order.km_total is not none and service_order.km_total > 0 %}
                     <div class="cliente-col">
                         <div class="info-item">
                             <span class="info-label">Total Percorrido:</span>
@@ -412,7 +412,7 @@
                         </div>
                     </div>
                     {% endif %}
-                    {% if service_order.km_rate %}
+                    {% if service_order.km_rate is not none %}
                     <div class="cliente-col">
                         <div class="info-item">
                             <span class="info-label">Valor por KM:</span>
@@ -420,7 +420,7 @@
                         </div>
                     </div>
                     {% endif %}
-                    {% if service_order.km_value %}
+                    {% if service_order.km_value is not none %}
                     <div class="cliente-col">
                         <div class="info-item">
                             <span class="info-label">Valor Total KM:</span>
@@ -481,41 +481,41 @@
         </div>
         
         <!-- Valores -->
-        {% if service_order.estimated_value or service_order.invoice_amount or service_order.invoice_number or service_order.km_value or service_order.labor_value or service_order.parts_value or service_order.total_value %}
+        {% if service_order.estimated_value or service_order.invoice_amount or service_order.invoice_number or service_order.km_value is not none or service_order.labor_value is not none or service_order.parts_value is not none or service_order.total_value is not none %}
         <div class="info-block">
             <div class="block-title">INFORMAÇÕES FINANCEIRAS</div>
             <div class="block-content">
                 
                 <!-- Detalhamento de Valores (se houver) -->
-                {% if service_order.km_value or service_order.labor_value or service_order.parts_value or service_order.total_value %}
+                {% if service_order.km_value is not none or service_order.labor_value is not none or service_order.parts_value is not none or service_order.total_value is not none %}
                 <div style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 2px solid #e2e8f0;">
                     <div style="font-weight: bold; color: #2c5aa0; margin-bottom: 10px; font-size: 11px; text-transform: uppercase;">
                         Composição do Valor Total
                     </div>
                     
                     <div class="valores-info">
-                        {% if service_order.km_value %}
+                        {% if service_order.km_value is not none %}
                         <div class="valor-item">
                             <div class="valor-label">VALOR KILOMETRAGEM</div>
                             <div class="valor-amount">R$ {{ service_order.km_value | safe_money }}</div>
                         </div>
                         {% endif %}
                         
-                        {% if service_order.labor_value %}
+                        {% if service_order.labor_value is not none %}
                         <div class="valor-item">
                             <div class="valor-label">MÃO DE OBRA</div>
                             <div class="valor-amount">R$ {{ service_order.labor_value | safe_money }}</div>
                         </div>
                         {% endif %}
                         
-                        {% if service_order.parts_value %}
+                        {% if service_order.parts_value is not none %}
                         <div class="valor-item">
                             <div class="valor-label">PEÇAS</div>
                             <div class="valor-amount">R$ {{ service_order.parts_value | safe_money }}</div>
                         </div>
                         {% endif %}
                         
-                        {% if service_order.total_value %}
+                        {% if service_order.total_value is not none %}
                         <div class="valor-item" style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed #cbd5e0;">
                             <div class="valor-label" style="font-size: 12px; font-weight: bold;">VALOR TOTAL</div>
                             <div class="valor-amount" style="font-size: 14px; font-weight: bold; color: #2c5aa0;">R$ {{ service_order.total_value | safe_money }}</div>
