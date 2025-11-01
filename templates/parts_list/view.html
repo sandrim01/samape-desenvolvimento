@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}Listagem {{ parts_list.list_number }} - SAMAPE{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-list-alt me-2"></i>Listagem {{ parts_list.list_number }}</h1>
+    <div>
+        <a href="{{ url_for('print_parts_list', id=parts_list.id) }}" class="btn btn-secondary" target="_blank">
+            <i class="fas fa-print"></i> Imprimir
+        </a>
+        {% if parts_list.status.name == 'aberta' %}
+        <form method="post" action="{{ url_for('finalize_parts_list', id=parts_list.id) }}" style="display:inline;">
+            <button type="submit" class="btn btn-success">
+                <i class="fas fa-check"></i> Finalizar
+            </button>
+        </form>
+        <form method="post" action="{{ url_for('cancel_parts_list', id=parts_list.id) }}" style="display:inline;" onsubmit="return confirm('Confirma cancelamento?')">
+            <button type="submit" class="btn btn-danger">
+                <i class="fas fa-ban"></i> Cancelar
+            </button>
+        </form>
+        {% endif %}
+        <a href="{{ url_for('parts_lists') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Voltar
+        </a>
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-header">Informações da Listagem</div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3">
+                <strong>Número:</strong><br>
+                {{ parts_list.list_number }}
+            </div>
+            <div class="col-md-3">
+                <strong>OS:</strong><br>
+                <a href="{{ url_for('view_service_order', id=parts_list.service_order_id) }}">
+                    #{{ parts_list.service_order_id }}
+                </a>
+            </div>
+            <div class="col-md-3">
+                <strong>Cliente:</strong><br>
+                {{ parts_list.service_order.client.name if parts_list.service_order.client else '-' }}
+            </div>
+            <div class="col-md-3">
+                <strong>Status:</strong><br>
+                {% if parts_list.status.name == 'aberta' %}
+                    <span class="badge bg-primary">Aberta</span>
+                {% elif parts_list.status.name == 'finalizada' %}
+                    <span class="badge bg-success">Finalizada</span>
+                {% else %}
+                    <span class="badge bg-danger">Cancelada</span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="row mt-3">
+            <div class="col-md-6">
+                <strong>Criado por:</strong><br>
+                {{ parts_list.created_by_user.name }} em {{ parts_list.created_at.strftime('%d/%m/%Y %H:%M') }}
+            </div>
+            {% if parts_list.notes %}
+            <div class="col-md-6">
+                <strong>Observações:</strong><br>
+                {{ parts_list.notes }}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">Peças</div>
+    <div class="card-body">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Peça</th>
+                    <th>Código</th>
+                    <th class="text-center">Quantidade</th>
+                    <th class="text-end">Preço Unit.</th>
+                    <th class="text-end">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in parts_list.items %}
+                <tr>
+                    <td>{{ item.part.name }}</td>
+                    <td>{{ item.part.part_number or '-' }}</td>
+                    <td class="text-center">{{ item.quantity }}</td>
+                    <td class="text-end">R$ {{ "%.2f"|format(item.unit_price) }}</td>
+                    <td class="text-end">R$ {{ "%.2f"|format(item.total_price) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr class="table-primary">
+                    <th colspan="4" class="text-end">TOTAL GERAL:</th>
+                    <th class="text-end">R$ {{ "%.2f"|format(parts_list.total_value) }}</th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -4896,6 +4896,184 @@ def register_routes(app):
     # Register function to be called with app context in app.py
     app.create_initial_admin = create_initial_admin
 
+    # ============================================================================
+    # ROTAS DE LISTAGEM DE PEÇAS
+    # ============================================================================
+    
+    @app.route('/lista-pecas')
+    @login_required
+    def parts_lists():
+        """Listagem de todas as listas de peças"""
+        from models import PartsList
+        lists = PartsList.query.order_by(PartsList.created_at.desc()).all()
+        return render_template('parts_list/index.html', lists=lists)
+    
+    @app.route('/lista-pecas/nova', methods=['GET', 'POST'])
+    @login_required
+    def new_parts_list():
+        """Criar nova listagem de peças"""
+        from models import PartsList, PartsListItem, ServiceOrder, Part
+        from forms import PartsListForm
+        
+        form = PartsListForm()
+        
+        if form.validate_on_submit():
+            try:
+                # Criar nova listagem
+                parts_list = PartsList(
+                    service_order_id=form.service_order_id.data,
+                    notes=form.notes.data,
+                    created_by=current_user.id
+                )
+                
+                # Gerar número único da listagem
+                parts_list.generate_list_number()
+                
+                db.session.add(parts_list)
+                db.session.flush()  # Para obter o ID
+                
+                # Processar itens da listagem (vem do JavaScript)
+                items_data = request.form.get('items_json')
+                if items_data:
+                    import json
+                    items = json.loads(items_data)
+                    
+                    for item in items:
+                        list_item = PartsListItem(
+                            parts_list_id=parts_list.id,
+                            part_id=item['part_id'],
+                            quantity=item['quantity'],
+                            unit_price=item['unit_price'],
+                            notes=item.get('notes', '')
+                        )
+                        list_item.calculate_total_price()
+                        db.session.add(list_item)
+                
+                # Calcular total da listagem
+                db.session.flush()
+                parts_list.calculate_total()
+                
+                # Atualizar a OS com o número da listagem
+                service_order = ServiceOrder.query.get(form.service_order_id.data)
+                if service_order:
+                    service_order.parts_list_number = parts_list.list_number
+                
+                db.session.commit()
+                
+                log_action(
+                    'Criação de Listagem de Peças',
+                    'parts_list',
+                    parts_list.id,
+                    f"Listagem {parts_list.list_number} criada para OS #{service_order.id}"
+                )
+                
+                flash(f'Listagem de Peças {parts_list.list_number} criada com sucesso!', 'success')
+                return redirect(url_for('view_parts_list', id=parts_list.id))
+                
+            except Exception as e:
+                db.session.rollback()
+                flash(f'Erro ao criar listagem: {str(e)}', 'danger')
+        
+        # Buscar todas as peças ativas para o formulário
+        from models import Part
+        parts = Part.query.filter_by(is_active=True).order_by(Part.name).all()
+        
+        return render_template('parts_list/create.html', form=form, parts=parts)
+    
+    @app.route('/lista-pecas/<int:id>')
+    @login_required
+    def view_parts_list(id):
+        """Visualizar listagem de peças"""
+        from models import PartsList
+        parts_list = PartsList.query.get_or_404(id)
+        return render_template('parts_list/view.html', parts_list=parts_list)
+    
+    @app.route('/lista-pecas/<int:id>/imprimir')
+    @login_required
+    def print_parts_list(id):
+        """Imprimir listagem de peças"""
+        from models import PartsList
+        parts_list = PartsList.query.get_or_404(id)
+        return render_template('parts_list/print.html', parts_list=parts_list)
+    
+    @app.route('/lista-pecas/<int:id>/finalizar', methods=['POST'])
+    @login_required
+    def finalize_parts_list(id):
+        """Finalizar listagem de peças"""
+        from models import PartsList, PartsListStatus
+        parts_list = PartsList.query.get_or_404(id)
+        
+        if parts_list.status == PartsListStatus.finalizada:
+            flash('Esta listagem já está finalizada.', 'warning')
+        else:
+            parts_list.status = PartsListStatus.finalizada
+            db.session.commit()
+            
+            log_action(
+                'Finalização de Listagem de Peças',
+                'parts_list',
+                parts_list.id,
+                f"Listagem {parts_list.list_number} finalizada"
+            )
+            
+            flash(f'Listagem {parts_list.list_number} finalizada com sucesso!', 'success')
+        
+        return redirect(url_for('view_parts_list', id=id))
+    
+    @app.route('/lista-pecas/<int:id>/cancelar', methods=['POST'])
+    @login_required
+    def cancel_parts_list(id):
+        """Cancelar listagem de peças"""
+        from models import PartsList, PartsListStatus, ServiceOrder
+        parts_list = PartsList.query.get_or_404(id)
+        
+        if parts_list.status == PartsListStatus.cancelada:
+            flash('Esta listagem já está cancelada.', 'warning')
+        else:
+            parts_list.status = PartsListStatus.cancelada
+            
+            # Remover referência da OS
+            if parts_list.service_order:
+                parts_list.service_order.parts_list_number = None
+            
+            db.session.commit()
+            
+            log_action(
+                'Cancelamento de Listagem de Peças',
+                'parts_list',
+                parts_list.id,
+                f"Listagem {parts_list.list_number} cancelada"
+            )
+            
+            flash(f'Listagem {parts_list.list_number} cancelada com sucesso!', 'success')
+        
+        return redirect(url_for('view_parts_list', id=id))
+    
+    @app.route('/api/parts/search')
+    @login_required
+    def search_parts():
+        """API para buscar peças (autocomplete)"""
+        from models import Part
+        query = request.args.get('q', '')
+        
+        if len(query) < 2:
+            return jsonify([])
+        
+        parts = Part.query.filter(
+            Part.is_active == True,
+            (Part.name.ilike(f'%{query}%') | Part.part_number.ilike(f'%{query}%'))
+        ).limit(20).all()
+        
+        results = [{
+            'id': p.id,
+            'name': p.name,
+            'part_number': p.part_number or '',
+            'selling_price': float(p.selling_price) if p.selling_price else 0,
+            'stock_quantity': p.stock_quantity
+        } for p in parts]
+        
+        return jsonify(results)
+
 
 
 

@@ -48,6 +48,11 @@ class VehicleStatus(enum.Enum):
     
 class VehicleType(enum.Enum):
     carro = "Carro"
+
+class PartsListStatus(enum.Enum):
+    aberta = "aberta"
+    finalizada = "finalizada"
+    cancelada = "cancelada"
     caminhao = "Caminhão"
     van = "Van"
     onibus = "Ônibus"
@@ -164,6 +169,9 @@ class ServiceOrder(db.Model):
     labor_value = db.Column(db.Numeric(10, 2), default=0)  # Valor da mão de obra
     parts_value = db.Column(db.Numeric(10, 2), default=0)  # Valor das peças
     total_value = db.Column(db.Numeric(10, 2), default=0)  # Valor total calculado
+    
+    # Parts list reference
+    parts_list_number = db.Column(db.String(20))  # Número da listagem de peças associada
     
     # Relations
     financial_entries = db.relationship('FinancialEntry', backref='service_order', lazy=True)
@@ -680,3 +688,79 @@ class VehicleTravelLog(db.Model):
     
     def __repr__(self):
         return f'<VehicleTravelLog {self.id} - {self.destination}>'
+
+class PartsList(db.Model):
+    """Modelo para Listagem de Peças vinculada a uma OS"""
+    __tablename__ = 'parts_list'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    list_number = db.Column(db.String(20), unique=True, nullable=False)  # Número único da listagem (ex: LP-2025-0001)
+    service_order_id = db.Column(db.Integer, db.ForeignKey('service_order.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    status = db.Column(Enum(PartsListStatus), default=PartsListStatus.aberta, nullable=False)
+    notes = db.Column(db.Text)  # Observações gerais da listagem
+    total_value = db.Column(db.Numeric(10, 2), default=0)  # Valor total calculado
+    
+    # Relationships
+    service_order = db.relationship('ServiceOrder', backref='parts_lists')
+    created_by_user = db.relationship('User', backref='parts_lists_created')
+    items = db.relationship('PartsListItem', backref='parts_list', lazy=True, cascade="all, delete-orphan")
+    
+    def generate_list_number(self):
+        """Gera um número único para a listagem no formato LP-YYYY-####"""
+        from sqlalchemy import func
+        year = datetime.utcnow().year
+        prefix = f"LP-{year}-"
+        
+        # Buscar o último número do ano
+        last_list = PartsList.query.filter(
+            PartsList.list_number.like(f"{prefix}%")
+        ).order_by(PartsList.id.desc()).first()
+        
+        if last_list and last_list.list_number:
+            try:
+                last_number = int(last_list.list_number.split('-')[-1])
+                new_number = last_number + 1
+            except (ValueError, IndexError):
+                new_number = 1
+        else:
+            new_number = 1
+        
+        self.list_number = f"{prefix}{new_number:04d}"
+        return self.list_number
+    
+    def calculate_total(self):
+        """Calcula o valor total da listagem somando todos os itens"""
+        total = sum(item.total_price or 0 for item in self.items)
+        self.total_value = total
+        return total
+    
+    def __repr__(self):
+        return f'<PartsList {self.list_number}>'
+
+class PartsListItem(db.Model):
+    """Modelo para itens individuais de uma Listagem de Peças"""
+    __tablename__ = 'parts_list_item'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    parts_list_id = db.Column(db.Integer, db.ForeignKey('parts_list.id'), nullable=False)
+    part_id = db.Column(db.Integer, db.ForeignKey('part.id'), nullable=False)
+    quantity = db.Column(db.Integer, nullable=False, default=1)
+    unit_price = db.Column(db.Numeric(10, 2), nullable=False)  # Preço unitário no momento da listagem
+    total_price = db.Column(db.Numeric(10, 2), nullable=False)  # Quantidade × Preço unitário
+    notes = db.Column(db.Text)  # Observações específicas do item
+    
+    # Relationship
+    part = db.relationship('Part', backref='parts_list_items')
+    
+    def calculate_total_price(self):
+        """Calcula o preço total do item"""
+        if self.quantity and self.unit_price:
+            self.total_price = self.quantity * self.unit_price
+        else:
+            self.total_price = 0
+        return self.total_price
+    
+    def __repr__(self):
+        return f'<PartsListItem {self.id} - Part {self.part_id}>'

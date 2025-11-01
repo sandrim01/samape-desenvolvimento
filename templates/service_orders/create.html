@@ -223,6 +223,13 @@
                 </div>
             </div>
             
+            <!-- Campo de referência à listagem de peças -->
+            <div class="mb-3">
+                <label for="parts_list_number" class="form-label">Nº Listagem de Peças</label>
+                {{ form.parts_list_number(class="form-control bg-light", id="parts_list_number") }}
+                <small class="form-text text-muted">Este número será gerado automaticamente ao criar uma listagem de peças para esta OS</small>
+            </div>
+            
             <div class="mb-3">
                 <label for="images" class="form-label">Imagens do Equipamento (máx. 500KB por imagem)</label>
                 {{ form.images(class="form-control", id="images", onchange="checkFileSize()") }}

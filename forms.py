@@ -157,6 +157,11 @@ class ServiceOrderForm(FlaskForm):
                               render_kw={"placeholder": "Ex: 200.00", "step": "0.01"})
     total_value = DecimalField('Valor Total (R$)', validators=[Optional()], places=2, 
                               render_kw={"readonly": True, "placeholder": "Calculado automaticamente"})
+    
+    # Campo de referência à listagem de peças
+    parts_list_number = StringField('Nº Listagem de Peças', validators=[Optional()],
+                                   render_kw={"readonly": True, "placeholder": "Gerado automaticamente ao criar listagem"})
+    
     images = FileField('Imagens do Equipamento (máx. 500KB por imagem)', validators=[
         Optional(),
         FileAllowed(['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'], 'Apenas imagens são permitidas!'),
@@ -532,4 +537,20 @@ class VehicleMaintenanceForm(FlaskForm):
         self.performed_by_id.choices = [(0, 'Serviço Externo')] + [
             (u.id, f"{u.name}") 
             for u in User.query.filter_by(active=True).order_by(User.name).all()
+        ]
+
+class PartsListForm(FlaskForm):
+    """Formulário para criar/editar Listagem de Peças"""
+    service_order_id = SelectField('Ordem de Serviço *', validators=[DataRequired()], coerce=int)
+    notes = TextAreaField('Observações', validators=[Optional()])
+    
+    def __init__(self, *args, **kwargs):
+        super(PartsListForm, self).__init__(*args, **kwargs)
+        # Lista de OSs abertas ou em andamento
+        from models import ServiceOrder, ServiceOrderStatus
+        self.service_order_id.choices = [
+            (os.id, f"OS #{os.id} - {os.client.name if os.client else 'Sem cliente'}") 
+            for os in ServiceOrder.query.filter(
+                ServiceOrder.status.in_([ServiceOrderStatus.aberta, ServiceOrderStatus.em_andamento])
+            ).order_by(ServiceOrder.id.desc()).all()
         ]

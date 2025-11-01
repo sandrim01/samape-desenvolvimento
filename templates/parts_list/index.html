@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Listagens de Peças - SAMAPE{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-list-alt me-2"></i>Listagens de Peças</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('new_parts_list') }}" class="btn btn-primary">
+            <i class="fas fa-plus me-1"></i> Nova Listagem
+        </a>
+    </div>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-table me-1"></i> Todas as Listagens
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Nº Listagem</th>
+                        <th>OS</th>
+                        <th>Cliente</th>
+                        <th>Valor Total</th>
+                        <th>Status</th>
+                        <th>Criado em</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if lists %}
+                        {% for list in lists %}
+                        <tr>
+                            <td><strong>{{ list.list_number }}</strong></td>
+                            <td>
+                                <a href="{{ url_for('view_service_order', id=list.service_order_id) }}">
+                                    OS #{{ list.service_order_id }}
+                                </a>
+                            </td>
+                            <td>{{ list.service_order.client.name if list.service_order.client else '-' }}</td>
+                            <td>R$ {{ "%.2f"|format(list.total_value or 0) }}</td>
+                            <td>
+                                {% if list.status.name == 'aberta' %}
+                                    <span class="badge bg-primary">Aberta</span>
+                                {% elif list.status.name == 'finalizada' %}
+                                    <span class="badge bg-success">Finalizada</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Cancelada</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ list.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+                            <td>
+                                <a href="{{ url_for('view_parts_list', id=list.id) }}" class="btn btn-sm btn-info" title="Visualizar">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{{ url_for('print_parts_list', id=list.id) }}" class="btn btn-sm btn-secondary" target="_blank" title="Imprimir">
+                                    <i class="fas fa-print"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">
+                                <i class="fas fa-inbox fa-3x mb-3 d-block"></i>
+                                Nenhuma listagem de peças encontrada.
+                                <br>
+                                <a href="{{ url_for('new_parts_list') }}" class="btn btn-primary mt-3">
+                                    <i class="fas fa-plus me-1"></i> Criar Primeira Listagem
+                                </a>
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

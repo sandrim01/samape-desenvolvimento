@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}Nova Listagem de Peças - SAMAPE{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-list-alt me-2"></i>Nova Listagem de Peças</h1>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form method="post" id="partsListForm">
+            {{ form.hidden_tag() }}
+            
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">Ordem de Serviço *</label>
+                    {{ form.service_order_id(class="form-control") }}
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">Observações</label>
+                {{ form.notes(class="form-control", rows=3) }}
+            </div>
+            
+            <hr>
+            
+            <h5>Peças</h5>
+            <div class="mb-3">
+                <input type="text" id="partSearch" class="form-control" placeholder="Digite para buscar peças...">
+            </div>
+            
+            <div id="partsContainer">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Peça</th>
+                            <th width="100px">Qtd</th>
+                            <th width="150px">Preço Unit.</th>
+                            <th width="150px">Total</th>
+                            <th width="50px"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="partsList"></tbody>
+                </table>
+            </div>
+            
+            <button type="button" class="btn btn-sm btn-secondary" onclick="addPartRow()">
+                <i class="fas fa-plus"></i> Adicionar Peça
+            </button>
+            
+            <hr>
+            
+            <div class="row">
+                <div class="col-md-6 offset-md-6">
+                    <h4>Total: R$ <span id="grandTotal">0.00</span></h4>
+                </div>
+            </div>
+            
+            <input type="hidden" name="items_json" id="items_json">
+            
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Salvar Listagem
+                </button>
+                <a href="{{ url_for('parts_lists') }}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+let partsData = {{ parts|tojson }};
+let selectedParts = [];
+
+function addPartRow(part = null) {
+    const tbody = document.getElementById('partsList');
+    const row = tbody.insertRow();
+    const index = tbody.rows.length - 1;
+    
+    row.innerHTML = `
+        <td>
+            <select class="form-control form-control-sm part-select" onchange="updateRow(${index})">
+                <option value="">Selecione...</option>
+                ${partsData.map(p => `<option value="${p.id}" data-price="${p.selling_price}">${p.name} ${p.part_number ? '(' + p.part_number + ')' : ''}</option>`).join('')}
+            </select>
+        </td>
+        <td><input type="number" class="form-control form-control-sm qty" value="1" min="1" onchange="updateRow(${index})"></td>
+        <td><input type="number" class="form-control form-control-sm price" value="0" step="0.01" onchange="updateRow(${index})"></td>
+        <td><input type="text" class="form-control form-control-sm total" readonly value="0.00"></td>
+        <td><button type="button" class="btn btn-sm btn-danger" onclick="removeRow(this)"><i class="fas fa-trash"></i></button></td>
+    `;
+}
+
+function updateRow(index) {
+    const row = document.getElementById('partsList').rows[index];
+    const qty = parseFloat(row.cells[1].querySelector('.qty').value) || 0;
+    const price = parseFloat(row.cells[2].querySelector('.price').value) || 0;
+    const total = qty * price;
+    row.cells[3].querySelector('.total').value = total.toFixed(2);
+    
+    // Auto-fill price from part
+    const select = row.cells[0].querySelector('.part-select');
+    if (select.selectedIndex > 0) {
+        const option = select.options[select.selectedIndex];
+        const partPrice = option.dataset.price;
+        if (partPrice && row.cells[2].querySelector('.price').value == 0) {
+            row.cells[2].querySelector('.price').value = partPrice;
+            updateRow(index);
+            return;
+        }
+    }
+    
+    updateGrandTotal();
+}
+
+function removeRow(btn) {
+    btn.closest('tr').remove();
+    updateGrandTotal();
+}
+
+function updateGrandTotal() {
+    const rows = document.getElementById('partsList').rows;
+    let total = 0;
+    for (let row of rows) {
+        total += parseFloat(row.cells[3].querySelector('.total').value) || 0;
+    }
+    document.getElementById('grandTotal').textContent = total.toFixed(2);
+}
+
+document.getElementById('partsListForm').onsubmit = function(e) {
+    const rows = document.getElementById('partsList').rows;
+    const items = [];
+    
+    for (let row of rows) {
+        const partId = row.cells[0].querySelector('.part-select').value;
+        if (!partId) continue;
+        
+        items.push({
+            part_id: parseInt(partId),
+            quantity: parseInt(row.cells[1].querySelector('.qty').value),
+            unit_price: parseFloat(row.cells[2].querySelector('.price').value),
+        });
+    }
+    
+    if (items.length === 0) {
+        alert('Adicione pelo menos uma peça à listagem!');
+        e.preventDefault();
+        return false;
+    }
+    
+    document.getElementById('items_json').value = JSON.stringify(items);
+    return true;
+};
+
+// Adicionar primeira linha ao carregar
+addPartRow();
+</script>
+{% endblock %}

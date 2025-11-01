@@ -147,6 +147,11 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link {% if '/lista-pecas' in request.path %}active{% endif %}" href="{{ url_for('parts_lists') }}">
+                                <i class="fas fa-list-alt"></i> Listagem de Peças
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link {% if '/pedidos-fornecedor' in request.path %}active{% endif %}" href="{{ url_for('supplier_orders') }}">
                                 <i class="fas fa-shipping-fast"></i> Pedidos a Fornecedores
                             </a>
@@ -283,6 +288,13 @@
                                 <i class="fas fa-shopping-cart"></i>
                             </div>
                             <span class="menu-label">Venda de Peças</span>
+                        </a>
+                        
+                        <a href="{{ url_for('parts_lists') }}" class="menu-grid-item {% if '/lista-pecas' in request.path %}active{% endif %}">
+                            <div class="menu-icon">
+                                <i class="fas fa-list-alt"></i>
+                            </div>
+                            <span class="menu-label">Listagem de Peças</span>
                         </a>
                         
                         <!-- Segunda linha -->
