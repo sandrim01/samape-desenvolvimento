@@ -619,6 +619,8 @@ function saveServiceOrder() {
 
 // Função para abrir o WhatsApp após baixar o PDF da OS
 function openWhatsAppAfterOSDownload(event, buttonElement) {
+    console.log('openWhatsAppAfterOSDownload chamada');
+    
     // Pega os dados do botão
     const orderId = buttonElement.dataset.orderId;
     const clientName = buttonElement.dataset.clientName;
@@ -626,18 +628,36 @@ function openWhatsAppAfterOSDownload(event, buttonElement) {
     const description = buttonElement.dataset.description;
     const pdfUrl = buttonElement.getAttribute('href');
     
-    // Abre o PDF em uma nova aba (para facilitar download/visualização)
-    window.open(pdfUrl, '_blank');
+    console.log('Dados:', { orderId, clientName, clientPhone, pdfUrl });
     
-    // Cria mensagem personalizada para o WhatsApp
-    const fileName = `OS_${orderId}_${clientName.replace(/\s+/g, '_')}.pdf`;
-    let whatsappMessage = `Olá! Segue em anexo a Ordem de Serviço #${orderId}`;
-    
-    if (description) {
-        whatsappMessage += ` - ${description}`;
+    // Inicia o download do PDF automaticamente
+    try {
+        const link = document.createElement('a');
+        link.href = pdfUrl;
+        link.download = `OS_${orderId}_${clientName.replace(/\s+/g, '_')}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        console.log('Download do PDF iniciado');
+    } catch (e) {
+        console.error('Erro ao baixar PDF:', e);
     }
     
-    whatsappMessage += `\n\n📄 Arquivo: ${fileName}\n\nPor favor, baixe o PDF e anexe na conversa.\n\nAtenciosamente,\nSAMAPE`;
+    // Cria mensagem personalizada para o WhatsApp com instruções mais claras
+    const fileName = `OS_${orderId}_${clientName.replace(/\s+/g, '_')}.pdf`;
+    let whatsappMessage = `📋 *Ordem de Serviço #${orderId}*`;
+    
+    if (clientName && clientName !== 'Cliente') {
+        whatsappMessage += `\n👤 Cliente: ${clientName}`;
+    }
+    
+    if (description) {
+        whatsappMessage += `\n📝 ${description}`;
+    }
+    
+    whatsappMessage += `\n\n📎 *O PDF está sendo baixado agora!*`;
+    whatsappMessage += `\n\n_Basta clicar no ícone de anexo (�) aqui no WhatsApp e selecionar o arquivo "${fileName}" que acabou de ser baixado._`;
+    whatsappMessage += `\n\n✅ SAMAPE - Sistema de Gerenciamento`;
     
     // Codifica a mensagem para URL
     const encodedMessage = encodeURIComponent(whatsappMessage);
@@ -646,18 +666,45 @@ function openWhatsAppAfterOSDownload(event, buttonElement) {
     setTimeout(function() {
         let whatsappUrl;
         
-        // Se tem telefone do cliente, abre direto para ele no WhatsApp Web
-        if (clientPhone && clientPhone.trim() !== '') {
-            // Remove caracteres não numéricos do telefone
-            const phoneNumber = clientPhone.replace(/\D/g, '');
-            
-            // Abre WhatsApp Web com número e mensagem
-            whatsappUrl = `https://web.whatsapp.com/send?phone=55${phoneNumber}&text=${encodedMessage}`;
-            window.open(whatsappUrl, '_blank');
-        } else {
-            // Se não tem telefone, abre WhatsApp Web para escolher contato
-            whatsappUrl = `https://web.whatsapp.com/send?text=${encodedMessage}`;
-            window.open(whatsappUrl, '_blank');
+        try {
+            // Se tem telefone do cliente, valida e abre direto para ele no WhatsApp Web
+            if (clientPhone && clientPhone.trim() !== '') {
+                // Remove caracteres não numéricos do telefone
+                let phoneNumber = clientPhone.replace(/\D/g, '');
+                
+                console.log('Telefone original:', clientPhone);
+                console.log('Telefone limpo:', phoneNumber);
+                
+                // Valida se o número tem pelo menos 10 dígitos (DDD + número)
+                if (phoneNumber.length >= 10 && phoneNumber.length <= 13) {
+                    // Remove 55 do início se já existir (evita duplicação)
+                    if (phoneNumber.startsWith('55')) {
+                        phoneNumber = phoneNumber.substring(2);
+                    }
+                    
+                    // Adiciona código do Brasil (55)
+                    phoneNumber = '55' + phoneNumber;
+                    
+                    // Abre WhatsApp Web com número e mensagem
+                    whatsappUrl = `https://web.whatsapp.com/send?phone=${phoneNumber}&text=${encodedMessage}`;
+                    console.log('Abrindo WhatsApp com telefone validado:', phoneNumber);
+                    window.open(whatsappUrl, '_blank');
+                } else {
+                    // Número inválido, abre sem número específico
+                    console.warn('Número de telefone inválido (tamanho:', phoneNumber.length, '):', phoneNumber);
+                    whatsappUrl = `https://web.whatsapp.com/send?text=${encodedMessage}`;
+                    console.log('Abrindo WhatsApp sem telefone (número inválido)');
+                    window.open(whatsappUrl, '_blank');
+                }
+            } else {
+                // Se não tem telefone, abre WhatsApp Web para escolher contato
+                whatsappUrl = `https://web.whatsapp.com/send?text=${encodedMessage}`;
+                console.log('Abrindo WhatsApp sem telefone (campo vazio)');
+                window.open(whatsappUrl, '_blank');
+            }
+        } catch (e) {
+            console.error('Erro ao abrir WhatsApp:', e);
+            alert('Erro ao abrir WhatsApp. Verifique o console para mais detalhes.');
         }
     }, 500);
 }
