@@ -93,6 +93,16 @@ def register_routes(app):
     # Define o admin_or_manager_required como alias para manager_required
     admin_or_manager_required = manager_required
     
+    # Middleware para adicionar headers no-cache em todas as páginas HTML
+    @app.after_request
+    def add_no_cache_headers(response):
+        """Adiciona headers para evitar cache de páginas HTML no navegador"""
+        if response.content_type and 'text/html' in response.content_type:
+            response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate, max-age=0'
+            response.headers['Pragma'] = 'no-cache'
+            response.headers['Expires'] = '0'
+        return response
+    
     # Error handlers
     @app.errorhandler(404)
     def page_not_found(e):
