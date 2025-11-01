@@ -1004,11 +1004,20 @@ def register_routes(app):
                 estimated_value=data.get('estimated_value', 0),
                 status=ServiceOrderStatus[data.get('status', 'pending')],
                 km_inicial=data.get('km_inicial', 0),
-                km_final=data.get('km_final', 0)
+                km_final=data.get('km_final', 0),
+                km_rate=data.get('km_rate', 0),
+                labor_value=data.get('labor_value', 0),
+                parts_value=data.get('parts_value', 0)
             )
             
             # Calculate km_total if both values are provided
             service_order.update_km_total()
+            
+            # Calculate km_value if km_total and km_rate are provided
+            service_order.update_km_value()
+            
+            # Calculate total_value
+            service_order.update_total_value()
             
             # Add equipment relationships if selected
             equipment_ids = data.get('equipment_ids', [])

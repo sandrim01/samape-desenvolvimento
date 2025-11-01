@@ -153,15 +153,50 @@ class ServiceOrder(db.Model):
     invoice_amount = db.Column(db.Numeric(10, 2))
     service_details = db.Column(db.Text)
     
+    # Kilometragem fields
+    km_inicial = db.Column(db.Numeric(10, 2), default=0)
+    km_final = db.Column(db.Numeric(10, 2), default=0)
+    km_total = db.Column(db.Numeric(10, 2), default=0)
+    km_rate = db.Column(db.Numeric(10, 2), default=0)  # Valor por KM
+    km_value = db.Column(db.Numeric(10, 2), default=0)  # Valor total de KM
+    
+    # Service value breakdown
+    labor_value = db.Column(db.Numeric(10, 2), default=0)  # Valor da mão de obra
+    parts_value = db.Column(db.Numeric(10, 2), default=0)  # Valor das peças
+    total_value = db.Column(db.Numeric(10, 2), default=0)  # Valor total calculado
+    
     # Relations
     financial_entries = db.relationship('FinancialEntry', backref='service_order', lazy=True)
     images = db.relationship('ServiceOrderImage', backref='service_order', lazy=True, cascade="all, delete-orphan")
+    
+    def update_km_total(self):
+        """Calcula o total de KM percorridos"""
+        if self.km_inicial and self.km_final and self.km_final > self.km_inicial:
+            self.km_total = self.km_final - self.km_inicial
+        else:
+            self.km_total = 0
+    
+    def update_km_value(self):
+        """Calcula o valor total baseado em KM"""
+        if self.km_total and self.km_rate:
+            self.km_value = self.km_total * self.km_rate
+        else:
+            self.km_value = 0
+    
+    def update_total_value(self):
+        """Calcula o valor total do serviço"""
+        km_val = self.km_value or 0
+        labor_val = self.labor_value or 0
+        parts_val = self.parts_value or 0
+        self.total_value = km_val + labor_val + parts_val
     
     @property
     def total_price(self):
         """Retorna o valor total da OS"""
         if self.invoice_amount:
             return float(self.invoice_amount)
+        elif self.total_value:
+            return float(self.total_value)
         elif self.estimated_value:
             return float(self.estimated_value)
         return 0.0
