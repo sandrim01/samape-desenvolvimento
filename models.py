@@ -135,11 +135,13 @@ class Equipment(db.Model):
     service_orders = db.relationship('ServiceOrder', secondary=equipment_service_orders, backref=db.backref('equipment', lazy=True))
     
 class ServiceOrder(db.Model):
+    __tablename__ = 'service_order'
+    
     id = db.Column(db.Integer, primary_key=True)
     client_id = db.Column(db.Integer, db.ForeignKey('client.id'), nullable=False)
     responsible_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     description = db.Column(db.Text, nullable=False)
-    estimated_value = db.Column(db.Numeric(10, 2), nullable=True)  # Valor estimado da OS
+    estimated_value = db.Column(db.Numeric(10, 2), nullable=True)
     status = db.Column(Enum(ServiceOrderStatus), default=ServiceOrderStatus.aberta, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -151,22 +153,28 @@ class ServiceOrder(db.Model):
     invoice_amount = db.Column(db.Numeric(10, 2))
     service_details = db.Column(db.Text)
     
-    # Financial fields
-    discount_amount = db.Column(db.Numeric(10, 2), default=0)
-    original_amount = db.Column(db.Numeric(10, 2))
-    
     # Relations
     financial_entries = db.relationship('FinancialEntry', backref='service_order', lazy=True)
     images = db.relationship('ServiceOrderImage', backref='service_order', lazy=True, cascade="all, delete-orphan")
     
     @property
     def total_price(self):
-        """Calcula o valor total considerando descontos"""
+        """Retorna o valor total da OS"""
         if self.invoice_amount:
             return float(self.invoice_amount)
         elif self.estimated_value:
             return float(self.estimated_value)
         return 0.0
+    
+    @property
+    def discount_amount(self):
+        """Propriedade calculada para compatibilidade"""
+        return 0.0
+    
+    @property
+    def original_amount(self):
+        """Propriedade calculada para compatibilidade"""
+        return self.total_price
 
 class ServiceOrderImage(db.Model):
     id = db.Column(db.Integer, primary_key=True)
