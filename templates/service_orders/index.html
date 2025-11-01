@@ -699,26 +699,10 @@ function openWhatsAppAfterOSDownload(event, buttonElement) {
     const description = buttonElement.dataset.description || buttonElement.getAttribute('data-description') || '';
     const pdfUrl = buttonElement.getAttribute('href');
     
-    // Inicia o download do PDF
+    // Abre o PDF em uma nova aba (para facilitar download/visualização)
     if (pdfUrl && pdfUrl !== '#') {
-        const downloadLink = document.createElement('a');
-        downloadLink.href = pdfUrl;
-        downloadLink.download = `OS_${orderId}_${clientName.replace(/\s+/g, '_')}.pdf`;
-        document.body.appendChild(downloadLink);
-        downloadLink.click();
-        document.body.removeChild(downloadLink);
+        window.open(pdfUrl, '_blank');
     }
-    
-    // Mostra alerta de sucesso com instruções
-    const alertHtml = `
-        <div class="alert alert-info alert-dismissible fade show" role="alert" style="position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 350px; max-width: 400px;">
-            <i class="fas fa-info-circle me-2"></i>
-            <strong>PDF baixado!</strong><br>
-            <small>Abrindo WhatsApp... Clique no ícone de anexo (📎) e selecione o PDF da OS #${orderId} que foi baixado.</small>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    `;
-    $('body').append(alertHtml);
     
     // Cria mensagem personalizada para o WhatsApp
     const fileName = `OS_${orderId}_${clientName.replace(/\s+/g, '_')}.pdf`;
@@ -728,12 +712,12 @@ function openWhatsAppAfterOSDownload(event, buttonElement) {
         whatsappMessage += ` - ${description}`;
     }
     
-    whatsappMessage += `\n\n📄 Arquivo: ${fileName}\n\nAtenciosamente,\nSAMAPE`;
+    whatsappMessage += `\n\n📄 Arquivo: ${fileName}\n\nPor favor, baixe o PDF e anexe na conversa.\n\nAtenciosamente,\nSAMAPE`;
     
     // Codifica a mensagem para URL
     const encodedMessage = encodeURIComponent(whatsappMessage);
     
-    // Aguarda 1 segundo e abre o WhatsApp Web
+    // Aguarda 500ms e abre o WhatsApp Web
     setTimeout(function() {
         let whatsappUrl;
         
@@ -746,11 +730,11 @@ function openWhatsAppAfterOSDownload(event, buttonElement) {
             whatsappUrl = `https://web.whatsapp.com/send?phone=55${phoneNumber}&text=${encodedMessage}`;
             window.open(whatsappUrl, '_blank');
         } else {
-            // Se não tem telefone, abre WhatsApp Web com mensagem genérica
+            // Se não tem telefone, abre WhatsApp Web para escolher contato
             whatsappUrl = `https://web.whatsapp.com/send?text=${encodedMessage}`;
             window.open(whatsappUrl, '_blank');
         }
-    }, 1000);
+    }, 500);
 }
 
 // Função para abrir modal de edição
