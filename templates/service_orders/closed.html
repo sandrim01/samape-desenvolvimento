@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+
+{% block title %}Ordens de Serviço Fechadas - SAMAPE{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2><i class="fas fa-check-circle text-success me-2"></i>Ordens de Serviço Fechadas</h2>
+            <a href="{{ url_for('service_orders') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i>Voltar para OS
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Card com resumo -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-subtitle mb-2 text-white-50">Total de OS Fechadas</h6>
+                        <h3 class="card-title mb-0">{{ closed_orders.total }}</h3>
+                    </div>
+                    <div class="fs-1">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-subtitle mb-2 text-white-50">Total Faturado</h6>
+                        <h3 class="card-title mb-0">R$ {{ "%.2f"|format(total_faturado) }}</h3>
+                    </div>
+                    <div class="fs-1">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filtros -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Filtros de Busca</h5>
+            </div>
+            <div class="card-body">
+                <form method="GET" id="filterForm">
+                    <div class="row g-3">
+                        <!-- Filtro por Cliente -->
+                        <div class="col-md-4">
+                            <label for="client" class="form-label">Cliente:</label>
+                            <select class="form-select" id="client" name="client">
+                                <option value="">Todos os Clientes</option>
+                                {% for client in clients %}
+                                <option value="{{ client.id }}" {% if client_filter == client.id %}selected{% endif %}>
+                                    {{ client.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Filtro por Data Inicial -->
+                        <div class="col-md-3">
+                            <label for="date_from" class="form-label">Data Inicial:</label>
+                            <input type="date" class="form-control" id="date_from" name="date_from" 
+                                   value="{{ date_from or '' }}">
+                        </div>
+
+                        <!-- Filtro por Data Final -->
+                        <div class="col-md-3">
+                            <label for="date_to" class="form-label">Data Final:</label>
+                            <input type="date" class="form-control" id="date_to" name="date_to" 
+                                   value="{{ date_to or '' }}">
+                        </div>
+
+                        <!-- Botões -->
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-filter me-1"></i>Filtrar
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Lista de OS Fechadas -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    Lista de OS Fechadas
+                    {% if closed_orders.items %}
+                        <span class="badge bg-success">{{ closed_orders.total }} encontrada(s)</span>
+                    {% endif %}
+                </h5>
+            </div>
+            
+            {% if closed_orders.items %}
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Cliente</th>
+                                <th>Nota Fiscal</th>
+                                <th>Data Fechamento</th>
+                                <th>Valor Faturado</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in closed_orders.items %}
+                            <tr>
+                                <td><strong>#{{ order.id }}</strong></td>
+                                <td>
+                                    {% if order.client %}
+                                        <i class="fas fa-user me-1"></i>{{ order.client.name }}
+                                    {% else %}
+                                        <span class="text-muted">Sem cliente</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if order.invoice_number %}
+                                        <span class="badge bg-info">{{ order.invoice_number }}</span>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if order.closed_at %}
+                                        <i class="fas fa-calendar me-1"></i>
+                                        {{ order.closed_at.strftime('%d/%m/%Y %H:%M') }}
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <strong class="text-success">
+                                        R$ {{ "%.2f"|format(order.invoice_amount or 0) }}
+                                    </strong>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a href="{{ url_for('view_service_order', id=order.id) }}" 
+                                           class="btn btn-outline-primary" title="Visualizar">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{{ url_for('export_service_order_pdf', id=order.id) }}" 
+                                           class="btn btn-outline-danger" target="_blank" title="PDF">
+                                            <i class="fas fa-file-pdf"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Paginação -->
+            {% if closed_orders.pages > 1 %}
+            <div class="card-footer">
+                <nav aria-label="Navegação de página">
+                    <ul class="pagination justify-content-center mb-0">
+                        {% if closed_orders.has_prev %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('closed_service_orders', page=closed_orders.prev_num, client=client_filter, date_from=date_from, date_to=date_to) }}">
+                                Anterior
+                            </a>
+                        </li>
+                        {% endif %}
+
+                        {% for page_num in closed_orders.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                            {% if page_num %}
+                                {% if page_num == closed_orders.page %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ page_num }}</span>
+                                </li>
+                                {% else %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('closed_service_orders', page=page_num, client=client_filter, date_from=date_from, date_to=date_to) }}">
+                                        {{ page_num }}
+                                    </a>
+                                </li>
+                                {% endif %}
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link">...</span>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if closed_orders.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('closed_service_orders', page=closed_orders.next_num, client=client_filter, date_from=date_from, date_to=date_to) }}">
+                                Próxima
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
+            
+            {% else %}
+            <div class="card-body text-center py-5">
+                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                <p class="text-muted">Nenhuma ordem de serviço fechada encontrada.</p>
+                {% if client_filter or date_from or date_to %}
+                <a href="{{ url_for('closed_service_orders') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times me-1"></i>Limpar Filtros
+                </a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Auto-submit do formulário ao mudar filtros
+document.getElementById('client').addEventListener('change', function() {
+    document.getElementById('filterForm').submit();
+});
+</script>
+{% endblock %}

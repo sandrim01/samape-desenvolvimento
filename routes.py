@@ -1546,6 +1546,64 @@ def register_routes(app):
             close_form=form
         )
 
+    @app.route('/os/fechadas')
+    @login_required
+    def closed_service_orders():
+        """Página com todas as ordens de serviço fechadas"""
+        page = request.args.get('page', 1, type=int)
+        per_page = 20
+        
+        # Filtros opcionais
+        client_filter = request.args.get('client', type=int)
+        date_from = request.args.get('date_from')
+        date_to = request.args.get('date_to')
+        
+        # Query base: apenas OS fechadas
+        query = ServiceOrder.query.filter_by(status=ServiceOrderStatus.fechada)
+        
+        # Aplicar filtros
+        if client_filter:
+            query = query.filter_by(client_id=client_filter)
+        
+        if date_from:
+            try:
+                date_from_obj = datetime.strptime(date_from, '%Y-%m-%d')
+                query = query.filter(ServiceOrder.closed_at >= date_from_obj)
+            except ValueError:
+                pass
+        
+        if date_to:
+            try:
+                date_to_obj = datetime.strptime(date_to, '%Y-%m-%d')
+                # Adicionar 1 dia para incluir todo o dia final
+                date_to_obj = date_to_obj + timedelta(days=1)
+                query = query.filter(ServiceOrder.closed_at < date_to_obj)
+            except ValueError:
+                pass
+        
+        # Ordenar por data de fechamento (mais recente primeiro)
+        query = query.order_by(ServiceOrder.closed_at.desc())
+        
+        # Paginar resultados
+        closed_orders = query.paginate(page=page, per_page=per_page, error_out=False)
+        
+        # Buscar lista de clientes para o filtro
+        clients = Client.query.order_by(Client.name).all()
+        
+        # Calcular totais
+        total_faturado = db.session.query(db.func.sum(ServiceOrder.invoice_amount))\
+            .filter_by(status=ServiceOrderStatus.fechada).scalar() or 0
+        
+        return render_template(
+            'service_orders/closed.html',
+            closed_orders=closed_orders,
+            clients=clients,
+            client_filter=client_filter,
+            date_from=date_from,
+            date_to=date_to,
+            total_faturado=total_faturado
+        )
+
     @app.route('/os/<int:id>/pdf')
     @login_required
     def export_service_order_pdf(id):
