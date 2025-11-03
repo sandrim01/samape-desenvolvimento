@@ -1,6 +1,6 @@
 ﻿import os
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 from functools import wraps
 from flask import render_template, redirect, url_for, flash, request, jsonify, session, abort, Response, make_response
 from flask_login import login_user, logout_user, login_required, current_user
@@ -1461,7 +1461,7 @@ def register_routes(app):
         form = CloseServiceOrderForm()
         
         if form.validate_on_submit():
-            # Gerar o nÃºmero da nota automaticamente
+            # Gerar o número da nota automaticamente
             from utils import get_next_invoice_number
             
             service_order.status = ServiceOrderStatus.fechada
@@ -1471,18 +1471,24 @@ def register_routes(app):
             service_order.invoice_amount = form.invoice_amount.data
             service_order.service_details = form.service_details.data
             
-            # Create financial entry
+            # Calcula data de vencimento (30 dias após o fechamento)
+            due_date = datetime.utcnow() + timedelta(days=30)
+            
+            # Create financial entry - A RECEBER (status pendente)
             financial_entry = FinancialEntry(
                 service_order_id=service_order.id,
-                description=f"Fechamento de OS #{service_order.id} - {service_order.client.name}",
+                description=f"Recebimento OS #{service_order.id} - {service_order.client.name}",
                 amount=form.invoice_amount.data,
                 type=FinancialEntryType.entrada,
-                category=FinancialCategory.fechamento_os,  # Categoria específica para fechamento de OS
-                status=FinancialStatus.pago,  # OS fechada = pagamento realizado
+                category=FinancialCategory.fechamento_os,
+                status=FinancialStatus.pendente,  # A RECEBER - pendente até o pagamento
                 date=datetime.utcnow(),
-                payment_date=datetime.utcnow(),
+                due_date=due_date,  # Vencimento em 30 dias
+                payment_date=None,  # Será preenchido quando for pago
                 created_by=current_user.id,
-                notes=f"Lançamento automático gerado pelo fechamento da OS #{service_order.id}"
+                entry_type='service_order',
+                reference_id=service_order.id,
+                notes=f"Valor a receber - Lançamento automático gerado pelo fechamento da OS #{service_order.id}"
             )
             
             db.session.add(financial_entry)
@@ -1492,10 +1498,10 @@ def register_routes(app):
                 'Fechamento de OS',
                 'service_order',
                 service_order.id,
-                f"OS {id} fechada com valor R$ {form.invoice_amount.data:.2f} - Lançamento financeiro #{financial_entry.id} criado"
+                f"OS {id} fechada com valor R$ {form.invoice_amount.data:.2f} - Lançamento financeiro #{financial_entry.id} criado (A RECEBER)"
             )
             
-            flash('Ordem de serviço fechada com sucesso! Lançamento financeiro gerado automaticamente.', 'success')
+            flash(f'✅ Ordem de serviço fechada! Valor de R$ {form.invoice_amount.data:.2f} lançado como A RECEBER no financeiro (venc: {due_date.strftime("%d/%m/%Y")}).', 'success')
             return redirect(url_for('view_service_order', id=id))
             
         return render_template(
