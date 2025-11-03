@@ -69,8 +69,8 @@ app.config["SESSION_COOKIE_SECURE"] = True
 app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 
-# Configure CSRF protection - TEMPORARIAMENTE DESABILITADO PARA DEBUG
-app.config["WTF_CSRF_ENABLED"] = False  # DESABILITADO TEMPORARIAMENTE
+# Configure CSRF protection
+app.config["WTF_CSRF_ENABLED"] = True  # CSRF HABILITADO
 app.config["WTF_CSRF_TIME_LIMIT"] = 3600  # 1 hour
 app.config["WTF_CSRF_SSL_STRICT"] = False  # Para ambiente de desenvolvimento
 
@@ -78,11 +78,8 @@ app.config["WTF_CSRF_SSL_STRICT"] = False  # Para ambiente de desenvolvimento
 db.init_app(app)
 login_manager.init_app(app)
 
-# CSRF TEMPORARIAMENTE DESABILITADO PARA DEBUG
-# csrf.init_app(app)
-# csrf.exempt('/clientes/<int:id>/excluir')
-# csrf.exempt('/admin/clientes/<int:id>/excluir-direto')
-# csrf.exempt('/os/<int:id>/update-ajax')
+# Initialize CSRF protection
+csrf.init_app(app)
 
 # Configure login manager
 login_manager.login_view = "login"
@@ -92,19 +89,11 @@ login_manager.login_message_category = "warning"
 # Import models 
 import models
 
-# Context processor para CSRF (funciona mesmo com CSRF desabilitado)
+# Context processor para CSRF
 @app.context_processor
 def inject_csrf_token():
-    try:
-        if app.config.get("WTF_CSRF_ENABLED", True):
-            from flask_wtf.csrf import generate_csrf
-            return dict(csrf_token=generate_csrf)
-        else:
-            # Se CSRF estiver desabilitado, retornar token vazio
-            return dict(csrf_token=lambda: "")
-    except Exception:
-        # Em caso de erro, retornar token vazio
-        return dict(csrf_token=lambda: "")
+    from flask_wtf.csrf import generate_csrf
+    return dict(csrf_token=generate_csrf)
 
 # Setup user loader for Flask-Login
 @login_manager.user_loader
