@@ -104,9 +104,14 @@
                         <span class="badge bg-primary">{{ service_orders.total }} encontrada(s)</span>
                     {% endif %}
                 </h5>
-                <button type="button" class="btn btn-primary btn-sm" onclick="openCreateModal()">
-                    <i class="fas fa-plus me-1"></i>Nova Ordem de Serviço
-                </button>
+                <div>
+                    <button type="button" class="btn btn-warning btn-sm me-2" onclick="testButton()">
+                        <i class="fas fa-bug me-1"></i>Testar JS
+                    </button>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="openCreateModal()">
+                        <i class="fas fa-plus me-1"></i>Nova Ordem de Serviço
+                    </button>
+                </div>
             </div>
             
             {% if service_orders and service_orders.items %}
@@ -367,6 +372,26 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <script class="requires-jquery">
+// ============================================
+// DIAGNÓSTICO: Verificar ambiente
+// ============================================
+console.log('=== DIAGNÓSTICO DE AMBIENTE ===');
+console.log('jQuery carregado:', typeof $ !== 'undefined');
+console.log('Bootstrap carregado:', typeof bootstrap !== 'undefined');
+
+// Verificar CSRF
+const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+console.log('Meta CSRF encontrado:', csrfMeta !== null);
+if (csrfMeta) {
+    console.log('CSRF token value:', csrfMeta.getAttribute('content'));
+}
+
+// Testar click em botão
+window.testButton = function() {
+    console.log('Teste de botão funcionando!');
+    alert('JavaScript está funcionando!');
+};
+
 let currentOrderId = null;
 
 // Verificar se deve abrir o modal de criação automaticamente
