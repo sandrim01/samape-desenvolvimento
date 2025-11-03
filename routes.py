@@ -2558,6 +2558,19 @@ def register_routes(app):
             FinancialEntry.due_date.between(today, next_week)
         ).order_by(FinancialEntry.due_date.asc()).all()
         
+        # NOVO: Buscar OS abertas e em andamento como previsão de receita
+        open_service_orders = ServiceOrder.query.filter(
+            ServiceOrder.status.in_([ServiceOrderStatus.aberta, ServiceOrderStatus.em_andamento])
+        ).order_by(ServiceOrder.created_at.desc()).all()
+        
+        # Calcular valor estimado das OS abertas
+        estimated_revenue = 0
+        for order in open_service_orders:
+            if order.estimated_value:
+                estimated_revenue += float(order.estimated_value)
+            elif order.total_value:
+                estimated_revenue += float(order.total_value)
+        
         # Estatísticas
         total_pending = sum(e.amount for e in pending_entries)
         total_overdue = sum(e.amount for e in overdue_entries)
@@ -2568,6 +2581,8 @@ def register_routes(app):
             pending_entries=pending_entries,
             overdue_entries=overdue_entries,
             upcoming_entries=upcoming_entries,
+            open_service_orders=open_service_orders,  # NOVO
+            estimated_revenue=estimated_revenue,  # NOVO
             total_pending=total_pending,
             total_overdue=total_overdue,
             total_upcoming=total_upcoming,
