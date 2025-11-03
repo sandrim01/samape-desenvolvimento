@@ -703,28 +703,44 @@ function openWhatsAppAfterOSDownload(event, buttonElement) {
     
     console.log('Dados modal:', { orderId, clientName, clientPhone, pdfUrl });
     
-    // Inicia o download do PDF automaticamente
+    // IMPORTANTE: Não é possível enviar arquivo automaticamente via WhatsApp Web
+    // por limitações de segurança do navegador e da API do WhatsApp.
+    // A melhor solução é abrir o PDF e instruir o usuário.
+    
+    // Abre o PDF em nova aba para o usuário baixar
     if (pdfUrl && pdfUrl !== '#') {
         try {
-            const link = document.createElement('a');
-            link.href = pdfUrl;
-            link.download = `OS_${orderId}_${clientName.replace(/\s+/g, '_')}.pdf`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            console.log('Download do PDF iniciado no modal');
+            window.open(pdfUrl, '_blank');
+            console.log('PDF aberto em nova aba (modal)');
         } catch (e) {
-            console.error('Erro ao baixar PDF no modal:', e);
+            console.error('Erro ao abrir PDF no modal:', e);
         }
     } else {
         console.error('URL do PDF inválida:', pdfUrl);
     }
     
-    // Cria mensagem personalizada para o WhatsApp com instruções mais claras
+    // Cria mensagem CLARA explicando que o anexo precisa ser manual
     const fileName = `OS_${orderId}_${clientName.replace(/\s+/g, '_')}.pdf`;
     let whatsappMessage = `📋 *Ordem de Serviço #${orderId}*`;
     
     if (clientName && clientName !== 'Cliente') {
+        whatsappMessage += `\n👤 Cliente: ${clientName}`;
+    }
+    
+    if (description) {
+        whatsappMessage += `\n📝 ${description}`;
+    }
+    
+    whatsappMessage += `\n\n⚠️ *IMPORTANTE:*`;
+    whatsappMessage += `\n\n1️⃣ O PDF foi aberto em outra aba do navegador`;
+    whatsappMessage += `\n2️⃣ Clique em "Baixar" (ícone de download) no PDF`;
+    whatsappMessage += `\n3️⃣ Volte aqui e clique no ícone 📎 (anexo)`;
+    whatsappMessage += `\n4️⃣ Selecione o arquivo: *${fileName}*`;
+    whatsappMessage += `\n\n_Obs: Por segurança, o WhatsApp não permite envio automático de arquivos via navegador._`;
+    whatsappMessage += `\n\n✅ SAMAPE`;
+    
+    // Codifica a mensagem para URL
+    const encodedMessage = encodeURIComponent(whatsappMessage);
         whatsappMessage += `\n👤 Cliente: ${clientName}`;
     }
     
