@@ -168,7 +168,7 @@
                                         <button type="button" class="btn btn-outline-warning" onclick="openEditModal({{ order.id }})" title="Editar">
                                             Editar
                                         </button>
-                                        {% if current_user.role == 'admin' %}
+                                        {% if current_user.role.name == 'admin' %}
                                         <button type="button" class="btn btn-outline-danger" onclick="deleteServiceOrder({{ order.id }})" title="Excluir">
                                             Excluir
                                         </button>
