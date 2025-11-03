@@ -16,7 +16,7 @@ from models import (
     UserRole, ServiceOrderStatus, FinancialEntryType, FinancialCategory, FinancialStatus, Supplier, Part, PartSale,
     SupplierOrder, OrderItem, OrderStatus, ServiceOrderImage, equipment_service_orders,
     StockItem, StockMovement, StockItemType, StockItemStatus, VehicleType, VehicleStatus,
-    Vehicle, VehicleMaintenance, Refueling, VehicleTravelLog, MaintenanceType, FuelType, CompanySettings
+    Vehicle, VehicleMaintenance, Refueling, VehicleTravelLog, MaintenanceType, FuelType, CompanySettings, PartsList
 )
 from forms import (
     LoginForm, UserForm, ClientForm, EquipmentForm, ServiceOrderForm,
@@ -1400,6 +1400,11 @@ def register_routes(app):
                 service_order.id,
                 f"OS #{id} - Cliente: {service_order.client.name if service_order.client else 'N/A'} - Status: {service_order.status.value}"
             )
+            
+            # Excluir parts_lists relacionadas (com seus itens em cascata)
+            parts_lists = PartsList.query.filter_by(service_order_id=id).all()
+            for parts_list in parts_lists:
+                db.session.delete(parts_list)
             
             # Excluir registros financeiros relacionados
             financial_entries = FinancialEntry.query.filter_by(service_order_id=id).all()
