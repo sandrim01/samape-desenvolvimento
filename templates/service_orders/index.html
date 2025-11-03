@@ -768,19 +768,6 @@ function openWhatsAppAfterOSDownload(event, buttonElement) {
     
     // Codifica a mensagem para URL
     const encodedMessage = encodeURIComponent(whatsappMessage);
-        whatsappMessage += `\n👤 Cliente: ${clientName}`;
-    }
-    
-    if (description) {
-        whatsappMessage += `\n📝 ${description}`;
-    }
-    
-    whatsappMessage += `\n\n📎 *O PDF está sendo baixado agora!*`;
-    whatsappMessage += `\n\n_Basta clicar no ícone de anexo (�) aqui no WhatsApp e selecionar o arquivo "${fileName}" que acabou de ser baixado._`;
-    whatsappMessage += `\n\n✅ SAMAPE - Sistema de Gerenciamento`;
-    
-    // Codifica a mensagem para URL
-    const encodedMessage = encodeURIComponent(whatsappMessage);
     
     // Aguarda 500ms e abre o WhatsApp Web
     setTimeout(function() {
