@@ -1393,20 +1393,51 @@ def register_routes(app):
         try:
             service_order = ServiceOrder.query.get_or_404(id)
             
-            # Excluir registros financeiros relacionados
-            FinancialEntry.query.filter_by(service_order_id=id).delete()
+            # Log antes de excluir
+            log_action(
+                'Tentativa de exclusão de OS',
+                'service_order',
+                service_order.id,
+                f"OS #{id} - Cliente: {service_order.client.name if service_order.client else 'N/A'} - Status: {service_order.status.value}"
+            )
             
-            # Excluir imagens relacionadas
-            ServiceOrderImage.query.filter_by(service_order_id=id).delete()
+            # Excluir registros financeiros relacionados
+            financial_entries = FinancialEntry.query.filter_by(service_order_id=id).all()
+            for entry in financial_entries:
+                db.session.delete(entry)
+            
+            # Excluir imagens relacionadas (cascade já faz isso, mas garantindo)
+            images = ServiceOrderImage.query.filter_by(service_order_id=id).all()
+            for image in images:
+                db.session.delete(image)
             
             # Excluir a ordem de serviço
             db.session.delete(service_order)
             db.session.commit()
             
-            flash('Ordem de serviço excluída com sucesso!', 'success')
+            # Log após sucesso
+            log_action(
+                'Exclusão de OS',
+                'service_order',
+                id,
+                f"OS #{id} excluída com sucesso"
+            )
+            
+            flash('✅ Ordem de serviço excluída com sucesso!', 'success')
+            
         except Exception as e:
             db.session.rollback()
-            flash(f'Erro ao excluir ordem de serviço: {str(e)}', 'danger')
+            error_msg = str(e)
+            
+            # Log do erro
+            log_action(
+                'Erro ao excluir OS',
+                'service_order',
+                id,
+                f"Erro: {error_msg}"
+            )
+            
+            flash(f'❌ Erro ao excluir ordem de serviço: {error_msg}', 'danger')
         
         return redirect(url_for('service_orders'))
 

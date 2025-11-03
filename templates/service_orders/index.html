@@ -168,9 +168,11 @@
                                         <button type="button" class="btn btn-outline-warning" onclick="openEditModal({{ order.id }})" title="Editar">
                                             Editar
                                         </button>
+                                        {% if current_user.role == 'admin' %}
                                         <button type="button" class="btn btn-outline-danger" onclick="deleteServiceOrder({{ order.id }})" title="Excluir">
                                             Excluir
                                         </button>
+                                        {% endif %}
                                     </div>
                                 </td>
                             </tr>
@@ -1674,11 +1676,15 @@ function createServiceOrder() {
 
 // Função para excluir ordem de serviço
 function deleteServiceOrder(orderId) {
-    if (confirm('Tem certeza que deseja excluir esta ordem de serviço?')) {
+    console.log('deleteServiceOrder chamada com ID:', orderId);
+    
+    if (confirm('Tem certeza que deseja excluir esta ordem de serviço? Esta ação não pode ser desfeita!')) {
         // Criar formulário temporário para fazer POST request
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = '/ordens-servico/' + orderId + '/excluir';
+        
+        console.log('Form action:', form.action);
         
         // Adicionar CSRF token se disponível
         const csrfToken = document.querySelector('meta[name="csrf-token"]');
@@ -1688,10 +1694,16 @@ function deleteServiceOrder(orderId) {
             input.name = 'csrf_token';
             input.value = csrfToken.getAttribute('content');
             form.appendChild(input);
+            console.log('CSRF token adicionado');
+        } else {
+            console.warn('CSRF token não encontrado');
         }
         
         document.body.appendChild(form);
+        console.log('Enviando formulário...');
         form.submit();
+    } else {
+        console.log('Exclusão cancelada pelo usuário');
     }
 }
 </script>
