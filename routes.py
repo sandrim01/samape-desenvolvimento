@@ -269,44 +269,46 @@ def register_routes(app):
     @app.route('/dashboard')
     @login_required  
     def dashboard():
-        """Dashboard principal com dados otimizados"""
+        """Dashboard principal ultra-otimizado"""
         try:
             from sqlalchemy.orm import joinedload
             
-            # Contar ordens por status (query otimizada)
-            total_orders = ServiceOrder.query.count()
-            open_orders = ServiceOrder.query.filter(ServiceOrder.status == ServiceOrderStatus.aberta).count()
-            in_progress_orders = ServiceOrder.query.filter(ServiceOrder.status == ServiceOrderStatus.em_andamento).count()
-            closed_orders = ServiceOrder.query.filter(ServiceOrder.status == ServiceOrderStatus.fechada).count()
+            # Query única para contar todos os status de uma vez
+            status_counts = db.session.query(
+                ServiceOrder.status,
+                func.count(ServiceOrder.id)
+            ).group_by(ServiceOrder.status).all()
             
-            # Clientes
+            status_dict = {status: count for status, count in status_counts}
+            total_orders = sum(status_dict.values())
+            open_orders = status_dict.get(ServiceOrderStatus.aberta, 0)
+            in_progress_orders = status_dict.get(ServiceOrderStatus.em_andamento, 0)
+            closed_orders = status_dict.get(ServiceOrderStatus.fechada, 0)
+            
+            # Queries rápidas
             total_clients = Client.query.count()
+            monthly_revenue = db.session.query(func.sum(FinancialEntry.value)).filter(
+                FinancialEntry.type == 'receita',
+                FinancialEntry.date >= func.date_trunc('month', func.current_date())
+            ).scalar() or 0
             
-            # Ordens recentes (com joinedload otimizado)
+            # Ordens recentes (apenas 5)
             recent_orders = ServiceOrder.query.options(
                 joinedload(ServiceOrder.client)
             ).order_by(ServiceOrder.created_at.desc()).limit(5).all()
             
-            # Dados financeiros
-            try:
-                monthly_revenue = db.session.query(db.func.sum(FinancialEntry.value)).filter(
-                    FinancialEntry.type == 'receita',
-                    FinancialEntry.date >= db.func.date_trunc('month', db.func.current_date())
-                ).scalar() or 0
-            except Exception:
-                monthly_revenue = 0
+            # Frota em query única
+            fleet_counts = db.session.query(
+                Vehicle.status,
+                func.count(Vehicle.id)
+            ).group_by(Vehicle.status).all()
             
-            # Dados da frota
-            try:
-                fleet_total = Vehicle.query.count()
-                fleet_active = Vehicle.query.filter_by(status='ativo').count()
-                fleet_maintenance = Vehicle.query.filter_by(status='em_manutencao').count()
-                fleet_inactive = Vehicle.query.filter_by(status='inativo').count()
-            except Exception:
-                fleet_total = fleet_active = fleet_maintenance = fleet_inactive = 0
-            app.logger.info(f"Closed Orders: {closed_orders}")
+            fleet_dict = {status: count for status, count in fleet_counts}
+            fleet_total = sum(fleet_dict.values())
+            fleet_active = fleet_dict.get('ativo', 0)
+            fleet_maintenance = fleet_dict.get('em_manutencao', 0)
+            fleet_inactive = fleet_dict.get('inativo', 0)
             
-            # USAR TEMPLATE BONITO com dados REAIS
             metrics_data = {
                 'total': total_orders, 
                 'open': open_orders, 
@@ -325,7 +327,6 @@ def register_routes(app):
                 'in_progress_orders': in_progress_orders, 
                 'closed_orders': closed_orders,
                 'avg_completion_time': '2-3 dias' if total_orders > 0 else 'N/A',
-                # Campos extras que o template dashboard.html precisa
                 'income_data': [monthly_revenue or 0],
                 'expense_data': [0],
                 'nf_total': 0,
@@ -337,58 +338,23 @@ def register_routes(app):
                 'delivered_this_month': closed_orders
             }
             
-            app.logger.info(f"Enviando para template - metrics_data: {metrics_data}")
-            app.logger.info(f"Recent orders para template: {[{'id': o.id, 'client': o.client.name if o.client else 'N/A'} for o in recent_orders] if recent_orders else 'Nenhuma'}")
-            
-            # DADOS DE PONTO PARA ADMINISTRADORES
+            # Alertas de ponto OTIMIZADOS - apenas contagens
             admin_ponto_alerts = {}
             if current_user.is_admin():
                 try:
-                    from models import Ponto, User
-                    from datetime import datetime, timedelta
+                    from models import Ponto
                     
-                    # Pontos sem saída (abertos)
-                    pontos_sem_saida = Ponto.query.filter(
-                        Ponto.hora_saida.is_(None)
-                    ).join(User).all()
-                    
-                    # Pontos com mais de 12 horas trabalhadas nos últimos 30 dias
-                    data_limite = datetime.now() - timedelta(days=30)
-                    pontos_excesso = Ponto.query.filter(
-                        Ponto.hora_saida.isnot(None),
-                        Ponto.data >= data_limite.date()
-                    ).all()
-                    
-                    # Filtrar pontos com mais de 12 horas
-                    pontos_problema = []
-                    for ponto in pontos_excesso:
-                        if ponto.horas_trabalhadas and ponto.horas_trabalhadas > 12:
-                            pontos_problema.append(ponto)
-                    
-                    # Funcionários com pontos problemáticos
-                    funcionarios_problemas = set()
-                    for ponto in pontos_sem_saida + pontos_problema:
-                        funcionarios_problemas.add(ponto.usuario_id)
+                    # Apenas contagens rápidas - SEM .all()
+                    pontos_sem_saida_count = Ponto.query.filter(Ponto.hora_saida.is_(None)).count()
                     
                     admin_ponto_alerts = {
-                        'pontos_sem_saida': len(pontos_sem_saida),
-                        'pontos_excesso_horas': len(pontos_problema),
-                        'funcionarios_afetados': len(funcionarios_problemas),
-                        'total_problemas': len(pontos_sem_saida) + len(pontos_problema),
-                        'funcionarios_detalhes': [
-                            {
-                                'nome': ponto.usuario.nome,
-                                'data': ponto.data.strftime('%d/%m'),
-                                'entrada': ponto.hora_entrada.strftime('%H:%M') if ponto.hora_entrada else '--',
-                                'tipo_problema': 'Sem saída' if not ponto.hora_saida else 'Excesso de horas'
-                            }
-                            for ponto in (pontos_sem_saida + pontos_problema)[:5]  # Últimos 5
-                        ]
+                        'pontos_sem_saida': pontos_sem_saida_count,
+                        'pontos_excesso_horas': 0,
+                        'funcionarios_afetados': 0,
+                        'total_problemas': pontos_sem_saida_count,
+                        'funcionarios_detalhes': []
                     }
-                    app.logger.info(f"Admin ponto alerts: {admin_ponto_alerts}")
-                    
-                except Exception as ponto_error:
-                    app.logger.error(f"Erro ao buscar dados de ponto: {ponto_error}")
+                except Exception:
                     admin_ponto_alerts = {
                         'pontos_sem_saida': 0,
                         'pontos_excesso_horas': 0,
@@ -417,7 +383,6 @@ def register_routes(app):
             )
         except Exception as e:
             app.logger.error(f"Erro crítico no dashboard: {e}")
-            # Em caso de erro, mostrar dashboard simples mas funcional
             return render_template('dashboard-beautiful.html',
                 metrics={
                     'total': 0, 'open': 0, 'in_progress': 0, 'closed': 0, 'efficiency_percentage': 100,
@@ -4472,19 +4437,12 @@ def register_routes(app):
     def ajax_delete_stock_item(id):
         """Excluir item de estoque via AJAX"""
         try:
-            app.logger.info(f"🗑️  Tentativa de exclusão AJAX - Item ID: {id}")
-            app.logger.info(f"📊 Headers da requisição: {dict(request.headers)}")
-            app.logger.info(f"📝 Form data: {dict(request.form)}")
-            
             stock_item = StockItem.query.get_or_404(id)
-            app.logger.info(f"✅ Item encontrado: {stock_item.name}")
             
             # Verificar se há movimentações associadas
             movements_count = StockMovement.query.filter_by(stock_item_id=id).count()
-            app.logger.info(f"📈 Movimentações encontradas: {movements_count}")
             
             if movements_count > 0:
-                app.logger.info(f"❌ Exclusão bloqueada - item possui movimentações")
                 return jsonify({
                     'success': False,
                     'message': f'Não é possível excluir o item "{stock_item.name}" pois possui {movements_count} movimentação(ões) registrada(s).'
@@ -4497,7 +4455,6 @@ def register_routes(app):
             # Excluir o item
             db.session.delete(stock_item)
             db.session.commit()
-            app.logger.info(f"✅ Item excluído com sucesso: {item_name}")
             
             # Registrar log
             log_action(
@@ -4525,7 +4482,6 @@ def register_routes(app):
     def fleet():
         """Lista de veículos da frota"""
         try:
-            app.logger.info("Acessando página de frota")
             
             stats = {
                 'active': Vehicle.query.filter_by(status=VehicleStatus.ativo).count(),
