@@ -273,11 +273,15 @@ def register_routes(app):
         try:
             from sqlalchemy.orm import joinedload
             
+            app.logger.info("=== DASHBOARD DEBUG - Iniciando ===")
+            
             # Query única para contar todos os status de uma vez
             status_counts = db.session.query(
                 ServiceOrder.status,
                 func.count(ServiceOrder.id)
             ).group_by(ServiceOrder.status).all()
+            
+            app.logger.info(f"Status counts raw: {status_counts}")
             
             status_dict = {status: count for status, count in status_counts}
             total_orders = sum(status_dict.values())
@@ -285,17 +289,25 @@ def register_routes(app):
             in_progress_orders = status_dict.get(ServiceOrderStatus.em_andamento, 0)
             closed_orders = status_dict.get(ServiceOrderStatus.fechada, 0)
             
+            app.logger.info(f"Orders - Total: {total_orders}, Open: {open_orders}, Progress: {in_progress_orders}, Closed: {closed_orders}")
+            
             # Queries rápidas
             total_clients = Client.query.count()
+            app.logger.info(f"Total clients: {total_clients}")
+            
             monthly_revenue = db.session.query(func.sum(FinancialEntry.value)).filter(
                 FinancialEntry.type == 'receita',
                 FinancialEntry.date >= func.date_trunc('month', func.current_date())
             ).scalar() or 0
             
+            app.logger.info(f"Monthly revenue: {monthly_revenue}")
+            
             # Ordens recentes (apenas 5)
             recent_orders = ServiceOrder.query.options(
                 joinedload(ServiceOrder.client)
             ).order_by(ServiceOrder.created_at.desc()).limit(5).all()
+            
+            app.logger.info(f"Recent orders count: {len(recent_orders)}")
             
             # Frota em query única
             fleet_counts = db.session.query(
@@ -303,11 +315,15 @@ def register_routes(app):
                 func.count(Vehicle.id)
             ).group_by(Vehicle.status).all()
             
+            app.logger.info(f"Fleet counts raw: {fleet_counts}")
+            
             fleet_dict = {status: count for status, count in fleet_counts}
             fleet_total = sum(fleet_dict.values())
-            fleet_active = fleet_dict.get('ativo', 0)
-            fleet_maintenance = fleet_dict.get('em_manutencao', 0)
-            fleet_inactive = fleet_dict.get('inativo', 0)
+            fleet_active = fleet_dict.get(VehicleStatus.ativo, 0)
+            fleet_maintenance = fleet_dict.get(VehicleStatus.em_manutencao, 0)
+            fleet_inactive = fleet_dict.get(VehicleStatus.inativo, 0)
+            
+            app.logger.info(f"Fleet - Total: {fleet_total}, Active: {fleet_active}, Maintenance: {fleet_maintenance}, Inactive: {fleet_inactive}")
             
             metrics_data = {
                 'total': total_orders, 
@@ -337,6 +353,9 @@ def register_routes(app):
                 'pending_delivery': 0,
                 'delivered_this_month': closed_orders
             }
+            
+            app.logger.info(f"Metrics data prepared: {metrics_data}")
+            app.logger.info("=== DASHBOARD DEBUG - Finalizando com sucesso ===")
             
             # Alertas de ponto OTIMIZADOS - apenas contagens
             admin_ponto_alerts = {}
@@ -382,17 +401,25 @@ def register_routes(app):
                 now=time.time()
             )
         except Exception as e:
+            import traceback
+            error_details = traceback.format_exc()
             app.logger.error(f"Erro crítico no dashboard: {e}")
+            app.logger.error(f"Traceback completo:\n{error_details}")
+            
+            # Retornar valores vazios mas continuar funcionando
             return render_template('dashboard-beautiful.html',
                 metrics={
                     'total': 0, 'open': 0, 'in_progress': 0, 'closed': 0, 'efficiency_percentage': 100,
                     'monthly_income': 0, 'monthly_expenses': 0, 'income_data': [0], 'expense_data': [0],
                     'nf_total': 0, 'nf_aprovadas': 0, 'nf_pendentes': 0, 'nf_rejeitadas': 0,
-                    'open_orders': 0, 'pending_delivery': 0, 'delivered_this_month': 0
+                    'open_orders': 0, 'pending_delivery': 0, 'delivered_this_month': 0,
+                    'total_clients': 0, 'total_revenue': 0, 'fleet_total': 0, 'fleet_active': 0,
+                    'fleet_maintenance': 0, 'fleet_inactive': 0, 'pending_orders': 0,
+                    'in_progress_orders': 0, 'closed_orders': 0, 'avg_completion_time': 'N/A'
                 },
                 so_stats={'total': 0, 'open': 0, 'in_progress': 0, 'closed': 0},
                 financial_summary={'total_revenue': 0, 'monthly_income': 0, 'monthly_expenses': 0},
-                recent_orders=[], recent_logs=[], now=time.time()
+                recent_orders=[], recent_logs=[], admin_ponto_alerts={}, now=time.time()
             )
 
     @app.route('/dashboard/simple')
